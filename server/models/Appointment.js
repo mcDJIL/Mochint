@@ -40,6 +40,14 @@ class Appointment {
     return rows[0];
   }
 
+  static async listByCustomer(customerId) {
+    const [rows] = await promisePool.query(
+      'SELECT * FROM appointments WHERE member_id = ? ORDER BY appointment_date DESC',
+      [customerId]
+    );
+    return rows;
+  }
+
   // Create new appointment
   static async create(appointmentData) {
     const {
@@ -267,6 +275,13 @@ class Appointment {
       ]
     );
     return rows;
+  }
+
+  static async countAll() {
+    const [rows] = await promisePool.query(`
+      SELECT COUNT(*) as total_appointments FROM appointments
+    `);
+    return rows[0].total_appointments;
   }
 }
 

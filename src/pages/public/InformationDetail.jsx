@@ -26,11 +26,11 @@ const InformationDetail = () => {
         setLoading(true);
         // 1. Fetch data artikel spesifik
         const response = await axios.get(`${API_URL}/${id}`);
-        setArticle(response.data);
+        setArticle(response.data.data);
 
         // 2. Fetch data artikel lain untuk sidebar (limit 3)
         const allResponse = await axios.get(API_URL);
-        const related = allResponse.data
+        const related = allResponse.data.data
           .filter(item => (item._id || item.id).toString() !== id.toString() && item.status === 'Published')
           .sort(() => 0.5 - Math.random()) // Acak sedikit agar variatif
           .slice(0, 3);

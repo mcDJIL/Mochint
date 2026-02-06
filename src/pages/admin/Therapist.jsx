@@ -29,7 +29,7 @@ const Therapist = () => {
 
   const Token = localStorage.getItem('token');
 
-  // Fetch therapists dan appointments dari API
+  // Ambil data terapis dan appointments dari API
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -46,14 +46,14 @@ const Therapist = () => {
       setAppointments(appointmentsRes.data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch data. Please try again.');
-      console.error('Error fetching data:', err);
+      setError('Gagal memuat data. Silakan coba lagi.');
+      console.error('Error memuat data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Function untuk menghitung total treatments dari appointments
+  // Fungsi untuk menghitung total perawatan dari appointments
   const calculateTherapistTreatments = (therapistName) => {
     if (!therapistName || !appointments || appointments.length === 0) return 0;
     
@@ -66,7 +66,7 @@ const Therapist = () => {
     return therapistAppointments.length;
   };
 
-  // Function untuk mendapatkan appointment history therapist
+  // Fungsi untuk mendapatkan riwayat appointment terapis
   const getAppointmentsByTherapist = (therapistName) => {
     if (!therapistName || !appointments || appointments.length === 0) return [];
     
@@ -77,13 +77,13 @@ const Therapist = () => {
     ).sort((a, b) => new Date(b.date) - new Date(a.date));
   };
 
-  // Function untuk menghitung total revenue dari appointments therapist
+  // Fungsi untuk menghitung total pendapatan dari appointments terapis
   const calculateTherapistRevenue = (therapistName) => {
     const therapistAppointments = getAppointmentsByTherapist(therapistName);
     return therapistAppointments.reduce((total, app) => total + (parseFloat(app.amount) || 0), 0);
   };
 
-  // Calculate overall statistics
+  // Hitung statistik keseluruhan
   const stats = {
     total: therapists.length,
     active: therapists.filter(t => t.status === 'active').length,
@@ -104,7 +104,7 @@ const Therapist = () => {
       sum + calculateTherapistRevenue(therapist.name), 0)
   };
 
-  // Filter therapists
+  // Filter terapis
   const filteredTherapists = therapists.filter(therapist => {
     const matchesSearch =
       (therapist.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -124,7 +124,7 @@ const Therapist = () => {
       email: '',
       phone: '',
       status: 'active',
-      joinDate: new Date().toLocaleDateString('en-GB', { 
+      joinDate: new Date().toLocaleDateString('id-ID', { 
         day: 'numeric', 
         month: 'short', 
         year: 'numeric' 
@@ -145,19 +145,19 @@ const Therapist = () => {
   };
 
   const handleSave = async () => {
-    // Validation
+    // Validasi
     if (!formData.name?.trim()) {
-      alert('Name is required');
+      alert('Nama wajib diisi');
       return;
     }
 
     if (!formData.email?.trim()) {
-      alert('Email is required');
+      alert('Email wajib diisi');
       return;
     }
 
     if (formData.email && !formData.email.includes('@')) {
-      alert('Please enter a valid email address');
+      alert('Harap masukkan alamat email yang valid');
       return;
     }
 
@@ -170,7 +170,7 @@ const Therapist = () => {
           email: formData.email.trim(),
           phone: formData.phone || '',
           status: formData.status || 'active',
-          join_date: formData.joinDate || new Date().toLocaleDateString('en-GB', { 
+          join_date: formData.joinDate || new Date().toLocaleDateString('id-ID', { 
             day: 'numeric', 
             month: 'short', 
             year: 'numeric' 
@@ -198,9 +198,9 @@ const Therapist = () => {
       handleCancel();
       setError(null);
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Failed to save therapist';
+      const errorMessage = err.response?.data?.error || 'Gagal menyimpan terapis';
       setError(errorMessage);
-      console.error('Error saving therapist:', err);
+      console.error('Error menyimpan terapis:', err);
     } finally {
       setSaveLoading(false);
     }
@@ -232,9 +232,9 @@ const Therapist = () => {
       setShowDeleteConfirm(null);
       setError(null);
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Failed to delete therapist';
+      const errorMessage = err.response?.data?.error || 'Gagal menghapus terapis';
       setError(errorMessage);
-      console.error('Error deleting therapist:', err);
+      console.error('Error menghapus terapis:', err);
     } finally {
       setDeleteLoading(false);
     }
@@ -253,7 +253,7 @@ const Therapist = () => {
     setViewingDetails(therapist);
   };
 
-  // Format currency
+  // Format mata uang
   const formatRupiah = (val) => {
     if (!val) return 'Rp 0';
     return new Intl.NumberFormat('id-ID', { 
@@ -269,7 +269,7 @@ const Therapist = () => {
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading therapists...</p>
+          <p className="mt-4 text-gray-600">Memuat data terapis...</p>
         </div>
       </div>
     );
@@ -284,13 +284,13 @@ const Therapist = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Therapists</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Gagal Memuat Terapis</h3>
         <p className="text-gray-500 mb-4">{error}</p>
         <button
           onClick={fetchAllData}
           className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 transition-colors duration-200"
         >
-          Retry
+          Coba Lagi
         </button>
       </div>
     );
@@ -314,8 +314,8 @@ const Therapist = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Therapists Management</h1>
-            <p className="text-gray-600">Manage therapist profiles and treatment history.</p>
+            <h1 className="text-2xl font-bold text-gray-800">Manajemen Terapis</h1>
+            <p className="text-gray-600">Kelola profil terapis dan riwayat perawatan.</p>
           </div>
           <button
             onClick={handleAdd}
@@ -325,7 +325,7 @@ const Therapist = () => {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            {loading ? 'Loading...' : 'Add Therapist'}
+            {loading ? 'Memuat...' : 'Tambah Terapis'}
           </button>
         </div>
 
@@ -333,19 +333,19 @@ const Therapist = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-gray-800">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total Therapists</div>
+            <div className="text-sm text-gray-600">Total Terapis</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <div className="text-sm text-gray-600">Active</div>
+            <div className="text-sm text-gray-600">Aktif</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-blue-600">{stats.totalTreatments}</div>
-            <div className="text-sm text-gray-600">Total Treatments</div>
+            <div className="text-sm text-gray-600">Total Perawatan</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-purple-600">{formatRupiah(stats.totalRevenue)}</div>
-            <div className="text-sm text-gray-600">Total Revenue</div>
+            <div className="text-sm text-gray-600">Total Pendapatan</div>
           </div>
         </div>
       </div>
@@ -363,7 +363,7 @@ const Therapist = () => {
               </div>
               <input
                 type="search"
-                placeholder="Search therapists by name, email, or phone..."
+                placeholder="Cari terapis berdasarkan nama, email, atau telepon..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
@@ -378,10 +378,10 @@ const Therapist = () => {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="on_leave">On Leave</option>
+              <option value="all">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Tidak Aktif</option>
+              <option value="on_leave">Cuti</option>
             </select>
           </div>
         </div>
@@ -390,16 +390,16 @@ const Therapist = () => {
       {/* Therapists Table */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Therapist List</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Daftar Terapis</h2>
           <span className="text-sm text-gray-500">
-            Showing {filteredTherapists.length} of {therapists.length} therapists
+            Menampilkan {filteredTherapists.length} dari {therapists.length} terapis
           </span>
         </div>
 
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brown-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading therapists...</p>
+            <p className="mt-2 text-gray-600">Memuat terapis...</p>
           </div>
         ) : filteredTherapists.length > 0 ? (
           <div className="overflow-x-auto">
@@ -407,13 +407,13 @@ const Therapist = () => {
               <thead>
                 <tr className="text-left text-sm text-gray-500 border-b">
                   <th className="pb-3 font-medium">ID</th>
-                  <th className="pb-3 font-medium">Therapist</th>
-                  <th className="pb-3 font-medium">Contact</th>
-                  <th className="pb-3 font-medium">Treatments</th>
-                  <th className="pb-3 font-medium">Revenue</th>
+                  <th className="pb-3 font-medium">Terapis</th>
+                  <th className="pb-3 font-medium">Kontak</th>
+                  <th className="pb-3 font-medium">Perawatan</th>
+                  <th className="pb-3 font-medium">Pendapatan</th>
                   <th className="pb-3 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Join Date</th>
-                  <th className="pb-3 font-medium">Actions</th>
+                  <th className="pb-3 font-medium">Tanggal Bergabung</th>
+                  <th className="pb-3 font-medium">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -448,13 +448,13 @@ const Therapist = () => {
                         <div className="text-lg font-bold text-gray-800">
                           {totalTreatments}
                         </div>
-                        <div className="text-xs text-gray-400">completed treatments</div>
+                        <div className="text-xs text-gray-400">perawatan selesai</div>
                       </td>
                       <td className="py-3">
                         <div className="text-lg font-bold text-green-700">
                           {formatRupiah(totalRevenue)}
                         </div>
-                        <div className="text-xs text-gray-400">total revenue</div>
+                        <div className="text-xs text-gray-400">total pendapatan</div>
                       </td>
                       <td className="py-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${therapist.status === 'active'
@@ -463,7 +463,9 @@ const Therapist = () => {
                             ? 'bg-gray-100 text-gray-800'
                             : 'bg-yellow-100 text-yellow-800'
                           }`}>
-                          {therapist.status || 'inactive'}
+                          {therapist.status === 'active' ? 'Aktif' : 
+                           therapist.status === 'inactive' ? 'Tidak Aktif' : 
+                           therapist.status === 'on_leave' ? 'Cuti' : 'Tidak Aktif'}
                         </span>
                       </td>
                       <td className="py-3 text-sm text-gray-500">
@@ -475,7 +477,7 @@ const Therapist = () => {
                             onClick={() => handleView(therapist)}
                             className="px-3 py-1 bg-brown-500 text-white text-xs rounded hover:bg-brown-600 transition-colors duration-200"
                           >
-                            View
+                            Lihat
                           </button>
                           <button
                             onClick={() => handleEdit(therapist)}
@@ -487,7 +489,7 @@ const Therapist = () => {
                             onClick={() => handleDelete(therapist.id)}
                             className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors duration-200"
                           >
-                            Delete
+                            Hapus
                           </button>
                         </div>
                       </td>
@@ -502,13 +504,13 @@ const Therapist = () => {
             <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No therapists found</h3>
-            <p className="text-gray-500 mb-6">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada terapis ditemukan</h3>
+            <p className="text-gray-500 mb-6">Coba sesuaikan pencarian atau kriteria filter Anda.</p>
             <button
               onClick={handleAdd}
               className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 transition-colors duration-200"
             >
-              Add New Therapist
+              Tambah Terapis Baru
             </button>
           </div>
         )}
@@ -519,7 +521,7 @@ const Therapist = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              {isAdding ? 'Add New Therapist' : 'Edit Therapist'}
+              {isAdding ? 'Tambah Terapis Baru' : 'Edit Terapis'}
             </h3>
 
             <div className="space-y-4">
@@ -527,7 +529,7 @@ const Therapist = () => {
               {!isAdding && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Therapist ID
+                    ID Terapis
                   </label>
                   <input
                     type="text"
@@ -541,7 +543,7 @@ const Therapist = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name <span className="text-red-500">*</span>
+                  Nama <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -564,14 +566,14 @@ const Therapist = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
-                  placeholder="doctor@clinic.com"
+                  placeholder="terapis@klinik.com"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone
+                  Telepon
                 </label>
                 <input
                   type="tel"
@@ -594,14 +596,14 @@ const Therapist = () => {
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="on_leave">On Leave</option>
+                    <option value="active">Aktif</option>
+                    <option value="inactive">Tidak Aktif</option>
+                    <option value="on_leave">Cuti</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Join Date
+                    Tanggal Bergabung
                   </label>
                   <input
                     type="text"
@@ -615,7 +617,7 @@ const Therapist = () => {
               </div>
 
               <div className="text-xs text-gray-500">
-                <p>Format join date: DD MMM YYYY (contoh: 25 Dec 2024)</p>
+                <p>Format tanggal bergabung: DD MMM YYYY (contoh: 25 Des 2024)</p>
               </div>
             </div>
 
@@ -625,7 +627,7 @@ const Therapist = () => {
                 disabled={saveLoading}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={handleSave}
@@ -635,12 +637,12 @@ const Therapist = () => {
                 {saveLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Saving...
+                    Menyimpan...
                   </>
                 ) : isAdding ? (
-                  'Add Therapist'
+                  'Tambah Terapis'
                 ) : (
-                  'Save Changes'
+                  'Simpan Perubahan'
                 )}
               </button>
             </div>
@@ -657,10 +659,10 @@ const Therapist = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">Delete Therapist</h3>
+            <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">Hapus Terapis</h3>
             <p className="text-gray-600 text-center mb-6">
-              Are you sure you want to delete this therapist?
-              This action cannot be undone and will remove all associated data.
+              Apakah Anda yakin ingin menghapus terapis ini?
+              Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait.
             </p>
             <div className="flex justify-center space-x-3">
               <button
@@ -668,7 +670,7 @@ const Therapist = () => {
                 disabled={deleteLoading}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={confirmDelete}
@@ -678,10 +680,10 @@ const Therapist = () => {
                 {deleteLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Deleting...
+                    Menghapus...
                   </>
                 ) : (
-                  'Delete Therapist'
+                  'Hapus Terapis'
                 )}
               </button>
             </div>
@@ -721,7 +723,7 @@ const Therapist = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Contact Information</label>
+                  <label className="text-sm font-medium text-gray-700">Informasi Kontak</label>
                   <div className="mt-2 space-y-2">
                     <div className="flex items-center">
                       <svg className="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -739,7 +741,7 @@ const Therapist = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Join Date</label>
+                  <label className="text-sm font-medium text-gray-700">Tanggal Bergabung</label>
                   <div className="text-gray-600 mt-1">
                     {viewingDetails.join_date || 'N/A'}
                   </div>
@@ -754,7 +756,9 @@ const Therapist = () => {
                         ? 'bg-gray-100 text-gray-800'
                         : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                      {viewingDetails.status || 'inactive'}
+                      {viewingDetails.status === 'active' ? 'Aktif' : 
+                       viewingDetails.status === 'inactive' ? 'Tidak Aktif' : 
+                       viewingDetails.status === 'on_leave' ? 'Cuti' : 'Tidak Aktif'}
                     </span>
                   </div>
                 </div>
@@ -764,43 +768,43 @@ const Therapist = () => {
               <div className="space-y-4">
                 {/* Statistics */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Treatment Statistics</label>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Statistik Perawatan</label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-50 rounded-lg p-4 text-center">
                       <div className="text-2xl font-bold text-gray-800">
                         {calculateTherapistTreatments(viewingDetails.name)}
                       </div>
-                      <div className="text-sm text-gray-600">Total Treatments</div>
+                      <div className="text-sm text-gray-600">Total Perawatan</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4 text-center">
                       <div className="text-2xl font-bold text-green-700">
                         {formatRupiah(calculateTherapistRevenue(viewingDetails.name))}
                       </div>
-                      <div className="text-sm text-gray-600">Total Revenue</div>
+                      <div className="text-sm text-gray-600">Total Pendapatan</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4 text-center">
                       <div className="text-2xl font-bold text-blue-600">
                         {new Set(getAppointmentsByTherapist(viewingDetails.name).map(app => app.treatment)).size}
                       </div>
-                      <div className="text-sm text-gray-600">Different Treatments</div>
+                      <div className="text-sm text-gray-600">Jenis Perawatan Berbeda</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4 text-center">
                       <div className="text-2xl font-bold text-purple-600">
                         {new Set(getAppointmentsByTherapist(viewingDetails.name).map(app => app.customer_name || app.customer_id)).size}
                       </div>
-                      <div className="text-sm text-gray-600">Unique Patients</div>
+                      <div className="text-sm text-gray-600">Pasien Unik</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Appointment History */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Recent Treatments</label>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Perawatan Terbaru</label>
                   <div className="max-h-60 overflow-y-auto">
                     {appointmentsLoading ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brown-600 mx-auto"></div>
-                        <p className="mt-2 text-sm text-gray-600">Loading appointments...</p>
+                        <p className="mt-2 text-sm text-gray-600">Memuat janji temu...</p>
                       </div>
                     ) : getAppointmentsByTherapist(viewingDetails.name).length > 0 ? (
                       <div className="space-y-2">
@@ -822,7 +826,7 @@ const Therapist = () => {
                               <div className="flex justify-between items-center text-xs text-gray-500">
                                 <span>{appointment.date || 'N/A'}</span>
                                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                                  {appointment.status || 'completed'}
+                                  {appointment.status === 'completed' ? 'Selesai' : appointment.status || 'Selesai'}
                                 </span>
                               </div>
                             </div>
@@ -830,7 +834,7 @@ const Therapist = () => {
                       </div>
                     ) : (
                       <div className="text-center py-4 text-gray-500">
-                        No completed treatments yet
+                        Belum ada perawatan yang selesai
                       </div>
                     )}
                   </div>
@@ -843,7 +847,7 @@ const Therapist = () => {
                 onClick={() => setViewingDetails(null)}
                 className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 transition-colors duration-200"
               >
-                Close
+                Tutup
               </button>
             </div>
           </div>

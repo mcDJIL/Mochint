@@ -17,14 +17,14 @@ const Member = () => {
     email: '',
     phone: '',
     address: '', // Field alamat baru ditambahkan
-    joinDate: new Date().toLocaleDateString('en-GB', {
+    joinDate: new Date().toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
     }),
     totalVisits: 0,
     status: 'active',
-    lastVisit: 'Never'
+    lastVisit: 'Belum Pernah'
   });
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +39,7 @@ const Member = () => {
   const [memberHistory, setMemberHistory] = useState([]);
   const [debugMode, setDebugMode] = useState(false);
 
-  // Fetch members dan appointments
+  // Ambil data members dan appointments
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -64,16 +64,16 @@ const Member = () => {
           app => app.status === 'completed'
         );
         
-        // Hitung total visits (berdasarkan appointments completed)
+        // Hitung total kunjungan (berdasarkan appointments yang selesai)
         const totalVisits = completedAppointments.length;
         
-        // Cari last visit terbaru dari appointments completed
-        let lastVisit = 'Never';
+        // Cari kunjungan terakhir dari appointments yang selesai
+        let lastVisit = 'Belum Pernah';
         if (completedAppointments.length > 0) {
           // Urutkan berdasarkan tanggal (terbaru ke terlama)
           const sortedAppointments = [...completedAppointments].sort((a, b) => {
-            const dateA = new Date(a.date.split(' ').reverse().join(' '));
-            const dateB = new Date(b.date.split(' ').reverse().join(' '));
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
             return dateB - dateA;
           });
           
@@ -93,14 +93,14 @@ const Member = () => {
       setAppointments(appointmentsRes.data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch data. Please try again.');
-      console.error('Error fetching data:', err);
+      setError('Gagal memuat data. Silakan coba lagi.');
+      console.error('Error memuat data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Function untuk update member visits otomatis
+  // Fungsi untuk update statistik kunjungan member otomatis
   const updateMemberVisitStats = (memberId) => {
     // Filter appointments untuk member ini yang status 'completed'
     const memberAppointments = appointments.filter(
@@ -112,12 +112,12 @@ const Member = () => {
     );
     
     const totalVisits = completedAppointments.length;
-    let lastVisit = 'Never';
+    let lastVisit = 'Belum Pernah';
     
     if (completedAppointments.length > 0) {
       const sortedAppointments = [...completedAppointments].sort((a, b) => {
-        const dateA = new Date(a.date.split(' ').reverse().join(' '));
-        const dateB = new Date(b.date.split(' ').reverse().join(' '));
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
         return dateB - dateA;
       });
       lastVisit = sortedAppointments[0].date;
@@ -137,17 +137,17 @@ const Member = () => {
       total_visits: totalVisits,
       last_visit: lastVisit
     }).catch(err => {
-      console.error('Error updating member stats:', err);
+      console.error('Error memperbarui statistik member:', err);
     });
   };
 
-  // Fetch member history dari API dengan fallback
+  // Ambil riwayat member dari API dengan fallback
   const fetchMemberHistory = async (memberId) => {
     try {
       setHistoryLoading(true);
       
       if (debugMode) {
-        console.log(`📡 [DEBUG] Fetching history for member ID: ${memberId}`);
+        console.log(`📡 [DEBUG] Mengambil riwayat untuk member ID: ${memberId}`);
         console.log(`📡 [DEBUG] API URL: ${HISTORY_API_URL}/${memberId}`);
       }
       
@@ -156,28 +156,28 @@ const Member = () => {
         const response = await axios.get(`${HISTORY_API_URL}/${memberId}`);
         
         if (debugMode) {
-          console.log(`📡 [DEBUG] History API Response Status: ${response.status}`);
-          console.log(`📡 [DEBUG] History Data Received:`, response.data);
+          console.log(`📡 [DEBUG] Status Response API Riwayat: ${response.status}`);
+          console.log(`📡 [DEBUG] Data Riwayat Diterima:`, response.data);
         }
         
         if (response.data && response.data.length > 0) {
           if (debugMode) {
-            console.log(`📡 [DEBUG] Found ${response.data.length} history records from API`);
+            console.log(`📡 [DEBUG] Ditemukan ${response.data.length} catatan riwayat dari API`);
           }
           return response.data;
         } else {
           if (debugMode) {
-            console.log(`📡 [DEBUG] No history records found from API, using fallback`);
+            console.log(`📡 [DEBUG] Tidak ada catatan riwayat dari API, menggunakan fallback`);
           }
         }
       } catch (apiError) {
-        console.warn('⚠️ History API not available, using fallback:', apiError.message);
+        console.warn('⚠️ API Riwayat tidak tersedia, menggunakan fallback:', apiError.message);
         if (debugMode) {
-          console.warn(`📡 [DEBUG] API Error Details:`, apiError.response?.data || apiError.message);
+          console.warn(`📡 [DEBUG] Detail Error API:`, apiError.response?.data || apiError.message);
         }
       }
       
-      // Fallback: ambil dari appointments yang completed
+      // Fallback: ambil dari appointments yang selesai
       const completedAppointments = appointments.filter(app => 
         app.customer_id && 
         app.customer_id.toString() === memberId.toString() &&
@@ -185,10 +185,10 @@ const Member = () => {
       );
       
       if (debugMode) {
-        console.log(`📡 [DEBUG] Found ${completedAppointments.length} completed appointments for fallback`);
+        console.log(`📡 [DEBUG] Ditemukan ${completedAppointments.length} appointments selesai untuk fallback`);
       }
       
-      // Convert appointments ke format history
+      // Konversi appointments ke format riwayat
       const fallbackHistory = completedAppointments.map(app => ({
         id: app.id,
         member_id: app.customer_id,
@@ -200,47 +200,47 @@ const Member = () => {
         time: app.time,
         amount: app.amount,
         status: app.status,
-        notes: `Appointment completed on ${app.date}`,
+        notes: `Janji temu selesai pada ${app.date}`,
         created_at: new Date().toISOString()
       }));
       
       return fallbackHistory;
       
     } catch (err) {
-      console.error('❌ Error in fetchMemberHistory:', err);
+      console.error('❌ Error dalam fetchMemberHistory:', err);
       return [];
     } finally {
       setHistoryLoading(false);
     }
   };
 
-  // Test History API untuk debugging
+  // Test API Riwayat untuk debugging
   const testHistoryAPI = async () => {
     if (members.length > 0) {
       const testMemberId = members[0].id;
-      console.log('🧪 [TEST] Testing history API for member:', testMemberId);
+      console.log('🧪 [TEST] Menguji API riwayat untuk member:', testMemberId);
       
       try {
         const response = await axios.get(`${HISTORY_API_URL}/${testMemberId}`);
-        console.log('🧪 [TEST] API Response:', response.data);
-        alert(`✅ API Test Result: ${response.data.length} records found\nCheck console for details.`);
+        console.log('🧪 [TEST] Response API:', response.data);
+        alert(`✅ Hasil Test API: ${response.data.length} catatan ditemukan\nCek konsol untuk detail.`);
       } catch (error) {
-        console.error('🧪 [TEST] API Error:', error);
-        alert(`❌ API Error: ${error.message}\nCheck console for details.`);
+        console.error('🧪 [TEST] Error API:', error);
+        alert(`❌ Error API: ${error.message}\nCek konsol untuk detail.`);
       }
     } else {
-      alert('No members available for testing');
+      alert('Tidak ada member tersedia untuk testing');
     }
   };
 
-  // Handle ketika appointment status berubah di page Appointment
+  // Handle ketika status appointment berubah di halaman Appointment
   const handleAppointmentStatusChange = (appointment) => {
     if (appointment.customer_id && appointment.status === 'completed') {
       updateMemberVisitStats(appointment.customer_id);
     }
   };
 
-  // Calculate statistics
+  // Hitung statistik
   const stats = {
     total: members.length,
     active: members.filter(m => m.status === 'active').length,
@@ -254,13 +254,13 @@ const Member = () => {
     }).length
   };
 
-  // Filter members based on search and filters
+  // Filter members berdasarkan pencarian dan filter
   const filteredMembers = members.filter(member => {
     const matchesSearch = 
       (member.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (member.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (member.phone || '').includes(searchTerm) ||
-      (member.address || '').toLowerCase().includes(searchTerm.toLowerCase()) || // Search alamat
+      (member.address || '').toLowerCase().includes(searchTerm.toLowerCase()) || // Cari alamat
       (member.id || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = selectedStatus === 'all' || member.status === selectedStatus;
@@ -275,14 +275,14 @@ const Member = () => {
       email: '',
       phone: '',
       address: '', // Alamat default kosong
-      joinDate: new Date().toLocaleDateString('en-GB', {
+      joinDate: new Date().toLocaleDateString('id-ID', {
         day: 'numeric',
         month: 'short',
         year: 'numeric'
       }),
       totalVisits: 0,
       status: 'active',
-      lastVisit: 'Never'
+      lastVisit: 'Belum Pernah'
     });
   };
 
@@ -298,20 +298,20 @@ const Member = () => {
       joinDate: member.join_date || member.joinDate || '',
       totalVisits: member.total_visits || member.totalVisits || 0,
       status: member.status || 'active',
-      lastVisit: member.last_visit || member.lastVisit || 'Never'
+      lastVisit: member.last_visit || member.lastVisit || 'Belum Pernah'
     });
   };
 
   const handleSave = async () => {
     // Validasi email
     if (formData.email && !formData.email.includes('@')) {
-      alert('Please enter a valid email address');
+      alert('Harap masukkan alamat email yang valid');
       return;
     }
 
-    // Validasi phone (minimal 10 digit)
+    // Validasi telepon (minimal 10 digit)
     if (formData.phone && formData.phone.replace(/\D/g, '').length < 10) {
-      alert('Please enter a valid phone number (minimum 10 digits)');
+      alert('Harap masukkan nomor telepon yang valid (minimal 10 digit)');
       return;
     }
 
@@ -320,7 +320,7 @@ const Member = () => {
     try {
       if (isAdding) {
         if (!formData.name?.trim()) {
-          alert('Name is required');
+          alert('Nama wajib diisi');
           setSaveLoading(false);
           return;
         }
@@ -333,7 +333,7 @@ const Member = () => {
           join_date: formData.joinDate,
           total_visits: parseInt(formData.totalVisits) || 0,
           status: formData.status || 'active',
-          last_visit: formData.lastVisit || 'Never'
+          last_visit: formData.lastVisit || 'Belum Pernah'
         };
         
         const response = await axios.post(MEMBERS_API_URL, newMemberData);
@@ -341,7 +341,7 @@ const Member = () => {
         setIsAdding(false);
       } else {
         if (!formData.name?.trim()) {
-          alert('Name is required');
+          alert('Nama wajib diisi');
           setSaveLoading(false);
           return;
         }
@@ -354,7 +354,7 @@ const Member = () => {
           join_date: formData.joinDate || '',
           total_visits: parseInt(formData.totalVisits) || 0,
           status: formData.status || 'active',
-          last_visit: formData.lastVisit || 'Never'
+          last_visit: formData.lastVisit || 'Belum Pernah'
         };
         
         const response = await axios.put(`${MEMBERS_API_URL}/${editingMember}`, updatedMemberData);
@@ -365,8 +365,8 @@ const Member = () => {
       
       handleCancel();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save member');
-      console.error('Error saving member:', err);
+      alert(err.response?.data?.error || 'Gagal menyimpan member');
+      console.error('Error menyimpan member:', err);
     } finally {
       setSaveLoading(false);
     }
@@ -380,14 +380,14 @@ const Member = () => {
       email: '',
       phone: '',
       address: '', // Reset alamat
-      joinDate: new Date().toLocaleDateString('en-GB', {
+      joinDate: new Date().toLocaleDateString('id-ID', {
         day: 'numeric',
         month: 'short',
         year: 'numeric'
       }),
       totalVisits: 0,
       status: 'active',
-      lastVisit: 'Never'
+      lastVisit: 'Belum Pernah'
     });
   };
 
@@ -402,8 +402,8 @@ const Member = () => {
       setMembers(members.filter(member => member.id !== showDeleteConfirm));
       setShowDeleteConfirm(null);
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to delete member');
-      console.error('Error deleting member:', err);
+      alert(err.response?.data?.error || 'Gagal menghapus member');
+      console.error('Error menghapus member:', err);
     } finally {
       setDeleteLoading(false);
     }
@@ -424,17 +424,17 @@ const Member = () => {
   };
 
   const viewHistory = async (member) => {
-    console.log('👁️ [HISTORY] Viewing history for member:', member);
+    console.log('👁️ [RIWAYAT] Melihat riwayat untuk member:', member);
     setHistoryLoading(true);
     try {
       const history = await fetchMemberHistory(member.id);
-      console.log('👁️ [HISTORY] Fetched history:', history);
+      console.log('👁️ [RIWAYAT] Riwayat diambil:', history);
       
       setMemberHistory(history);
       setViewingHistory({...member, history: history});
       
     } catch (error) {
-      console.error('❌ Error in viewHistory:', error);
+      console.error('❌ Error dalam viewHistory:', error);
       // Fallback ke appointments jika semua gagal
       const fallbackHistory = appointments.filter(app => 
         app.customer_id && app.customer_id.toString() === member.id.toString() &&
@@ -449,7 +449,7 @@ const Member = () => {
         time: app.time,
         amount: app.amount,
         status: app.status,
-        notes: `Appointment completed on ${app.date}`
+        notes: `Janji temu selesai pada ${app.date}`
       }));
       
       setMemberHistory(fallbackHistory);
@@ -464,7 +464,7 @@ const Member = () => {
     setMemberHistory([]);
   };
 
-  // Format currency
+  // Format mata uang
   const formatRupiah = (val) => {
     if (!val) return 'Rp 0';
     return new Intl.NumberFormat('id-ID', { 
@@ -480,7 +480,7 @@ const Member = () => {
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading members...</p>
+          <p className="mt-4 text-gray-600">Memuat data member...</p>
         </div>
       </div>
     );
@@ -495,13 +495,13 @@ const Member = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Members</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Gagal Memuat Member</h3>
         <p className="text-gray-500 mb-4">{error}</p>
         <button
           onClick={fetchAllData}
           className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 transition-colors duration-200"
         >
-          Retry
+          Coba Lagi
         </button>
       </div>
     );
@@ -515,7 +515,7 @@ const Member = () => {
           onClick={() => setDebugMode(!debugMode)}
           className={`px-3 py-1 text-sm rounded-lg ${debugMode ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'}`}
         >
-          {debugMode ? '🔧 Debug Mode ON' : '🔧 Debug Mode OFF'}
+          {debugMode ? '🔧 Mode Debug ON' : '🔧 Mode Debug OFF'}
         </button>
         <button
           onClick={testHistoryAPI}
@@ -541,8 +541,8 @@ const Member = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Members Management</h1>
-            <p className="text-gray-600">Manage clinic members and their treatment history.</p>
+            <h1 className="text-2xl font-bold text-gray-800">Manajemen Member</h1>
+            <p className="text-gray-600">Kelola member klinik dan riwayat perawatan mereka.</p>
           </div>
           <button
             onClick={handleAdd}
@@ -552,7 +552,7 @@ const Member = () => {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            {loading ? 'Loading...' : 'Add Member'}
+            {loading ? 'Memuat...' : 'Tambah Member'}
           </button>
         </div>
 
@@ -560,19 +560,19 @@ const Member = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-gray-800">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total Members</div>
+            <div className="text-sm text-gray-600">Total Member</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <div className="text-sm text-gray-600">Active Members</div>
+            <div className="text-sm text-gray-600">Member Aktif</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-blue-600">{stats.totalVisits}</div>
-            <div className="text-sm text-gray-600">Total Visits</div>
+            <div className="text-sm text-gray-600">Total Kunjungan</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="text-2xl font-bold text-purple-600">{stats.newThisMonth}</div>
-            <div className="text-sm text-gray-600">New This Month</div>
+            <div className="text-sm text-gray-600">Baru Bulan Ini</div>
           </div>
         </div>
       </div>
@@ -590,7 +590,7 @@ const Member = () => {
               </div>
               <input
                 type="search"
-                placeholder="Search members by name, email, phone, address, or ID..."
+                placeholder="Cari member berdasarkan nama, email, telepon, alamat, atau ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
@@ -605,9 +605,9 @@ const Member = () => {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="all">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Tidak Aktif</option>
             </select>
           </div>
         </div>
@@ -616,16 +616,16 @@ const Member = () => {
       {/* Members Table */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Member List</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Daftar Member</h2>
           <span className="text-sm text-gray-500">
-            Showing {filteredMembers.length} of {members.length} members
+            Menampilkan {filteredMembers.length} dari {members.length} member
           </span>
         </div>
         
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brown-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading members...</p>
+            <p className="mt-2 text-gray-600">Memuat member...</p>
           </div>
         ) : filteredMembers.length > 0 ? (
           <div className="overflow-x-auto">
@@ -634,13 +634,13 @@ const Member = () => {
                 <tr className="text-left text-sm text-gray-500 border-b">
                   <th className="pb-3 font-medium">ID</th>
                   <th className="pb-3 font-medium">Member</th>
-                  <th className="pb-3 font-medium">Contact</th>
-                  <th className="pb-3 font-medium">Address</th>
-                  <th className="pb-3 font-medium">Join Date</th>
-                  <th className="pb-3 font-medium">Visits</th>
-                  <th className="pb-3 font-medium">Last Visit</th>
+                  <th className="pb-3 font-medium">Kontak</th>
+                  <th className="pb-3 font-medium">Alamat</th>
+                  <th className="pb-3 font-medium">Tanggal Bergabung</th>
+                  <th className="pb-3 font-medium">Kunjungan</th>
+                  <th className="pb-3 font-medium">Kunjungan Terakhir</th>
                   <th className="pb-3 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Actions</th>
+                  <th className="pb-3 font-medium">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -663,7 +663,7 @@ const Member = () => {
                           <div className="text-xs text-gray-500">
                             {(appointments.filter(app => 
                               app.customer_id && app.customer_id.toString() === member.id.toString()
-                            ).length) || 0} appointments
+                            ).length) || 0} janji temu
                           </div>
                         </div>
                       </div>
@@ -674,7 +674,7 @@ const Member = () => {
                     </td>
                     <td className="py-3">
                       <div className="text-sm text-gray-600 max-w-xs truncate" title={member.address || ''}>
-                        {member.address || 'No address'}
+                        {member.address || 'Tidak ada alamat'}
                       </div>
                     </td>
                     <td className="py-3 text-sm text-gray-500">
@@ -684,10 +684,10 @@ const Member = () => {
                       <div className="text-lg font-bold text-gray-800">
                         {member.total_visits || member.totalVisits || 0}
                       </div>
-                      <div className="text-xs text-gray-400">completed visits</div>
+                      <div className="text-xs text-gray-400">kunjungan selesai</div>
                     </td>
                     <td className="py-3 text-sm text-gray-500">
-                      {member.last_visit || member.lastVisit || 'Never'}
+                      {member.last_visit || member.lastVisit || 'Belum Pernah'}
                     </td>
                     <td className="py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -695,7 +695,7 @@ const Member = () => {
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {member.status || 'inactive'}
+                        {member.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
                       </span>
                     </td>
                     <td className="py-3">
@@ -705,7 +705,7 @@ const Member = () => {
                           disabled={loading || historyLoading}
                           className="px-3 py-1 bg-brown-500 text-white rounded-lg hover:bg-brown-600 text-sm transition-colors duration-200 disabled:opacity-50"
                         >
-                          {historyLoading ? 'Loading...' : 'History'}
+                          {historyLoading ? 'Memuat...' : 'Riwayat'}
                         </button>
                         <button
                           onClick={() => handleEdit(member)}
@@ -719,7 +719,7 @@ const Member = () => {
                           disabled={loading}
                           className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm transition-colors duration-200 disabled:opacity-50"
                         >
-                          Delete
+                          Hapus
                         </button>
                       </div>
                     </td>
@@ -733,13 +733,13 @@ const Member = () => {
             <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-2.645a4 4 0 00-5.197-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No members found</h3>
-            <p className="text-gray-500 mb-6">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Member tidak ditemukan</h3>
+            <p className="text-gray-500 mb-6">Coba sesuaikan pencarian atau kriteria filter Anda.</p>
             <button
               onClick={handleAdd}
               className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 transition-colors duration-200"
             >
-              Add New Member
+              Tambah Member Baru
             </button>
           </div>
         )}
@@ -750,13 +750,13 @@ const Member = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              {isAdding ? 'Add New Member' : 'Edit Member'}
+              {isAdding ? 'Tambah Member Baru' : 'Edit Member'}
             </h3>
             <div className="space-y-4">
               {!isAdding && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Member ID
+                    ID Member
                   </label>
                   <input
                     type="text"
@@ -770,7 +770,7 @@ const Member = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name <span className="text-red-500">*</span>
+                  Nama Lengkap <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -778,14 +778,14 @@ const Member = () => {
                   value={formData.name || ''}
                   onChange={handleChange}
                   className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
-                  placeholder="Enter full name"
+                  placeholder="Masukkan nama lengkap"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
+                  Alamat Email
                 </label>
                 <input
                   type="email"
@@ -793,13 +793,13 @@ const Member = () => {
                   value={formData.email || ''}
                   onChange={handleChange}
                   className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
-                  placeholder="email@example.com"
+                  placeholder="email@contoh.com"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
+                  Nomor Telepon
                 </label>
                 <input
                   type="tel"
@@ -814,25 +814,25 @@ const Member = () => {
               {/* Field Alamat Baru */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Address
+                  Alamat
                 </label>
                 <textarea
                   name="address"
                   value={formData.address || ''}
                   onChange={handleChange}
                   className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
-                  placeholder="Enter complete address"
+                  placeholder="Masukkan alamat lengkap"
                   rows="2"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Complete address (street, city, postal code)
+                  Alamat lengkap (jalan, kota, kode pos)
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Total Visits
+                    Total Kunjungan
                   </label>
                   <input
                     type="number"
@@ -853,15 +853,15 @@ const Member = () => {
                     onChange={handleChange}
                     className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="active">Aktif</option>
+                    <option value="inactive">Tidak Aktif</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Join Date
+                  Tanggal Bergabung
                 </label>
                 <input
                   type="text"
@@ -869,7 +869,7 @@ const Member = () => {
                   value={formData.joinDate || ''}
                   onChange={handleChange}
                   className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
-                  placeholder="DD MMM YYYY"
+                  placeholder="15 Jan 2023"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Format: 15 Jan 2023
@@ -878,7 +878,7 @@ const Member = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Visit
+                  Kunjungan Terakhir
                 </label>
                 <input
                   type="text"
@@ -886,11 +886,11 @@ const Member = () => {
                   value={formData.lastVisit || ''}
                   onChange={handleChange}
                   className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
-                  placeholder="Auto-calculated from completed appointments"
+                  placeholder="Diperbarui otomatis dari janji temu selesai"
                   disabled
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Auto-updated when appointments are completed
+                  Diperbarui otomatis ketika janji temu selesai
                 </p>
               </div>
             </div>
@@ -901,7 +901,7 @@ const Member = () => {
                 disabled={saveLoading}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={handleSave}
@@ -911,12 +911,12 @@ const Member = () => {
                 {saveLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Saving...
+                    Menyimpan...
                   </>
                 ) : isAdding ? (
-                  'Add Member'
+                  'Tambah Member'
                 ) : (
-                  'Save Changes'
+                  'Simpan Perubahan'
                 )}
               </button>
             </div>
@@ -933,10 +933,10 @@ const Member = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">Delete Member</h3>
+            <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">Hapus Member</h3>
             <p className="text-gray-600 text-center mb-6">
-              Are you sure you want to delete this member? 
-              This action cannot be undone and will remove all associated data.
+              Apakah Anda yakin ingin menghapus member ini? 
+              Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait.
             </p>
             <div className="flex justify-center space-x-3">
               <button
@@ -944,7 +944,7 @@ const Member = () => {
                 disabled={deleteLoading}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={confirmDelete}
@@ -954,10 +954,10 @@ const Member = () => {
                 {deleteLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Deleting...
+                    Menghapus...
                   </>
                 ) : (
-                  'Delete Member'
+                  'Hapus Member'
                 )}
               </button>
             </div>
@@ -972,16 +972,16 @@ const Member = () => {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Treatment History - {viewingHistory.name}
+                  Riwayat Perawatan - {viewingHistory.name}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Member ID: <span className="font-medium">{viewingHistory.id}</span> | 
-                  Total Visits: <span className="font-medium">{viewingHistory.total_visits || viewingHistory.totalVisits || 0}</span>
+                  ID Member: <span className="font-medium">{viewingHistory.id}</span> | 
+                  Total Kunjungan: <span className="font-medium">{viewingHistory.total_visits || viewingHistory.totalVisits || 0}</span>
                 </p>
                 {debugMode && (
                   <div className="text-xs text-gray-500 mt-1">
-                    History Source: {viewingHistory.history?.length > 0 ? 'API' : 'Fallback (Appointments)'} | 
-                    Records: {viewingHistory.history?.length || 0}
+                    Sumber Riwayat: {viewingHistory.history?.length > 0 ? 'API' : 'Fallback (Janji Temu)'} | 
+                    Catatan: {viewingHistory.history?.length || 0}
                   </div>
                 )}
               </div>
@@ -1003,44 +1003,44 @@ const Member = () => {
                   <div className="font-medium">{viewingHistory.email}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Phone</div>
+                  <div className="text-sm text-gray-600">Telepon</div>
                   <div className="font-medium">{viewingHistory.phone}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Address</div>
-                  <div className="font-medium">{viewingHistory.address || 'No address'}</div>
+                  <div className="text-sm text-gray-600">Alamat</div>
+                  <div className="font-medium">{viewingHistory.address || 'Tidak ada alamat'}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Join Date</div>
+                  <div className="text-sm text-gray-600">Tanggal Bergabung</div>
                   <div className="font-medium">{viewingHistory.join_date || viewingHistory.joinDate}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Last Visit</div>
-                  <div className="font-medium">{viewingHistory.last_visit || viewingHistory.lastVisit || 'Never'}</div>
+                  <div className="text-sm text-gray-600">Kunjungan Terakhir</div>
+                  <div className="font-medium">{viewingHistory.last_visit || viewingHistory.lastVisit || 'Belum Pernah'}</div>
                 </div>
               </div>
             </div>
 
             {/* Treatment History Table */}
             <div className="mb-6">
-              <h4 className="text-md font-semibold text-gray-800 mb-4">Treatment Records</h4>
+              <h4 className="text-md font-semibold text-gray-800 mb-4">Catatan Perawatan</h4>
               {historyLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brown-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading history...</p>
+                  <p className="mt-2 text-gray-600">Memuat riwayat...</p>
                 </div>
               ) : viewingHistory.history && viewingHistory.history.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="text-left text-sm text-gray-500 border-b">
-                        <th className="pb-3 font-medium">Date</th>
-                        <th className="pb-3 font-medium">Treatment</th>
-                        <th className="pb-3 font-medium">Therapist</th>
-                        <th className="pb-3 font-medium">Amount</th>
-                        <th className="pb-3 font-medium">Appointment ID</th>
+                        <th className="pb-3 font-medium">Tanggal</th>
+                        <th className="pb-3 font-medium">Perawatan</th>
+                        <th className="pb-3 font-medium">Terapis</th>
+                        <th className="pb-3 font-medium">Jumlah</th>
+                        <th className="pb-3 font-medium">ID Janji Temu</th>
                         <th className="pb-3 font-medium">Status</th>
-                        <th className="pb-3 font-medium">Notes</th>
+                        <th className="pb-3 font-medium">Catatan</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1074,11 +1074,11 @@ const Member = () => {
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
-                              {record.status || 'completed'}
+                              {record.status === 'completed' ? 'Selesai' : record.status || 'Selesai'}
                             </span>
                           </td>
                           <td className="py-3 text-sm text-gray-500 max-w-xs">
-                            {record.notes || 'No notes'}
+                            {record.notes || 'Tidak ada catatan'}
                           </td>
                         </tr>
                       ))}
@@ -1090,15 +1090,15 @@ const Member = () => {
                   <svg className="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">No treatment history yet</h4>
-                  <p className="text-gray-500">This member hasn't completed any treatments yet.</p>
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Belum ada riwayat perawatan</h4>
+                  <p className="text-gray-500">Member ini belum menyelesaikan perawatan apapun.</p>
                   <div className="mt-4 text-sm text-gray-600">
-                    <p>To add treatment history:</p>
+                    <p>Untuk menambahkan riwayat perawatan:</p>
                     <ol className="list-decimal list-inside mt-2 text-left max-w-md mx-auto">
-                      <li>Go to Appointments page</li>
-                      <li>Complete an appointment for this member</li>
-                      <li>Click "Complete" button on the appointment</li>
-                      <li>History will be automatically recorded</li>
+                      <li>Pergi ke halaman Janji Temu</li>
+                      <li>Selesaikan janji temu untuk member ini</li>
+                      <li>Klik tombol "Selesaikan" pada janji temu</li>
+                      <li>Riwayat akan tercatat secara otomatis</li>
                     </ol>
                   </div>
                 </div>
@@ -1108,29 +1108,29 @@ const Member = () => {
             {/* Treatment Statistics */}
             {viewingHistory.history && viewingHistory.history.length > 0 && (
               <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-md font-semibold text-gray-800 mb-4">Treatment Summary</h4>
+                <h4 className="text-md font-semibold text-gray-800 mb-4">Ringkasan Perawatan</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-800">{viewingHistory.history.length}</div>
-                    <div className="text-sm text-gray-600">Total Treatments</div>
+                    <div className="text-sm text-gray-600">Total Perawatan</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-800">
                       {new Set(viewingHistory.history.map(h => h.treatment_name || h.treatment)).size}
                     </div>
-                    <div className="text-sm text-gray-600">Different Treatments</div>
+                    <div className="text-sm text-gray-600">Jenis Perawatan Berbeda</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-800">
                       {new Set(viewingHistory.history.map(h => h.therapist)).size}
                     </div>
-                    <div className="text-sm text-gray-600">Different Therapists</div>
+                    <div className="text-sm text-gray-600">Terapis Berbeda</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-800">
                       {formatRupiah(viewingHistory.history.reduce((sum, h) => sum + (parseFloat(h.amount) || 0), 0))}
                     </div>
-                    <div className="text-sm text-gray-600">Total Amount</div>
+                    <div className="text-sm text-gray-600">Total Jumlah</div>
                   </div>
                 </div>
               </div>
@@ -1141,7 +1141,7 @@ const Member = () => {
                 onClick={closeHistory}
                 className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 transition-colors duration-200"
               >
-                Close
+                Tutup
               </button>
             </div>
           </div>

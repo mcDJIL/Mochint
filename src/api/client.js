@@ -1,5 +1,7 @@
 // src/api/client.js
 
+import axios from "axios";
+
 // GANTI INI:
 // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 // const DEBUG_MODE = process.env.NODE_ENV === 'development';
@@ -129,154 +131,26 @@ const handleResponse = async (response) => {
 // ============================
 
 const authAPI = {
-  // Login - Dual System
   login: async (email, password) => {
-    try {
-      log('🔐 Login attempt for:', email);
-      
-      const response = await enhancedFetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        body: JSON.stringify({ email, password })
-      });
-      
-      const data = await handleResponse(response);
-      log('✅ Login response:', { 
-        success: data.success,
-        user_type: data.user?.user_type 
-      });
-      
-      // Save to localStorage
-      if (data.token && data.user) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('user_type', data.user.user_type || 'member');
-        localStorage.setItem('login_time', new Date().toISOString());
-        log('✅ Auth data saved to localStorage');
-      }
-      
-      return {
-        success: true,
-        user: data.user,
-        token: data.token,
-        message: data.message || 'Login successful'
-      };
-      
-    } catch (error) {
-      logError('❌ Login error:', error);
-      
-      // User-friendly error messages
-      const errorMessage = error.message.toLowerCase();
-      let userFriendlyError = 'Login failed';
-      
-      if (errorMessage.includes('password salah')) {
-        userFriendlyError = 'Password salah';
-      } else if (errorMessage.includes('email tidak terdaftar')) {
-        userFriendlyError = 'Email tidak terdaftar';
-      } else if (errorMessage.includes('tidak aktif')) {
-        userFriendlyError = 'Akun tidak aktif';
-      } else if (errorMessage.includes('timeout')) {
-        userFriendlyError = 'Koneksi timeout. Periksa jaringan Anda.';
-      } else if (errorMessage.includes('network')) {
-        userFriendlyError = 'Tidak dapat terhubung ke server. Periksa koneksi Anda.';
-      }
-      
-      throw new Error(userFriendlyError);
-    }
-  },
-  
-  // Register
-  register: async (userData) => {
-    try {
-      log('📝 Register attempt for:', userData.email);
-      
-      const response = await enhancedFetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        body: JSON.stringify(userData)
-      });
-      
-      const data = await handleResponse(response);
-      log('✅ Register successful:', { id: data.user?.id });
-      
-      // Save to localStorage
-      if (data.token && data.user) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('user_type', data.user.user_type || 'member');
+    const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+    if (res.data.token && res.data.user) {
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        localStorage.setItem('user_type', res.data.user.user_type || 'member');
         localStorage.setItem('login_time', new Date().toISOString());
       }
-      
-      return {
-        success: true,
-        user: data.user,
-        token: data.token,
-        message: data.message || 'Registration successful'
-      };
-      
-    } catch (error) {
-      logError('❌ Register error:', error);
-      
-      let userFriendlyError = error.message;
-      if (error.message.includes('already registered')) {
-        userFriendlyError = 'Email sudah terdaftar';
-      } else if (error.message.includes('Password must be')) {
-        userFriendlyError = 'Password minimal 6 karakter';
-      }
-      
-      throw new Error(userFriendlyError);
-    }
+    return res.data;
   },
   
-  // Logout
-  logout: () => {
-    log('👋 Logout called');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('user_type');
-    localStorage.removeItem('login_time');
-    localStorage.removeItem('active_user');
-    localStorage.removeItem('isAdmin');
-    log('✅ LocalStorage cleared');
-  },
-  
-  // Verify token
-  verify: async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        log('No token found for verification');
-        return { valid: false, reason: 'No token' };
-      }
-      
-      const response = await enhancedFetch(`${API_URL}/auth/verify`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        log('✅ Token verified successfully');
-        return { valid: true, user: data.user };
-      } else {
-        logWarn('Token verification failed:', data.error);
-        return { valid: false, reason: data.error };
-      }
-      
-    } catch (error) {
-      logError('Token verification error:', error);
-      return { valid: false, reason: error.message };
-    }
-  },
-  
-  // Reset passwords (development only)
-  resetPasswords: async () => {
-    if (import.meta.env.MODE === 'production') {
-      throw new Error('This feature is only available in development');
-    }
-    
-    try {
-      const response = await fetch(`${API_URL}/auth/reset-passwords`);
-      return await handleResponse(response);
-    } catch (error) {
-      logError('Reset passwords error:', error);
-      throw error;
-    }
+  register: async ({ name, email, phone, address, password }) => {
+    const res = await axios.post(`${API_URL}/auth/register`, {
+      name,
+      email,
+      phone,
+      address,
+      password
+    });
+    return res.data;
   }
 };
 

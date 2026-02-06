@@ -7,7 +7,7 @@ const Information = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category: 'Announcement',
+    category: 'Pengumuman',
     status: 'Draft',
     image: '',
     author: ''
@@ -15,7 +15,7 @@ const Information = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,9 +23,9 @@ const Information = () => {
   const API_URL = 'http://localhost:5000/api/articles';
 
   // Kategori yang tersedia
-  const categories = ['All', 'Treatment', 'Product', 'Promotion', 'Announcement', 'Event', 'Tips'];
+  const categories = ['Semua', 'Perawatan', 'Produk', 'Promo', 'Pengumuman', 'Acara', 'Tips'];
 
-  // Fetch articles dari API
+  // Ambil artikel dari API
   useEffect(() => {
     fetchArticles();
   }, []);
@@ -37,15 +37,15 @@ const Information = () => {
       setArticles(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch articles. Please try again.');
-      console.error('Error fetching articles:', err);
+      setError('Gagal memuat artikel. Silakan coba lagi.');
+      console.error('Error memuat artikel:', err);
     } finally {
       setLoading(false);
     }
   };
 
   // Filter artikel berdasarkan kategori
-  const filteredArticles = selectedCategory === 'All' 
+  const filteredArticles = selectedCategory === 'Semua' 
     ? articles 
     : articles.filter(article => article.category === selectedCategory);
 
@@ -55,7 +55,7 @@ const Information = () => {
     setFormData({
       title: '',
       content: '',
-      category: 'Announcement',
+      category: 'Pengumuman',
       status: 'Draft',
       image: '',
       author: ''
@@ -81,12 +81,12 @@ const Information = () => {
       };
 
       if (isAdding) {
-        // Create new article
+        // Buat artikel baru
         const response = await axios.post(API_URL, articleData);
         setArticles([response.data, ...articles]);
         setIsAdding(false);
       } else {
-        // Update existing article
+        // Update artikel yang sudah ada
         const response = await axios.put(`${API_URL}/${editingArticle}`, articleData);
         setArticles(articles.map(article => 
           (article._id || article.id) === editingArticle ? response.data : article
@@ -97,15 +97,15 @@ const Information = () => {
       setFormData({
         title: '',
         content: '',
-        category: 'Announcement',
+        category: 'Pengumuman',
         status: 'Draft',
         image: '',
         author: ''
       });
       setPreviewImage(null);
     } catch (err) {
-      setError('Failed to save article. Please try again.');
-      console.error('Error saving article:', err);
+      setError('Gagal menyimpan artikel. Silakan coba lagi.');
+      console.error('Error menyimpan artikel:', err);
     }
   };
 
@@ -115,7 +115,7 @@ const Information = () => {
     setFormData({
       title: '',
       content: '',
-      category: 'Announcement',
+      category: 'Pengumuman',
       status: 'Draft',
       image: '',
       author: ''
@@ -124,13 +124,13 @@ const Information = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this article?')) {
+    if (window.confirm('Apakah Anda yakin ingin menghapus artikel ini?')) {
       try {
         await axios.delete(`${API_URL}/${id}`);
         setArticles(articles.filter(article => (article._id || article.id) !== id));
       } catch (err) {
-        setError('Failed to delete article. Please try again.');
-        console.error('Error deleting article:', err);
+        setError('Gagal menghapus artikel. Silakan coba lagi.');
+        console.error('Error menghapus artikel:', err);
       }
     }
   };
@@ -165,7 +165,7 @@ const Information = () => {
   const toggleStatus = async (id, currentStatus) => {
     try {
       const newStatus = currentStatus === 'Published' ? 'Draft' : 'Published';
-      // Logika fitur: Tambahkan publishedAt saat merubah status ke Published
+      // Logika fitur: Tambahkan publishedAt saat mengubah status ke Published
       const updateData = { 
         status: newStatus,
         publishedAt: newStatus === 'Published' ? new Date().toISOString() : null
@@ -177,22 +177,22 @@ const Information = () => {
         (article._id || article.id) === id ? response.data : article
       ));
     } catch (err) {
-      setError('Failed to update status. Please try again.');
-      console.error('Error updating status:', err);
+      setError('Gagal memperbarui status. Silakan coba lagi.');
+      console.error('Error memperbarui status:', err);
     }
   };
 
   const getStatusColor = (status) => {
-    return status === 'Published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+    return status === 'Published' ? 'bg-green-100 text-green-800' : 'bg-brown-100 text-brown-800';
   };
 
   const getCategoryColor = (category) => {
     const colors = {
-      'Treatment': 'bg-brown-100 text-brown-800',
-      'Product': 'bg-blue-100 text-blue-800',
-      'Promotion': 'bg-pink-100 text-pink-800',
-      'Announcement': 'bg-orange-100 text-orange-800',
-      'Event': 'bg-red-100 text-red-800',
+      'Perawatan': 'bg-brown-100 text-brown-800',
+      'Produk': 'bg-blue-100 text-blue-800',
+      'Promo': 'bg-pink-100 text-pink-800',
+      'Pengumuman': 'bg-orange-100 text-orange-800',
+      'Acara': 'bg-red-100 text-red-800',
       'Tips': 'bg-teal-100 text-teal-800'
     };
     return colors[category] || 'bg-gray-100 text-gray-800';
@@ -216,13 +216,13 @@ const Information = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Articles</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Gagal Memuat Artikel</h3>
         <p className="text-gray-500 mb-4">{error}</p>
         <button
           onClick={fetchArticles}
           className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700"
         >
-          Try Again
+          Coba Lagi
         </button>
       </div>
     );
@@ -233,8 +233,8 @@ const Information = () => {
       {/* Page Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Information & News</h1>
-          <p className="text-gray-600">Manage articles, announcements, and clinic information.</p>
+          <h1 className="text-2xl font-bold text-gray-800">Informasi & Berita</h1>
+          <p className="text-gray-600">Kelola artikel, pengumuman, dan informasi klinik.</p>
         </div>
         <button
           onClick={handleAdd}
@@ -243,7 +243,7 @@ const Information = () => {
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Create Article
+          Buat Artikel
         </button>
       </div>
 
@@ -281,7 +281,7 @@ const Information = () => {
 
           {/* View Mode Toggle */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">View:</span>
+            <span className="text-sm text-gray-600">Tampilan:</span>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
@@ -307,17 +307,17 @@ const Information = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
           <div className="bg-brown-50 rounded-lg p-4">
             <div className="text-2xl font-bold text-brown-600">{articles.length}</div>
-            <div className="text-sm text-gray-600">Total Articles</div>
+            <div className="text-sm text-gray-600">Total Artikel</div>
           </div>
           <div className="bg-green-50 rounded-lg p-4">
             <div className="text-2xl font-bold text-green-600">
               {articles.filter(a => a.status === 'Published').length}
             </div>
-            <div className="text-sm text-gray-600">Published</div>
+            <div className="text-sm text-gray-600">Dipublikasikan</div>
           </div>
           <div className="bg-orange-50 rounded-lg p-4">
             <div className="text-2xl font-bold text-orange-600">{categories.length - 1}</div>
-            <div className="text-sm text-gray-600">Categories</div>
+            <div className="text-sm text-gray-600">Kategori</div>
           </div>
         </div>
       </div>
@@ -336,7 +336,7 @@ const Information = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/800x500?text=Article+Image';
+                      e.target.src = 'https://via.placeholder.com/800x500?text=Gambar+Artikel';
                     }}
                   />
                 ) : (
@@ -353,7 +353,7 @@ const Information = () => {
                 </div>
                 <div className="absolute top-2 right-2">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(article.status)}`}>
-                    {article.status}
+                    {article.status === 'Published' ? 'Dipublikasikan' : 'Draft'}
                   </span>
                 </div>
               </div>
@@ -372,7 +372,7 @@ const Information = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {/* UI Menampilkan publishedAt jika ada */}
-                    {new Date(article.publishedAt || article.createdAt || article.date).toLocaleDateString('en-GB', {
+                    {new Date(article.publishedAt || article.createdAt || article.date).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric'
@@ -398,11 +398,11 @@ const Information = () => {
                     onClick={() => toggleStatus(article._id || article.id, article.status)}
                     className={`px-3 py-2 rounded-lg text-sm font-medium ${
                       article.status === 'Published'
-                        ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                        ? 'bg-brown-100 text-brown-700 hover:bg-brown-200'
                         : 'bg-green-100 text-green-700 hover:bg-green-200'
                     }`}
                   >
-                    {article.status === 'Published' ? 'Unpublish' : 'Publish'}
+                    {article.status === 'Published' ? 'Batalkan Publikasi' : 'Publikasikan'}
                   </button>
                   <button
                     onClick={() => handleDelete(article._id || article.id)}
@@ -423,13 +423,13 @@ const Information = () => {
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm text-gray-500 border-b">
-                <th className="pb-3 pl-6">Image</th>
-                <th className="pb-3">Title</th>
-                <th className="pb-3">Category</th>
+                <th className="pb-3 pl-6">Gambar</th>
+                <th className="pb-3">Judul</th>
+                <th className="pb-3">Kategori</th>
                 <th className="pb-3">Status</th>
-                <th className="pb-3">Date</th>
-                <th className="pb-3">Author</th>
-                <th className="pb-3 pr-6">Actions</th>
+                <th className="pb-3">Tanggal</th>
+                <th className="pb-3">Penulis</th>
+                <th className="pb-3 pr-6">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -465,11 +465,11 @@ const Information = () => {
                   </td>
                   <td className="py-3">
                     <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(article.status)}`}>
-                      {article.status}
+                      {article.status === 'Published' ? 'Dipublikasikan' : 'Draft'}
                     </span>
                   </td>
                   <td className="py-3 text-sm text-gray-500">
-                    {new Date(article.publishedAt || article.createdAt || article.date).toLocaleDateString('en-GB', {
+                    {new Date(article.publishedAt || article.createdAt || article.date).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric'
@@ -487,11 +487,11 @@ const Information = () => {
                       onClick={() => toggleStatus(article._id || article.id, article.status)}
                       className={`px-3 py-1 rounded-lg text-sm ${
                         article.status === 'Published'
-                          ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                          ? 'bg-brown-100 text-brown-700 hover:bg-brown-200'
                           : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                     >
-                      {article.status === 'Published' ? 'Unpub' : 'Pub'}
+                      {article.status === 'Published' ? 'Batal' : 'Publikasi'}
                     </button>
                   </td>
                 </tr>
@@ -506,11 +506,11 @@ const Information = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
-              {isAdding ? 'Create New Article' : 'Edit Article'}
+              {isAdding ? 'Buat Artikel Baru' : 'Edit Artikel'}
             </h3>
             
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Article Featured Image</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Gambar Utama Artikel</label>
               <div className="mb-4 flex justify-center">
                 <div className="w-full h-64 rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300">
                   {previewImage ? (
@@ -523,7 +523,7 @@ const Information = () => {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                       <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                      <span className="text-sm">Upload article featured image</span>
+                      <span className="text-sm">Unggah gambar utama artikel</span>
                     </div>
                   )}
                 </div>
@@ -532,12 +532,12 @@ const Information = () => {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Upload Image</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Unggah Gambar</label>
                     <input type="file" accept="image/*" onChange={handleImageUpload} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brown-50 file:text-brown-700 hover:file:bg-brown-100" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                    <input type="text" value={previewImage || ''} onChange={handleImageUrlChange} placeholder="https://example.com/article-image.jpg" className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">URL Gambar</label>
+                    <input type="text" value={previewImage || ''} onChange={handleImageUrlChange} placeholder="https://example.com/gambar-artikel.jpg" className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" />
                   </div>
                 </div>
               </div>
@@ -545,49 +545,49 @@ const Information = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Article Title</label>
-                <input type="text" name="title" value={formData.title || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Enter article title" />
+                <label className="block text-sm font-medium text-gray-700">Judul Artikel</label>
+                <input type="text" name="title" value={formData.title || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Masukkan judul artikel" />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
+                  <label className="block text-sm font-medium text-gray-700">Kategori</label>
                   <select name="category" value={formData.category || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                    <option value="">Select Category</option>
-                    <option value="Treatment">Treatment</option>
-                    <option value="Product">Product</option>
-                    <option value="Promotion">Promotion</option>
-                    <option value="Announcement">Announcement</option>
-                    <option value="Event">Event</option>
-                    <option value="Tips">Tips & Advice</option>
+                    <option value="">Pilih Kategori</option>
+                    <option value="Perawatan">Perawatan</option>
+                    <option value="Produk">Produk</option>
+                    <option value="Promo">Promo</option>
+                    <option value="Pengumuman">Pengumuman</option>
+                    <option value="Acara">Acara</option>
+                    <option value="Tips">Tips & Saran</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
                   <select name="status" value={formData.status || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
                     <option value="Draft">Draft</option>
-                    <option value="Published">Published</option>
+                    <option value="Published">Dipublikasikan</option>
                   </select>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700">Article Content</label>
-                <textarea name="content" value={formData.content || ''} onChange={handleChange} rows="8" className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Write your article content here..." />
+                <label className="block text-sm font-medium text-gray-700">Konten Artikel</label>
+                <textarea name="content" value={formData.content || ''} onChange={handleChange} rows="8" className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Tulis konten artikel Anda di sini..." />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Author</label>
+                  <label className="block text-sm font-medium text-gray-700">Penulis</label>
                   <input type="text" name="author" value={formData.author || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" />
                 </div>
               </div>
             </div>
 
             <div className="flex justify-end space-x-2 mt-6">
-              <button onClick={handleCancel} className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Cancel</button>
+              <button onClick={handleCancel} className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Batal</button>
               <button onClick={handleSave} className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700">
-                {isAdding ? 'Publish Article' : 'Save Changes'}
+                {isAdding ? 'Publikasikan Artikel' : 'Simpan Perubahan'}
               </button>
             </div>
           </div>
@@ -598,9 +598,9 @@ const Information = () => {
       {filteredArticles.length === 0 && !loading && (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No articles found</h3>
-          <p className="text-gray-500 mb-6">No articles match the selected category.</p>
-          <button onClick={handleAdd} className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700">Create Your First Article</button>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada artikel ditemukan</h3>
+          <p className="text-gray-500 mb-6">Tidak ada artikel yang cocok dengan kategori yang dipilih.</p>
+          <button onClick={handleAdd} className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700">Buat Artikel Pertama Anda</button>
         </div>
       )}
     </div>

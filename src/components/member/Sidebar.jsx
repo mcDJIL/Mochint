@@ -89,10 +89,10 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { name: 'Dashboard', path: '/member', icon: <LayoutDashboard size={20} /> },
-    { name: 'Booking', path: '/member/booking/step-1', icon: <CalendarCheck size={20} /> },
-    { name: 'Appointment', path: '/member/appointment', icon: <ClipboardList size={20} /> },
-    { name: 'History', path: '/member/history', icon: <History size={20} /> },
+    { name: 'Beranda', path: '/member', icon: <LayoutDashboard size={20} /> },
+    { name: 'Reservasi', path: '/member/booking/step-1', icon: <CalendarCheck size={20} /> },
+    { name: 'Janji Temu', path: '/member/appointment', icon: <ClipboardList size={20} /> },
+    { name: 'Riwayat', path: '/member/history', icon: <History size={20} /> },
    // { name: 'Profile', path: '/member/profile', icon: <User size={20} /> },
   ];
 
@@ -106,7 +106,7 @@ const Sidebar = () => {
       {/* Logo / Title Area - Menggunakan Poppins */}
       <div className="p-10 border-b border-gray-50">
         <h2 className="text-3xl font-display font-bold text-[#3E2723] tracking-tighter">Mochint</h2>
-        <p className="text-[10px] font-black text-[#8D6E63] uppercase tracking-[0.3em] mt-1.5 font-sans">Member Services</p>
+        <p className="text-[10px] font-black text-[#8D6E63] uppercase tracking-[0.3em] mt-1.5 font-sans">Layanan Member </p>
       </div>
 
       {/* User Info Section */}
@@ -161,7 +161,7 @@ const Sidebar = () => {
           className="flex items-center gap-4 p-4 text-[#8D6E63] hover:bg-white hover:shadow-sm rounded-2xl transition-all font-sans font-bold text-xs uppercase tracking-widest"
         >
           <Home size={20} />
-          <span>Homepage</span>
+          <span>Beranda</span>
         </Link>
 
         {/* Logout Button */}
@@ -170,20 +170,9 @@ const Sidebar = () => {
           onClick={handleLogout}
         >
           <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span>Logout</span>
+          <span>Keluar</span>
         </button>
         
-        {/* Debug info (only in development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-500 font-mono">
-              Path: {location.pathname}
-            </p>
-            <p className="text-xs text-gray-500 font-mono mt-1">
-              User: {user ? 'Loaded' : 'Not found'}
-            </p>
-          </div>
-        )}
       </div>
     </aside>
   );

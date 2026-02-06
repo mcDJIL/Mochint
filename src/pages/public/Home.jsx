@@ -29,10 +29,10 @@ const Home = () => {
         ]);
 
         // Ambil 4 produk terbaru untuk ditampilkan di Home
-        setProducts(resProducts.data.slice(0, 4));
+        setProducts((resProducts.data.data || resProducts.data).slice(0, 4));
         
         // Set testimoni dari database
-        setTestimonials(resReviews.data);
+        setTestimonials(resReviews.data.data);
         
         console.log("Data loaded successfully from database");
       } catch (error) {
@@ -85,10 +85,10 @@ const Home = () => {
             Mochint Beauty Care
           </h1>
           <p className="text-lg md:text-xl text-[#8D6E63] mb-10 max-w-2xl mx-auto font-medium font-sans">
-            Your premium destination for elegant beauty treatments and radiant skincare
+            Klinik kecantikan terpercaya dengan teknologi terkini dan bahan premium untuk perawatan kulit Anda.
           </p>
           <button onClick={handleBookingClick} className="font-display inline-flex items-center px-10 py-4 bg-[#8D6E63] text-white text-lg font-bold rounded-full hover:bg-[#6D4C41] transition-all shadow-lg transform hover:-translate-y-1 mx-auto">
-            Booking Now <ArrowRight className="ml-2" size={20} />
+            Reservasi Sekarang <ArrowRight className="ml-2" size={20} />
           </button>
         </div>
       </section>
@@ -103,10 +103,10 @@ const Home = () => {
             </div>
           </div>
           <div className="w-full lg:w-1/2">
-            <div className="font-display inline-block px-3 py-1 bg-[#FDFBF7] text-[#8D6E63] text-xs font-bold tracking-widest uppercase mb-4 rounded-md">Premium Clinic</div>
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-[#3E2723] mb-6 tracking-tight leading-tight">Beauty Beyond <br/> Limits</h2>
-            <p className="font-sans text-gray-500 mb-8 leading-relaxed text-lg font-normal">Welcome to Mochint Beauty Care. We combine advanced technology with 100% premium ingredients provided by certified professionals.</p>
-            <button onClick={handleAboutClick} className="font-display px-8 py-3 border-2 border-[#8D6E63] text-[#8D6E63] font-bold rounded-full hover:bg-[#8D6E63] hover:text-white transition-all">About Us</button>
+            <div className="font-display inline-block px-3 py-1 bg-[#FDFBF7] text-[#8D6E63] text-xs font-bold tracking-widest uppercase mb-4 rounded-md">Kenali Mochint Lebih Dekat</div>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-[#3E2723] mb-6 tracking-tight leading-tight">Rumah Cantik <br/> Mochint Beauty Care</h2>
+            <p className="font-sans text-gray-500 mb-8 leading-relaxed text-lg font-normal">Selamat datang di Mochint Beauty Care, salon kecantikan yang berlokasi di Pandaan Pasuruan Jawa Timur. Kami hadir sebagai solusi bagi Anda yang ingin merawat kulit dengan teknologi terkini dan bahan premium.</p>
+            <button onClick={handleAboutClick} className="font-display px-8 py-3 border-2 border-[#8D6E63] text-[#8D6E63] font-bold rounded-full hover:bg-[#8D6E63] hover:text-white transition-all">Tentang Kami</button>
           </div>
         </div>
       </section>
@@ -148,9 +148,9 @@ const Home = () => {
           <div className="relative rounded-[30px] overflow-hidden bg-[#5D4037] text-white py-16 px-10 md:px-20 flex flex-col md:flex-row items-center justify-between shadow-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#8D6E63] rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
             <div className="relative z-10 max-w-xl">
-              <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 leading-tight tracking-tight text-white">30% Discount <br/> <span className="text-[#D7CCC8]">Selected Products</span></h2>
-              <p className="font-sans text-[#D7CCC8]/80 text-lg mb-8 font-normal">Penawaran terbatas bulan ini. Dapatkan kulit sehat impianmu dengan harga lebih hemat.</p>
-              <button onClick={handlePromoClick} className="font-display px-8 py-3 bg-white text-[#5D4037] font-bold rounded-full hover:bg-gray-100 transition shadow-lg">Cek Promo</button>
+              <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 leading-tight tracking-tight text-white">Buka Peluang Bisnis <br/> <span className="text-[#D7CCC8]">Bersama Mochint!</span></h2>
+              <p className="font-sans text-[#D7CCC8]/80 text-lg mb-8 font-normal">Buka peluang penghasilan tambahan dengan menjadi Reseller resmi Mochint Beauty Care. Modal ringan, keuntungan pasti.</p>
+              <button onClick={handlePromoClick} className="font-display px-8 py-3 bg-white text-[#5D4037] font-bold rounded-full hover:bg-gray-100 transition shadow-lg">Gabung Mitra</button>
             </div>
           </div>
         </div>
@@ -223,9 +223,9 @@ const Home = () => {
               <div className="space-y-2">
                 <h2 className="text-3xl font-display font-bold tracking-tight text-white">Kunjungi Kami</h2>
                 <div className="flex items-start gap-3">
-                  <MapPin className="text-[#8D6E63] shrink-0 mt-1" size={20} />
+                  <MapPin className="text-[#8D6E63] shrink-0 mt-1" size={30} />
                   <p className="font-sans text-[#D7CCC8] font-medium opacity-80">
-                    Jl. Sidomukti No.13 RT03, RW.04, Pesantren, Pandaan, Kec. Pandaan, Pasuruan, Jawa Timur 67156
+                    Jl. Sidomukti No.13 RT03, RW.04, Pesantren, Pandaan,<br/> Kec. Pandaan, Pasuruan, Jawa Timur 67156
                   </p>
                 </div>
               </div>
@@ -235,7 +235,7 @@ const Home = () => {
                   <Phone size={24} className="text-white" />
                 </div>
                 <div className="font-sans">
-                  <h4 className="font-black text-[10px] uppercase tracking-widest text-[#D7CCC8]">WhatsApp Hotline</h4>
+                  <h4 className="font-black text-[10px] uppercase tracking-widest text-[#D7CCC8]">WhatsApp</h4>
                   <p className="text-lg font-display font-bold text-white">+62 819-9420-4009</p>
                 </div>
               </div>
