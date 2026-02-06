@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Dashboard = () => {
-  // URL API - sesuaikan dengan database
   const APPOINTMENTS_API_URL = 'http://localhost:5000/api/appointments';
   const MEMBERS_API_URL = 'http://localhost:5000/api/members';
   const THERAPISTS_API_URL = 'http://localhost:5000/api/therapists';
 
   const Token = localStorage.getItem('token');
-  //console.log('Dashboard - Token dari localStorage:', Token);
 
-  // State
   const [appointments, setAppointments] = useState([]);
   const [members, setMembers] = useState([]);
   const [therapists, setTherapists] = useState([]);
@@ -21,7 +18,6 @@ const Dashboard = () => {
   });
   const [error, setError] = useState(null);
 
-  // Ambil semua data
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -56,71 +52,56 @@ const Dashboard = () => {
     }
   };
 
-  // Hitung statistik janji temu dari data database
   const calculateAppointmentStats = () => {
     const total = appointments.length;
-
-    // Menggunakan data status dari database appointment
     const pending = appointments.filter(a => a.status?.toLowerCase() === 'pending').length;
     const confirmed = appointments.filter(a => a.status?.toLowerCase() === 'confirmed').length;
     const completed = appointments.filter(a => a.status?.toLowerCase() === 'completed').length;
-
     return { total, pending, confirmed, completed };
   };
 
   const appointmentStats = calculateAppointmentStats();
 
-  // Dapatkan janji temu hari ini - HANYA pending dan confirmed
   const getTodaysAppointments = () => {
     const today = new Date();
-    // Format tanggal hari ini ke YYYY-MM-DD (sesuai format database)
     const todayStr = today.toISOString().split('T')[0];
 
-    // Juga dapatkan tanggal dalam format alternatif untuk perbandingan
     const day = today.getDate().toString().padStart(2, '0');
     const month = (today.getMonth() + 1).toString().padStart(2, '0');
     const year = today.getFullYear();
 
-    // Beberapa kemungkinan format tanggal
     const possibleTodayFormats = [
-      todayStr, // YYYY-MM-DD
-      `${year}-${month}-${day}`, // Sama seperti di atas
-      `${day}/${month}/${year}`, // DD/MM/YYYY
-      `${month}/${day}/${year}`, // MM/DD/YYYY
-      today.toLocaleDateString('en-US'), // Format lokal
-      today.toLocaleDateString('id-ID'), // Format Indonesia
+      todayStr,
+      `${year}-${month}-${day}`,
+      `${day}/${month}/${year}`,
+      `${month}/${day}/${year}`,
+      today.toLocaleDateString('en-US'),
+      today.toLocaleDateString('id-ID'),
     ];
 
     return appointments.filter(app => {
       if (!app.date) return false;
 
-      // FILTER: Hanya tampilkan janji temu dengan status pending atau confirmed
       const status = app.status?.toLowerCase();
       if (status === 'completed') {
-        return false; // Lewati janji temu yang sudah selesai
+        return false;
       }
 
       try {
-        // Konversi tanggal appointment ke string dan normalisasi
         let appDate = app.date.toString().trim();
 
-        // Jika itu adalah string tanggal ISO (mengandung T)
         if (appDate.includes('T')) {
           const dateObj = new Date(appDate);
-          appDate = dateObj.toISOString().split('T')[0]; // Konversi ke YYYY-MM-DD
+          appDate = dateObj.toISOString().split('T')[0];
         }
 
-        // Hapus bagian waktu jika ada
         if (appDate.includes(' ')) {
           appDate = appDate.split(' ')[0];
         }
 
-        // Periksa apakah cocok dengan salah satu format hari ini
         return possibleTodayFormats.some(format => {
-          // Bandingkan tanggal dengan berbagai cara
           if (appDate === format) return true;
 
-          // Coba parsing dan bandingkan sebagai objek Date
           try {
             const appDateObj = new Date(appDate);
             const formatDateObj = new Date(format);
@@ -129,10 +110,9 @@ const Dashboard = () => {
               return false;
             }
 
-            // Bandingkan tahun, bulan, dan hari
             return appDateObj.getFullYear() === formatDateObj.getFullYear() &&
-                   appDateObj.getMonth() === formatDateObj.getMonth() &&
-                   appDateObj.getDate() === formatDateObj.getDate();
+              appDateObj.getMonth() === formatDateObj.getMonth() &&
+              appDateObj.getDate() === formatDateObj.getDate();
           } catch {
             return false;
           }
@@ -146,12 +126,10 @@ const Dashboard = () => {
 
   const todayAppointments = getTodaysAppointments();
 
-  // Format waktu appointment untuk ditampilkan
   const formatAppointmentTime = (timeStr) => {
     if (!timeStr) return 'T/A';
 
     try {
-      // Jika waktu dalam format HH:MM
       if (timeStr.includes(':')) {
         const [hours, minutes] = timeStr.split(':');
         const hour = parseInt(hours);
@@ -165,7 +143,6 @@ const Dashboard = () => {
     }
   };
 
-  // Tindakan cepat untuk memperbarui status appointment dari dashboard
   const handleQuickUpdateStatus = async (appointmentId, currentStatus) => {
     try {
       let nextStatus;
@@ -178,17 +155,14 @@ const Dashboard = () => {
         return;
       }
 
-      // Update di backend
       await axios.put(`${APPOINTMENTS_API_URL}/${appointmentId}`, {
         status: nextStatus
       });
 
-      // Update state lokal
       setAppointments(prev => prev.map(app =>
         app.id === appointmentId ? { ...app, status: nextStatus } : app
       ));
 
-      // Refresh data untuk memperbarui dashboard
       fetchAllData();
 
     } catch (err) {
@@ -197,20 +171,15 @@ const Dashboard = () => {
     }
   };
 
-  // Hitung statistik anggota dari data database
   const calculateMemberStats = () => {
     const total = members.length;
-    const active = members.filter(m =>
-      m.status?.toLowerCase() === 'active'
-    ).length;
+    const active = members.filter(m => m.status?.toLowerCase() === 'active').length;
 
-    // Hitung total kunjungan dari appointment
     const totalVisits = appointments
       .filter(app => app.status?.toLowerCase() === 'completed')
-      .filter(app => app.customer_id) // Hanya appointment dengan customer_id
+      .filter(app => app.customer_id)
       .length;
 
-    // Hitung anggota baru bulan ini
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
@@ -222,7 +191,7 @@ const Dashboard = () => {
 
         const dateObj = new Date(joinDate);
         return dateObj.getMonth() === currentMonth &&
-               dateObj.getFullYear() === currentYear;
+          dateObj.getFullYear() === currentYear;
       } catch (error) {
         console.warn('Error parsing tanggal bergabung:', error);
         return false;
@@ -234,7 +203,6 @@ const Dashboard = () => {
 
   const memberStats = calculateMemberStats();
 
-  // Dapatkan anggota terbaru (diurutkan berdasarkan tanggal bergabung)
   const getRecentMembers = (count = 4) => {
     return [...members]
       .sort((a, b) => {
@@ -249,7 +217,7 @@ const Dashboard = () => {
 
           if (isNaN(dateAObj.getTime()) || isNaN(dateBObj.getTime())) return 0;
 
-          return dateBObj - dateAObj; // Terbaru pertama
+          return dateBObj - dateAObj;
         } catch (error) {
           return 0;
         }
@@ -259,9 +227,7 @@ const Dashboard = () => {
 
   const recentMembers = getRecentMembers(4);
 
-  // Dapatkan anggota teratas berdasarkan kunjungan
   const getTopMembersByVisits = (count = 4) => {
-    // Buat peta kunjungan anggota dari appointment
     const memberVisits = {};
 
     appointments
@@ -279,7 +245,6 @@ const Dashboard = () => {
         memberVisits[memberId].visits++;
       });
 
-    // Gabungkan dengan data anggota untuk info tambahan
     const topMembers = Object.values(memberVisits)
       .sort((a, b) => b.visits - a.visits)
       .slice(0, count)
@@ -300,12 +265,10 @@ const Dashboard = () => {
 
   const topMembers = getTopMembersByVisits(4);
 
-  // Filter perawatan selesai untuk Recent Treatments
   const recentTreatments = appointments
     .filter(appointment => appointment.status?.toLowerCase() === 'completed')
     .sort((a, b) => {
       try {
-        // Gabungkan tanggal dan waktu untuk pengurutan
         const dateTimeA = a.date + ' ' + (a.time || '00:00');
         const dateTimeB = b.date + ' ' + (b.time || '00:00');
 
@@ -314,14 +277,13 @@ const Dashboard = () => {
 
         if (isNaN(dateAObj.getTime()) || isNaN(dateBObj.getTime())) return 0;
 
-        return dateBObj - dateAObj; // Terbaru pertama
+        return dateBObj - dateAObj;
       } catch (error) {
         return 0;
       }
     })
     .slice(0, 5);
 
-  // Hitung total pendapatan dari semua appointment yang selesai
   const calculateTotalRevenue = () => {
     return appointments
       .filter(appointment => appointment.status?.toLowerCase() === 'completed')
@@ -333,16 +295,13 @@ const Dashboard = () => {
 
   const totalRevenue = calculateTotalRevenue();
 
-  // Format total pendapatan
   const formatRevenue = (amount) => {
     return `Rp ${amount.toLocaleString('id-ID')}`;
   };
 
   const formattedTotalRevenue = formatRevenue(totalRevenue);
 
-  // Dapatkan terapis teratas berdasarkan appointment yang selesai
   const getTopTherapists = (count = 3) => {
-    // Hitung jumlah appointment selesai per terapis
     const therapistStats = {};
 
     appointments
@@ -359,7 +318,6 @@ const Dashboard = () => {
         therapistStats[therapistName].completedAppointments++;
       });
 
-    // Hitung total appointments per terapis
     appointments
       .filter(app => app.therapist)
       .forEach(app => {
@@ -369,12 +327,10 @@ const Dashboard = () => {
         }
       });
 
-    // Konversi ke array dan urutkan
     const sortedTherapists = Object.values(therapistStats)
       .sort((a, b) => b.completedAppointments - a.completedAppointments)
       .slice(0, count);
 
-    // Tambahkan data dari database terapis
     return sortedTherapists.map(therapistStat => {
       const therapistFromDb = therapists.find(t =>
         t.name?.toString().trim().toLowerCase() === therapistStat.name.toLowerCase()
@@ -392,7 +348,6 @@ const Dashboard = () => {
 
   const topTherapists = getTopTherapists(3);
 
-  // State loading
   const isLoading = Object.values(loading).some(l => l === true);
 
   if (isLoading) {
@@ -428,7 +383,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 p-6 bg-white min-h-screen">
-      {/* Judul Halaman */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Beranda</h1>
@@ -445,7 +399,6 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* Grid Statistik Utama */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Anggota"
@@ -477,31 +430,18 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Janji Temu Hari Ini - HANYA pending dan confirmed */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Janji Temu Hari Ini</h2>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-1"></div>
-                <span className="text-xs text-gray-600">Pending</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
-                <span className="text-xs text-gray-600">Confirmed</span>
-              </div>
-            </div>
-            <a href="/admin/appointment" className="text-sm text-brown-600 hover:text-brown-700 font-medium">
-              Lihat Semua →
-            </a>
-          </div>
+          <a href="/admin/appointment" className="text-sm text-brown-600 hover:text-brown-700 font-medium">
+            Lihat Semua →
+          </a>
         </div>
 
         <div className="mb-4">
           <div className="text-sm text-gray-600">
-            Menampilkan <span className="font-bold">{todayAppointments.length}</span> janji temu{todayAppointments.length !== 1 ? '' : ''} untuk hari ini
-            <span className="text-xs text-gray-500 ml-2">(Janji temu yang selesai tidak ditampilkan di sini)</span>
+            Menampilkan <span className="font-bold">{todayAppointments.length}</span> janji temu untuk hari ini
+            <span className="text-xs text-gray-500 ml-2">(Janji temu yang selesai tidak ditampilkan)</span>
           </div>
         </div>
 
@@ -510,9 +450,8 @@ const Dashboard = () => {
             {todayAppointments.map((appointment) => (
               <div key={appointment.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg border border-gray-200 transition-colors duration-200">
                 <div className="flex items-center flex-1 min-w-0">
-                  <div className={`w-3 h-3 rounded-full mr-3 flex-shrink-0 ${
-                    appointment.status?.toLowerCase() === 'confirmed' ? 'bg-blue-500' : 'bg-yellow-500'
-                  }`}></div>
+                  <div className={`w-3 h-3 rounded-full mr-3 flex-shrink-0 ${appointment.status?.toLowerCase() === 'confirmed' ? 'bg-blue-500' : 'bg-yellow-500'
+                    }`}></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center mb-1">
                       <h3 className="font-medium text-gray-800 truncate">
@@ -544,12 +483,11 @@ const Dashboard = () => {
                       appointment.status?.toLowerCase() === 'confirmed'
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                      }`}>
                       {appointment.status || 'pending'}
                     </span>
                   </div>
 
-                  {/* Tombol Tindakan Cepat */}
                   <div className="flex space-x-1">
                     {appointment.status?.toLowerCase() === 'pending' && (
                       <button
@@ -582,7 +520,7 @@ const Dashboard = () => {
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak Ada Janji Temu Aktif Hari Ini</h3>
-            <p className="text-gray-500 mb-4">Anda tidak memiliki janji temu pending atau confirmed yang dijadwalkan untuk hari ini.</p>
+            <p className="text-gray-500 mb-4">Anda tidak memiliki janji temu pending atau confirmed untuk hari ini.</p>
             <div className="flex justify-center space-x-3">
               <a
                 href="/admin/appointment"
@@ -607,9 +545,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Grid untuk Anggota Terbaru dan Anggota Teratas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Anggota Terbaru */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-semibold text-gray-800">Anggota Terbaru</h2>
@@ -653,7 +589,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Anggota Teratas berdasarkan Kunjungan */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-semibold text-gray-800">Anggota Teratas berdasarkan Kunjungan</h2>
@@ -688,7 +623,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Perawatan Terbaru (Hanya yang selesai) */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Perawatan Selesai Terbaru</h2>
@@ -727,7 +661,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Terapis Teratas */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Terapis Teratas</h2>
@@ -776,7 +709,6 @@ const Dashboard = () => {
   );
 };
 
-// Komponen StatCard dengan subtitle
 const StatCard = ({ title, value, icon: Icon, color, subtitle }) => {
   const colorClasses = {
     brown: 'bg-brown-100 text-brown-600',
@@ -803,7 +735,6 @@ const StatCard = ({ title, value, icon: Icon, color, subtitle }) => {
   );
 };
 
-// Komponen SVG Icon
 const UsersIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-2.645a4 4 0 00-5.197-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />

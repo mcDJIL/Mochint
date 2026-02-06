@@ -156,4 +156,4 @@ const ProductDetail = ({ isOpen, onClose, product }) => {
   );
 };
 
-export default ProductDetail;
+export default ProductDetail; 

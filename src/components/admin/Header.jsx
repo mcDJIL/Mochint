@@ -45,7 +45,7 @@ const Header = () => {
                 </svg>
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-700">Admin User</p>
+                <p className="text-sm font-medium text-gray-700">Admin</p>
                 <p className="text-xs text-gray-500">Administrator</p>
               </div>
               {/* Dropdown Arrow */}

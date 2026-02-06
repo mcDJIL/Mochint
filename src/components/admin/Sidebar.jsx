@@ -8,7 +8,7 @@ const Sidebar = () => {
     { name: 'Member', path: '/admin/member' },
     { name: 'Perawatan', path: '/admin/treatment' },
     { name: 'Produk', path: '/admin/product' },
-    { name: 'Terapis', path: '/admin/therapist' },
+    { name: 'Terapist', path: '/admin/therapist' },
     { name: 'Informasi', path: '/admin/information' },
   ];
 

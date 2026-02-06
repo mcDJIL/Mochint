@@ -67,7 +67,7 @@ const Treatment = () => {
             <Home size={18} />
           </button>
           <span className="text-gray-300">/</span>
-          <span>Treatment</span>
+          <span>Perawatan</span>
         </nav>
 
         <div className="flex flex-col lg:flex-row gap-12">
@@ -77,7 +77,7 @@ const Treatment = () => {
               <div className="relative mb-8">
                 <input
                   type="text"
-                  placeholder="Search treatment..."
+                  placeholder="Cari layanan..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-100 bg-[#FDFBF7] text-sm outline-none focus:border-[#8D6E63] font-sans"

@@ -140,22 +140,22 @@ const BookingStep3 = () => {
 
         {/* RINGKASAN SIDEBAR */}
         <div className="w-full lg:w-96">
-          <div className="bg-[#3E2723] text-white p-8 rounded-[40px] shadow-2xl sticky top-8 text-left">
+          <div className="bg-[#FDFBF7] text-[#3E2723] p-8 rounded-[40px] shadow-2xl sticky top-8 text-left">
             <h3 className="text-xl font-display font-bold mb-8 flex items-center gap-3 text-[#8D6E63] tracking-tight">
               <Info size={22} /> Ringkasan
             </h3>
             <div className="space-y-6 font-sans">
-              <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                <p className="text-[9px] text-[#8D6E63] uppercase font-black mb-1.5 tracking-widest">Treatment</p>
+              <div className="bg-[#8D6E63]/5 p-5 rounded-2xl border border-white/10">
+                <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Treatment</p>
                 <p className="text-sm font-bold leading-snug">{treatment?.name || "-"}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                  <p className="text-[9px] text-[#8D6E63] uppercase font-black mb-1.5 tracking-widest">Mulai</p>
+                  <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Mulai</p>
                   <p className="text-lg font-bold font-display">{selectedTime || "--:--"}</p>
                 </div>
                 <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                  <p className="text-[9px] text-[#8D6E63] uppercase font-black mb-1.5 tracking-widest">Selesai</p>
+                  <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Selesai</p>
                   <p className="text-lg font-bold font-display text-green-400">{calculateEndTime(selectedTime) || "--:--"}</p>
                 </div>
               </div>

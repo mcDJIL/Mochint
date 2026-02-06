@@ -19,7 +19,7 @@ const BookingStep1 = () => {
           </button>
           <span>/</span>
           <span className="text-[#8D6E63] bg-[#8D6E63]/10 px-4 py-1.5 rounded-full font-display">
-            Booking
+            Reservasi
           </span>
         </nav>
       </div>
@@ -57,7 +57,7 @@ const BookingStep1 = () => {
           onClick={() => navigate('/member/booking/step-2')}
           className="px-10 py-4 bg-[#8D6E63] text-white font-display font-bold rounded-full shadow-xl shadow-[#8D6E63]/20 hover:bg-[#5D4037] transition-all transform active:scale-95 uppercase text-[10px] tracking-[0.2em]"
         >
-          Mulai Booking
+          Reservasi Sekarang
         </button>
       </div>
     </div>

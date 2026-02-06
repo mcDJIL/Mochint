@@ -27,7 +27,6 @@ const Product = () => {
   const API_URL = 'http://localhost:5000/api/products';
   
   const categories = ['Semua Produk', 'Acne', 'Brightening', 'Best Seller', 'Lainnya'];
-
   useEffect(() => {
     fetchProducts();
   }, []);
