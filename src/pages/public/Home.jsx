@@ -29,10 +29,10 @@ const Home = () => {
         ]);
 
         // Ambil 4 produk terbaru untuk ditampilkan di Home
-        setProducts(resProducts.data.slice(0, 4));
+        setProducts((resProducts.data.data || resProducts.data).slice(0, 4));
         
         // Set testimoni dari database
-        setTestimonials(resReviews.data);
+        setTestimonials(resReviews.data.data);
         
         console.log("Data loaded successfully from database");
       } catch (error) {
