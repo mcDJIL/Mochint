@@ -89,7 +89,7 @@ const TreatmentDetail = ({ isOpen, onClose, treatment }) => {
             {/* Harga & Durasi - Sinkron Database */}
             <div className="pt-10 border-t border-gray-100 flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-black text-[#A1887F] uppercase tracking-widest mb-1 font-sans">Estimasi Investasi</p>
+                <p className="text-[11px] font-black text-[#A1887F] uppercase tracking-widest mb-1 font-sans">Harga</p>
                 <p className="text-3xl font-display font-bold text-[#8D6E63]">Rp {formatPrice(treatment.price)}</p>
               </div>
               <div className="px-6 py-3 bg-[#5D4037] text-white rounded-2xl flex items-center gap-3 shadow-lg">

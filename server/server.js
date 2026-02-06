@@ -170,41 +170,6 @@ const createAllTables = async () => {
       VALUES ('admin', 'admin@mochint.com', ?, 'Administrator', 'admin')
     `, [adminPassword]);
     
-    // Insert default member
-    await connection.query(`
-      INSERT IGNORE INTO members (name, email, password, phone, address, join_date) 
-      VALUES ('Siltiana Putri', 'siltiana@gmail.com', ?, '081234567890', 'Jl. Test No. 123, Jakarta', '2024-01-15')
-    `, [memberPassword]);
-    
-    // Insert sample data jika tabel kosong
-    await connection.query(`
-      INSERT IGNORE INTO therapists (name, email, phone) 
-      VALUES 
-      ('Dr. Amelia', 'amelia@clinic.com', '0811111111'),
-      ('Dr. Budi', 'budi@clinic.com', '0812222222')
-    `);
-    
-    await connection.query(`
-      INSERT IGNORE INTO treatments (name, category, duration, price, description) 
-      VALUES 
-      ('Facial Treatment', 'Facial', '60 minutes', 300000, 'Deep cleansing facial treatment'),
-      ('Body Massage', 'Massage', '90 minutes', 450000, 'Relaxing full body massage')
-    `);
-    
-    await connection.query(`
-      INSERT IGNORE INTO products (name, category, price, description) 
-      VALUES 
-      ('Vitamin C Serum', 'Skincare', 250000, 'Brightening serum with Vitamin C'),
-      ('Moisturizing Cream', 'Skincare', 180000, 'Deep hydration cream')
-    `);
-    
-    await connection.query(`
-      INSERT IGNORE INTO articles (title, content, category, status, author) 
-      VALUES 
-      ('Tips Perawatan Kulit Sehat', 'Content artikel tentang perawatan kulit...', 'Beauty', 'Published', 'Admin'),
-      ('Manfaat Facial Rutin', 'Content artikel tentang manfaat facial...', 'Treatment', 'Published', 'Admin')
-    `);
-    
     connection.release();
     console.log('✅ All tables created with sample data');
     

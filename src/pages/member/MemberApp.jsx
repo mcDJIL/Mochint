@@ -59,7 +59,7 @@ const MemberApp = () => {
         onClick={() => setShowLogin(true)}
         className="px-16 py-5 bg-[#3E2723] text-white font-display font-bold text-sm uppercase tracking-[0.2em] rounded-[24px] shadow-2xl shadow-[#3E2723]/30 hover:bg-[#8D6E63] transition-all duration-500 w-full max-w-xs mb-8 transform active:scale-95"
       >
-        Login to Account
+        Masuk
       </button>
 
       {/* Link Daftar - Inter */}

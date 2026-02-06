@@ -24,8 +24,7 @@ const Product = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_URL = 'http://localhost:5000/api/products';
-  
+  const API_URL = 'http://localhost:5000/api/products';  
   const categories = ['All Products', 'Acne', 'Brightening', 'Best Seller', 'Other'];
 
   useEffect(() => {

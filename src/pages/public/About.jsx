@@ -30,12 +30,13 @@ const About = () => {
             <Home size={18} />
           </button>
           <span className="text-gray-300">/</span>
-          <span className="font-bold">About Us</span>
+          <span className="font-bold">Tentang Kami</span>
         </nav>
+
 
         {/* Section 1: Story (Sama seperti sebelumnya) */}
         <section className="space-y-8 mb-24">
-          <h1 className="text-4xl font-serif font-bold text-[#5D4037]">Story Mochint Beauty Care</h1>
+          <h1 className="text-4xl md:text-4xl font-display font-bold text-[#3E2723] tracking-tight">Cerita Mochint Beauty Care</h1>
           <div className="relative w-full h-[500px] rounded-[40px] overflow-hidden shadow-xl">
             <img src="https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80" alt="Banner" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/10 flex flex-col justify-center px-12">
@@ -45,10 +46,11 @@ const About = () => {
           <p className="text-gray-500 leading-relaxed text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
         </section>
 
+
+
         {/* Section 2: Penghargaan dengan Slider Interaktif */}
         <section className="space-y-12">
-          <h2 className="text-4xl font-serif font-bold text-[#5D4037]">Penghargaan</h2>
-
+          <h2 className="text-4xl md:text-4xl font-bold text-[#3E2723] tracking-tight">Penghargaan</h2>
           <div className="relative group px-4">
             <Swiper
               modules={[Navigation, Pagination]}

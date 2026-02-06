@@ -25,18 +25,18 @@ const Navbar = () => {
   const brandBg = "bg-[#8D6E63]";
 
   const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Treatment', path: '/treatment' },
+    { name: 'Beranda', path: '/' },
+    { name: 'Perawatan', path: '/treatment' },
     { name: 'Skincare', path: '/product' },
-    { name: 'Promo', path: '/promo' },
-    { name: 'Informasi', path: '/information' },
-    { name: 'Member App', path: user ? '/member' : '/member-app', isMember: true },
+    { name: 'Reseller', path: '/promo' },
+    { name: 'Blog', path: '/information' },
+    { name: 'Aplikasi Member', path: user ? '/member' : '/member-app', isMember: true },
   ];
 
   const memberMenuItems = [
-    { name: 'My Profile', path: '/member' },
-    { name: 'Booking', path: '/member/booking/step-1' },
-    { name: 'Appointments', path: '/member/appointment' },
+    { name: 'Profil', path: '/member' },
+    { name: 'Reservasi', path: '/member/booking/step-1' },
+    { name: 'Janji Temu', path: '/member/appointment' },
     { name: 'Konsultasi', path: '#', isExternal: true },
   ];
 
@@ -107,7 +107,7 @@ const Navbar = () => {
                       }`}
                   >
                     <User size={16} className="mr-2" />
-                    {user ? `Hi, ${user.name.split(' ')[0]}` : 'Member App'}
+                    {user ? `Hi, ${user.name.split(' ')[0]}` : 'Aplikasi Member'}
                     {user && <ChevronDown size={14} className="ml-1" />}
                   </button>
 
