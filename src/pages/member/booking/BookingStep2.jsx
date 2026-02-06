@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Home } from 'lucide-react';
 
@@ -7,28 +7,24 @@ const BookingStep2 = () => {
 
   // 1. Data Katalog Treatment
   const allTreatments = [
-    { id: 1, name: 'Facial Micro Diamond', category: 'Beauty Treatment', price: '120k', info: 'Pembersihan mendalam dengan microdiamond' },
-    { id: 2, name: 'Facial Peeling Ultimate', category: 'Ultimate Treatment', price: '175k', info: 'Whitening / Acne Treatment' },
-    { id: 3, name: 'Facial Detox', category: 'Beauty Treatment', price: '135k', info: 'Mengeluarkan racun pada kulit wajah' },
-    { id: 4, name: 'Facial Mesotherapy', category: 'Ultimate Treatment', price: '175k', info: 'Nutrisi wajah tanpa jarum' },
-    { id: 5, name: 'Mochint Signature', category: 'Special Treatment', price: '250k', info: 'Layanan eksklusif Signature Mochint' },
+    { id: 1, name: 'Facial Micro Diamond', category: 'Perawatan Kecantikan', price: '120k', info: 'Pembersihan mendalam dengan microdiamond' },
+    { id: 2, name: 'Facial Peeling Ultimate', category: 'Perawatan Unggulan', price: '175k', info: 'Whitening / Acne Treatment' },
+    { id: 3, name: 'Facial Detox', category: 'Perawatan Kecantikan', price: '135k', info: 'Mengeluarkan racun pada kulit wajah' },
+    { id: 4, name: 'Facial Mesotherapy', category: 'Perawatan Unggulan', price: '175k', info: 'Nutrisi wajah tanpa jarum' },
+    { id: 5, name: 'Mochint Signature', category: 'Perawatan Khusus', price: '250k', info: 'Layanan eksklusif Signature Mochint' },
   ];
 
   // 2. State Management
   const [selectedCategory, setSelectedCategory] = useState('Beauty Treatment');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredTreatments, setFilteredTreatments] = useState(
-    allTreatments.filter(t => t.category === 'Beauty Treatment')
-  );
 
-  // 3. Fungsi Apply Filter
-  const handleApplyFilter = () => {
-    const filtered = allTreatments.filter(t => 
-      t.category === selectedCategory && 
+  // 3. Filter treatments secara otomatis dengan useMemo
+  const filteredTreatments = useMemo(() => {
+    return allTreatments.filter(t => 
+      (selectedCategory === 'Semua Perawatan' || t.category === selectedCategory) && 
       t.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilteredTreatments(filtered);
-  };
+  }, [selectedCategory, searchTerm]);
 
   // 4. Navigasi ke Step 3
   const handleBookNow = (treatment) => {
@@ -78,7 +74,7 @@ const BookingStep2 = () => {
 
           <h3 className="text-[10px] font-black text-[#5D4037] mb-6 uppercase tracking-[0.2em] font-sans">Kategori</h3>
           <div className="space-y-4 mb-8">
-            {['Beauty Treatment', 'Special Treatment', 'Ultimate Treatment', 'Promo Treatment'].map((cat) => (
+            {['Semua Perawatan', 'Perawatan Kecantikan', 'Perawatan Khusus', 'Perawatan Unggulan',].map((cat) => (
               <label key={cat} className="flex items-center gap-4 cursor-pointer group">
                 <div className="relative flex items-center justify-center">
                   <input 
@@ -97,24 +93,22 @@ const BookingStep2 = () => {
             ))}
           </div>
 
-          <button 
-            onClick={handleApplyFilter}
-            className="w-full py-4 bg-[#8D6E63] text-white rounded-2xl font-display font-bold flex items-center justify-center gap-2 hover:bg-[#5D4037] transition-all shadow-lg shadow-[#8D6E63]/20 uppercase text-xs tracking-widest"
-          >
-            <Plus size={18} /> Apply Filter
-          </button>
+          {/* Menghapus tombol Apply Filter */}
         </div>
 
         {/* TREATMENT CATALOG (Kanan) */}
         <div className="w-full lg:w-2/3 text-left">
-          <h2 className="text-xl font-display font-bold text-[#2D3436] mb-6 tracking-tight">Daftar Layanan (Katalog)</h2>
+          <h2 className="text-xl font-display font-bold text-[#2D3436] mb-6 tracking-tight">
+            Daftar Layanan (Katalog) - {filteredTreatments.length} ditemukan
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredTreatments.length > 0 ? (
               filteredTreatments.map((item) => (
                 <div key={item.id} className="bg-white p-6 rounded-[30px] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
                   <div>
                     <h4 className="font-display font-bold text-[#2D3436] mb-1 group-hover:text-[#8D6E63] transition-colors tracking-tight text-lg">{item.name}</h4>
-                    <p className="text-[10px] font-sans font-bold text-gray-400 mb-6 uppercase tracking-widest">{item.info}</p>
+                    <p className="text-[10px] font-sans font-bold text-gray-400 mb-2 uppercase tracking-widest">{item.category}</p>
+                    <p className="text-sm font-sans text-gray-600 mb-4">{item.info}</p>
                   </div>
                   <div className="flex justify-between items-center pt-4 border-t border-gray-50">
                     <span className="text-xl font-display font-bold text-[#2D3436]">{item.price}</span>

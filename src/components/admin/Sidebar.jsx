@@ -3,13 +3,13 @@ import { NavLink } from 'react-router-dom';
 
 const Sidebar = () => {
   const menuItems = [
-    { name: 'Dashboard', path: '/admin' },
-    { name: 'Appointment', path: '/admin/appointment' },
+    { name: 'Beranda', path: '/admin' },
+    { name: 'Janji Temu', path: '/admin/appointment' },
     { name: 'Member', path: '/admin/member' },
-    { name: 'Treatment', path: '/admin/treatment' },
-    { name: 'Product', path: '/admin/product' },
-    { name: 'Therapist', path: '/admin/therapist' },
-    { name: 'Information', path: '/admin/information' },
+    { name: 'Perawatan', path: '/admin/treatment' },
+    { name: 'Produk', path: '/admin/product' },
+    { name: 'Terapist', path: '/admin/therapist' },
+    { name: 'Informasi', path: '/admin/information' },
   ];
 
   // ============ GANTI NAMA FILE LOGO DI SINI ============

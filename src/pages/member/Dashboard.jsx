@@ -129,20 +129,20 @@ const Dashboard = () => {
       
       // Gunakan reviewsAPI.create() sesuai dengan client.js yang baru
       await reviewsAPI.create({
-        name: currentUser.name || 'Anonymous',
-        location: currentUser.address || "Verified Member",
+        name: currentUser.name || 'Anonim',
+        location: currentUser.address || "Member Terverifikasi",
         rating: reviewData.rating,
         comment: reviewData.comment,
         userId: currentUser.id,
         email: currentUser.email
       });
       
-      alert("✅ Terima kasih atas review Anda!");
+      alert("✅ Terima kasih atas ulasan Anda!");
       setReviewData({ rating: 5, comment: '' });
       
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert("❌ Gagal mengirim review. Silakan coba lagi.");
+      alert("❌ Gagal mengirim ulasan. Silakan coba lagi.");
     } finally {
       setIsSubmittingReview(false);
     }
@@ -154,7 +154,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8D6E63] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600">Memuat dashboard...</p>
         </div>
       </div>
     );
@@ -167,10 +167,10 @@ const Dashboard = () => {
         {/* HEADER DASHBOARD */}
         <div className="mb-8 text-left">
           <h1 className="text-2xl md:text-4xl lg:text-5xl font-display font-bold text-[#5D4037] tracking-tighter leading-tight">
-            Mochint Dashboard
+            Mochint Beauty Care
           </h1>
           <p className="text-[#8D6E63] font-bold font-sans uppercase text-xs tracking-widest mt-1">
-            Member Services
+            Layanan Member 
           </p>
           <p className="text-sm text-gray-400 mt-1 italic font-sans opacity-70">
             Layanan Istimewa untuk Anda
@@ -179,10 +179,10 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           
-          {/* KOLOM KIRI: PROFILE CARD & REMINDER */}
+          {/* KOLOM KIRI: KARTU PROFIL & PENGINGAT */}
           <div className="lg:col-span-1 space-y-6 text-left">
             
-            {/* PROFILE CARD */}
+            {/* KARTU PROFIL */}
             <div className="bg-[#8D6E63] rounded-3xl md:rounded-[30px] p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
               <div className="absolute -right-4 -top-4 opacity-10"></div>
               <div className="relative z-10">
@@ -204,7 +204,7 @@ const Dashboard = () => {
                   <div className="flex justify-between">
                     <span className="opacity-70">ID Member</span>
                     <span className="font-mono font-bold tracking-wider">
-                      {user.id || 'N/A'}
+                      {user.id || 'T/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -229,17 +229,17 @@ const Dashboard = () => {
                   onClick={() => setIsEditModalOpen(true)}
                   className="w-full mt-6 py-3 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-xs font-display font-bold uppercase tracking-widest transition-all"
                 >
-                  Edit Profile
+                  Edit Profil
                 </button>
               </div>
             </div>
 
-            {/* REMINDER SECTION */}
+            {/* BAGIAN PENGINGAT */}
             <div className="bg-white rounded-3xl md:rounded-[30px] p-6 shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-display font-bold text-[#5D4037]">Reminder</h3>
+                <h3 className="font-display font-bold text-[#5D4037]">Pengingat</h3>
                 <span className="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-black uppercase tracking-widest font-sans">
-                  Confirmed
+                  Dikonfirmasi
                 </span>
               </div>
               
@@ -259,7 +259,7 @@ const Dashboard = () => {
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 py-4 text-red-400 font-display font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-2xl transition-all border border-dashed border-red-100"
             >
-              <LogOut size={18} /> Logout Account
+              <LogOut size={18} /> Keluar Akun
             </button>
           </div>
 
@@ -274,10 +274,10 @@ const Dashboard = () => {
                   <Calendar size={24} />
                 </div>
                 <h3 className="text-lg md:text-xl font-display font-bold text-[#5D4037]">
-                  Online Booking
+                  Pemesanan Online
                 </h3>
                 <div className="mt-4 flex items-center text-[#8D6E63] font-display font-bold text-xs uppercase tracking-widest">
-                  Mulai Booking <ChevronRight size={18} className="ml-1" />
+                  Mulai Pemesanan <ChevronRight size={18} className="ml-1" />
                 </div>
               </div>
 
@@ -285,11 +285,11 @@ const Dashboard = () => {
                 onClick={() => navigate('/member/appointment')} 
                 className="group bg-white p-6 md:p-8 rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer"
               >
-                <div className="bg-[#5D4037] w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
+                <div className="bg-[#8D6E63] w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
                   <Clock size={24} />
                 </div>
                 <h3 className="text-lg md:text-xl font-display font-bold text-[#5D4037]">
-                  Appointment
+                  Janji Temu
                 </h3>
                 <div className="mt-4 flex items-center text-[#5D4037] font-display font-bold text-xs uppercase tracking-widest">
                   Lihat Jadwal <ChevronRight size={18} className="ml-1" />
@@ -320,14 +320,14 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* FITUR REVIEW */}
+            {/* FITUR ULASAN */}
             <div className="bg-white rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
               <div className="bg-[#F9F6F2] p-6 md:p-10 md:w-1/3 flex flex-col justify-center">
                 <div className="bg-[#8D6E63]/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 text-[#8D6E63] mx-auto md:mx-0">
                   <Star size={24} fill="currentColor" />
                 </div>
                 <h3 className="text-lg md:text-xl font-display font-bold mb-2 tracking-tight text-center md:text-left">
-                  My Review
+                  Ulasan Saya
                 </h3>
                 <p className="text-xs text-[#A1887F] font-sans leading-relaxed text-center md:text-left">
                   Berikan rating dan ulasan Anda untuk kami.
@@ -365,10 +365,10 @@ const Dashboard = () => {
                     className="w-full py-4 bg-[#8D6E63] text-white font-display font-bold rounded-2xl text-[11px] uppercase tracking-widest hover:bg-[#5D4037] transition-all flex items-center justify-center gap-3 shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmittingReview ? (
-                      "Processing..."
+                      "Memproses..."
                     ) : (
                       <>
-                        <Send size={16} /> Publish Review
+                        <Send size={16} /> Publikasikan Ulasan
                       </>
                     )}
                   </button>
@@ -379,7 +379,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* POPUP: UPDATE MY INFORMATION */}
+      {/* POPUP: PERBARUI INFORMASI SAYA */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div 
@@ -398,13 +398,13 @@ const Dashboard = () => {
                 <Settings size={24} />
               </div>
               <h3 className="text-xl md:text-2xl font-display font-bold italic tracking-tight">
-                Update Profile
+                Perbarui Profil
               </h3>
             </div>
             <div className="p-6 md:p-10 space-y-5 text-left font-sans text-[#3E2723]">
               <div>
                 <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Full Name
+                  Nama Lengkap
                 </label>
                 <input 
                   type="text" 
@@ -416,7 +416,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Phone Number
+                  Nomor Telepon
                 </label>
                 <input 
                   type="tel" 
@@ -427,7 +427,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Email Address
+                  Alamat Email
                 </label>
                 <input 
                   type="email" 
@@ -439,7 +439,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Address
+                  Alamat
                 </label>
                 <textarea 
                   value={formData.address || ''} 
@@ -453,13 +453,13 @@ const Dashboard = () => {
                   onClick={() => setIsEditModalOpen(false)} 
                   className="flex-1 py-4 bg-gray-50 rounded-2xl font-display font-bold text-[10px] uppercase tracking-widest text-[#A1887F]"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button 
                   onClick={handleSave} 
                   className="flex-1 py-4 bg-[#8D6E63] text-white rounded-2xl font-display font-bold text-[10px] uppercase tracking-widest shadow-xl shadow-[#8D6E63]/20 hover:bg-[#5D4037] transition-all flex items-center justify-center"
                 >
-                  <Save size={16} className="mr-2"/> Save Profile
+                  <Save size={16} className="mr-2"/> Simpan Profil
                 </button>
               </div>
             </div>

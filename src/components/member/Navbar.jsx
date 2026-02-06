@@ -18,9 +18,7 @@ const Navbar = () => {
     setIsMemberMenuOpen(false);
   }, [location]);
 
-  // ============ GANTI NAMA FILE LOGO DI SINI ============
-  const LOGO_FILENAME = "logomochint.svg"; // ← UBAH NAMA FILE DI SINI
-  // ======================================================
+  const LOGO_FILENAME = "logomochint.svg"; 
 
   const brandBg = "bg-[#8D6E63]";
 

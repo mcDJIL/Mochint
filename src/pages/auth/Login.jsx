@@ -66,6 +66,7 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess }) => {
           <p className="text-sm font-black text-[#8D6E63] tracking-[0.4em] uppercase">BEAUTY CARE</p>
         </div>
 
+
         {/* Form Container */}
         <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
           {error && (

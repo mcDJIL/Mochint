@@ -1,67 +1,205 @@
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home } from 'lucide-react';
+import { Search, Plus, Home } from 'lucide-react';
 
-const BookingStep1 = () => {
+const BookingStep2 = () => {
   const navigate = useNavigate();
 
+  // 1. Data Katalog Treatment
+  const allTreatments = [
+    { id: 1, name: 'Facial Micro Diamond', category: 'Beauty Treatment', price: '120k', info: 'Pembersihan mendalam dengan microdiamond' },
+    { id: 2, name: 'Facial Peeling Ultimate', category: 'Ultimate Treatment', price: '175k', info: 'Whitening / Acne Treatment' },
+    { id: 3, name: 'Facial Detox', category: 'Beauty Treatment', price: '135k', info: 'Mengeluarkan racun pada kulit wajah' },
+    { id: 4, name: 'Facial Mesotherapy', category: 'Ultimate Treatment', price: '175k', info: 'Nutrisi wajah tanpa jarum' },
+    { id: 5, name: 'Mochint Signature', category: 'Special Treatment', price: '250k', info: 'Layanan eksklusif Signature Mochint' },
+  ];
+
+  // 2. State Management - Default "All"
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // 3. Filter treatments secara otomatis dengan useMemo
+  const filteredTreatments = useMemo(() => {
+    let filtered = allTreatments;
+    
+    // Filter berdasarkan kategori
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(t => t.category === selectedCategory);
+    }
+    
+    // Filter berdasarkan pencarian
+    if (searchTerm.trim() !== '') {
+      filtered = filtered.filter(t => 
+        t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.info.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  }, [selectedCategory, searchTerm]);
+
+  // 4. Navigasi ke Step 3
+  const handleBookNow = (treatment) => {
+    sessionStorage.setItem('selectedTreatment', JSON.stringify(treatment));
+    navigate('/member/booking/step-3');
+  };
+
+  // 5. Reset filter
+  const handleResetFilter = () => {
+    setSelectedCategory('All');
+    setSearchTerm('');
+  };
+
   return (
-    <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 flex flex-col items-center font-sans">
+    <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 font-sans">
       
-      {/* NAVBAR SEDERHANA: Hanya Icon Home / Booking */}
-      <div className="w-full max-w-5xl mb-16">
-        <nav className="flex items-center gap-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-gray-400 font-sans">
-          <button 
-            onClick={() => navigate('/member')} 
-            className="p-2 bg-white rounded-lg shadow-sm text-[#8D6E63] hover:bg-[#8D6E63] hover:text-white transition-all"
-          >
-            <Home size={16} />
-          </button>
-          <span>/</span>
-          <span className="text-[#8D6E63] bg-[#8D6E63]/10 px-4 py-1.5 rounded-full font-display">
-            Booking
-          </span>
-        </nav>
+      {/* RESPONSIVE NAVBAR BOOKING */}
+      <nav className="flex items-center gap-3 text-[10px] md:text-xs mb-8 font-bold uppercase tracking-[0.2em] text-gray-400 font-sans">
+        <button 
+          onClick={() => navigate('/member')}
+          className="p-2 bg-white rounded-lg shadow-sm text-[#8D6E63] hover:bg-[#8D6E63] hover:text-white transition-all"
+        >
+          <Home size={16} />
+        </button>
+        <span>/</span>
+        <span className="text-[#8D6E63] bg-[#8D6E63]/10 px-4 py-1.5 rounded-full font-display">
+          Treatment
+        </span>
+      </nav>
+
+      {/* HEADER SECTION */}
+      <div className="mb-10 text-left">
+        <h1 className="text-3xl md:text-5xl font-display font-bold text-[#5D4037] mb-3 tracking-tighter">Pilih Perawatan Anda</h1>
+        <p className="text-gray-500 text-sm md:text-base max-w-2xl leading-relaxed font-sans font-medium">
+          Tampil memukau setiap hari dengan solusi kecantikan modern yang disesuaikan hanya untuk Anda!
+        </p>
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="w-full max-w-4xl text-left md:text-left">
-        <h1 className="text-4xl md:text-6xl font-display font-bold text-[#8D6E63] leading-tight mb-8 tracking-tighter">
-          Siap Untuk Self-Care? Reservasi <br /> Sekarang, Gak Pake Ribet!
-        </h1>
+      <div className="flex flex-col lg:flex-row gap-8">
+        
+        {/* SIDEBAR FILTER (Responsive) */}
+        <div className="w-full lg:w-1/3 bg-white p-6 md:p-8 rounded-[30px] shadow-sm border border-gray-100 h-fit text-left">
+          <div className="relative mb-8">
+            <Search className="absolute left-4 top-3.5 text-gray-300" size={18} />
+            <input 
+              type="text" 
+              placeholder="Cari perawatan..." 
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-[#8D6E63] transition-all text-sm font-sans font-bold"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-        {/* INFO CARD */}
-        <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 mb-10">
-          <p className="text-[#5D4037] font-display font-bold text-sm md:text-base mb-6 tracking-tight">
-            Buat Janji Temu di Mochint Beauty Care Cuma Butuh Langkah Sat-Set:
-          </p>
-          
-          <ul className="space-y-4 text-gray-500 text-sm md:text-base leading-relaxed font-sans">
-            <li className="flex gap-3">
-              <span className="font-bold text-[#8D6E63] font-display">1.</span>
-              <span className="font-sans font-medium">Tentukan Jadwal: Pilih tanggal dan jam yang tersedia di sistem real-time kami.</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="font-bold text-[#8D6E63] font-display">2.</span>
-              <span className="font-sans font-medium">Lengkapi Data: Pastikan data diri dan treatment yang dipilih sudah sesuai.</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="font-bold text-[#8D6E63] font-display">3.</span>
-              <span className="font-sans font-medium">Konfirmasi: Selesaikan pesanan dan bed Anda akan otomatis dipesan oleh sistem.</span>
-            </li>
-          </ul>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-[10px] font-black text-[#5D4037] uppercase tracking-[0.2em] font-sans">Kategori</h3>
+            {(selectedCategory !== 'All' || searchTerm.trim() !== '') && (
+              <button 
+                onClick={handleResetFilter}
+                className="text-[10px] text-gray-400 hover:text-[#8D6E63] font-sans font-bold uppercase tracking-widest transition-colors"
+              >
+                Reset Filter
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-4 mb-8">
+            {['All', 'Beauty Treatment', 'Special Treatment', 'Ultimate Treatment', 'Promo Treatment'].map((cat) => (
+              <label key={cat} className="flex items-center gap-4 cursor-pointer group">
+                <div className="relative flex items-center justify-center">
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    className="peer appearance-none w-5 h-5 border-2 border-gray-200 rounded-full checked:border-[#8D6E63] transition-all" 
+                    checked={selectedCategory === cat}
+                    onChange={() => setSelectedCategory(cat)}
+                  />
+                  <div className="absolute w-2.5 h-2.5 rounded-full bg-[#8D6E63] scale-0 peer-checked:scale-100 transition-transform"></div>
+                </div>
+                <span className={`text-sm font-bold transition-colors font-sans ${selectedCategory === cat ? 'text-[#8D6E63]' : 'text-gray-400 group-hover:text-[#8D6E63]'}`}>
+                  {cat} {cat === 'All' && `(${allTreatments.length})`}
+                </span>
+              </label>
+            ))}
+          </div>
+
+          {/* Informasi filter aktif */}
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <p className="text-xs font-sans text-gray-400 mb-2">Filter Aktif:</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedCategory !== 'All' && (
+                <span className="px-3 py-1 bg-[#8D6E63]/10 text-[#8D6E63] text-xs font-sans font-bold rounded-full">
+                  Kategori: {selectedCategory}
+                </span>
+              )}
+              {searchTerm.trim() !== '' && (
+                <span className="px-3 py-1 bg-[#8D6E63]/10 text-[#8D6E63] text-xs font-sans font-bold rounded-full">
+                  Pencarian: "{searchTerm}"
+                </span>
+              )}
+              {selectedCategory === 'All' && searchTerm.trim() === '' && (
+                <span className="px-3 py-1 bg-gray-100 text-gray-400 text-xs font-sans rounded-full">
+                  Semua perawatan ditampilkan
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* ACTION BUTTON: Mengarah langsung ke Step 2 */}
-        <button 
-          onClick={() => navigate('/member/booking/step-2')}
-          className="px-10 py-4 bg-[#8D6E63] text-white font-display font-bold rounded-full shadow-xl shadow-[#8D6E63]/20 hover:bg-[#5D4037] transition-all transform active:scale-95 uppercase text-[10px] tracking-[0.2em]"
-        >
-          Mulai Booking
-        </button>
+        {/* TREATMENT CATALOG (Kanan) */}
+        <div className="w-full lg:w-2/3 text-left">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-display font-bold text-[#2D3436] tracking-tight">
+              Daftar Layanan {selectedCategory !== 'All' && `- ${selectedCategory}`}
+            </h2>
+            <span className="text-sm font-sans font-bold text-[#8D6E63] bg-[#8D6E63]/10 px-3 py-1 rounded-full">
+              {filteredTreatments.length} perawatan ditemukan
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredTreatments.length > 0 ? (
+              filteredTreatments.map((item) => (
+                <div key={item.id} className="bg-white p-6 rounded-[30px] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-display font-bold text-[#2D3436] group-hover:text-[#8D6E63] transition-colors tracking-tight text-lg">
+                        {item.name}
+                      </h4>
+                      <span className="text-[10px] font-sans font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-full">
+                        {item.category}
+                      </span>
+                    </div>
+                    <p className="text-sm font-sans text-gray-600 mb-4">{item.info}</p>
+                  </div>
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-50">
+                    <span className="text-xl font-display font-bold text-[#2D3436]">{item.price}</span>
+                    <button 
+                      onClick={() => handleBookNow(item)}
+                      className="px-6 py-2 bg-[#8D6E63] text-white text-[10px] font-display font-bold rounded-xl hover:bg-[#5D4037] transition-all uppercase tracking-[0.2em] shadow-sm"
+                    >
+                      Book Now
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center bg-white rounded-[30px] border border-dashed border-gray-200">
+                <p className="text-gray-400 italic font-sans mb-4">Layanan tidak ditemukan dengan filter saat ini.</p>
+                <button 
+                  onClick={handleResetFilter}
+                  className="px-6 py-2 bg-gray-100 text-gray-600 text-sm font-sans font-bold rounded-lg hover:bg-gray-200 transition-all"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );
 };
 
-export default BookingStep1;
+export default BookingStep2;
