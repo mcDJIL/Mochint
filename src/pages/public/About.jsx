@@ -43,7 +43,7 @@ const About = () => {
               <h2 className="text-white text-5xl font-bold leading-tight max-w-md">Mochint Beauty Care</h2>
             </div>
           </div>
-          <p className="text-gray-500 leading-relaxed text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
+          <p className="text-gray-500 leading-relaxed text-justify">Selamat datang di Mochint Beauty Care, salon kecantikan yang berlokasi di Pandaan Pasuruan Jawa Timur. Kami hadir sebagai solusi bagi Anda yang ingin merawat kulit dengan teknologi terkini dan bahan premium.</p>
         </section>
 
 
