@@ -18,22 +18,22 @@ const Sidebar = () => {
 
   return (
     <div className="w-64 bg-white shadow-lg">
-      {/* Logo Section - Simple */}
+      {/* Bagian Logo - Sederhana */}
       <div className="p-6 border-b">
         <div className="flex items-center space-x-3">
-          {/* Logo SVG Simple */}
+          {/* Logo SVG Sederhana */}
           <img
             src={`/${logoFile}`}  // ← Logo diambil dari sini
-            alt="Mochint Logo"
+            alt="Logo Mochint"
             className="h-10 w-auto"
           />
 
-          {/* Brand Name */}
+          {/* Nama Merek */}
 
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigasi */}
       <nav className="p-4">
         <ul className="space-y-2">
           {menuItems.map((item) => (

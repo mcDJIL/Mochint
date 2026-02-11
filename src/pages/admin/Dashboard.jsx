@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Dashboard = () => {
-  // API URLs - update sesuai dengan database
   const APPOINTMENTS_API_URL = 'http://localhost:5000/api/appointments';
   const MEMBERS_API_URL = 'http://localhost:5000/api/members';
   const THERAPISTS_API_URL = 'http://localhost:5000/api/therapists';
 
-  const Token = localStorage.getItem('token')
-  //console.log('Dashboard - Token from localStorage:', Token);
+  const Token = localStorage.getItem('token');
 
-  // State
   const [appointments, setAppointments] = useState([]);
   const [members, setMembers] = useState([]);
   const [therapists, setTherapists] = useState([]);
@@ -21,7 +18,6 @@ const Dashboard = () => {
   });
   const [error, setError] = useState(null);
 
-  // Fetch all data
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -45,7 +41,7 @@ const Dashboard = () => {
       setTherapists(therapistsRes.data || []);
       setError(null);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
+      console.error('Error mengambil data dashboard:', err);
       setError('Gagal memuat data dashboard. Silakan coba lagi.');
     } finally {
       setLoading({
@@ -56,71 +52,56 @@ const Dashboard = () => {
     }
   };
 
-  // Calculate appointment statistics from database data
   const calculateAppointmentStats = () => {
     const total = appointments.length;
-
-    // Menggunakan data status dari database appointment
     const pending = appointments.filter(a => a.status?.toLowerCase() === 'pending').length;
     const confirmed = appointments.filter(a => a.status?.toLowerCase() === 'confirmed').length;
     const completed = appointments.filter(a => a.status?.toLowerCase() === 'completed').length;
-
     return { total, pending, confirmed, completed };
   };
 
   const appointmentStats = calculateAppointmentStats();
 
-  // Get today's appointments - HANYA pending dan confirmed
   const getTodaysAppointments = () => {
     const today = new Date();
-    // Format today's date to YYYY-MM-DD (to match database format)
     const todayStr = today.toISOString().split('T')[0];
 
-    // Also get date in alternative formats for comparison
     const day = today.getDate().toString().padStart(2, '0');
     const month = (today.getMonth() + 1).toString().padStart(2, '0');
     const year = today.getFullYear();
 
-    // Multiple possible date formats
     const possibleTodayFormats = [
-      todayStr, // YYYY-MM-DD
-      `${year}-${month}-${day}`, // Same as above
-      `${day}/${month}/${year}`, // DD/MM/YYYY
-      `${month}/${day}/${year}`, // MM/DD/YYYY
-      today.toLocaleDateString('en-US'), // Local format
-      today.toLocaleDateString('id-ID'), // Indonesian format
+      todayStr,
+      `${year}-${month}-${day}`,
+      `${day}/${month}/${year}`,
+      `${month}/${day}/${year}`,
+      today.toLocaleDateString('en-US'),
+      today.toLocaleDateString('id-ID'),
     ];
 
     return appointments.filter(app => {
       if (!app.date) return false;
 
-      // FILTER: Hanya tampilkan appointment dengan status pending atau confirmed
       const status = app.status?.toLowerCase();
       if (status === 'completed') {
-        return false; // Skip completed appointments
+        return false;
       }
 
       try {
-        // Convert appointment date to string and normalize
         let appDate = app.date.toString().trim();
 
-        // If it's an ISO date string (contains T)
         if (appDate.includes('T')) {
           const dateObj = new Date(appDate);
-          appDate = dateObj.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+          appDate = dateObj.toISOString().split('T')[0];
         }
 
-        // Remove time part if exists
         if (appDate.includes(' ')) {
           appDate = appDate.split(' ')[0];
         }
 
-        // Check if it matches any of today's formats
         return possibleTodayFormats.some(format => {
-          // Compare dates in various ways
           if (appDate === format) return true;
 
-          // Try to parse and compare as Date objects
           try {
             const appDateObj = new Date(appDate);
             const formatDateObj = new Date(format);
@@ -129,7 +110,6 @@ const Dashboard = () => {
               return false;
             }
 
-            // Compare year, month, and day
             return appDateObj.getFullYear() === formatDateObj.getFullYear() &&
               appDateObj.getMonth() === formatDateObj.getMonth() &&
               appDateObj.getDate() === formatDateObj.getDate();
@@ -138,7 +118,7 @@ const Dashboard = () => {
           }
         });
       } catch (error) {
-        console.warn('Error parsing appointment date:', app.date, error);
+        console.warn('Error parsing tanggal appointment:', app.date, error);
         return false;
       }
     });
@@ -146,12 +126,10 @@ const Dashboard = () => {
 
   const todayAppointments = getTodaysAppointments();
 
-  // Format appointment time for display
   const formatAppointmentTime = (timeStr) => {
     if (!timeStr) return 'T/A';
 
     try {
-      // If time is in HH:MM format
       if (timeStr.includes(':')) {
         const [hours, minutes] = timeStr.split(':');
         const hour = parseInt(hours);
@@ -165,7 +143,6 @@ const Dashboard = () => {
     }
   };
 
-  // Quick action untuk update status appointment dari dashboard
   const handleQuickUpdateStatus = async (appointmentId, currentStatus) => {
     try {
       let nextStatus;
@@ -178,39 +155,31 @@ const Dashboard = () => {
         return;
       }
 
-      // Update di backend
       await axios.put(`${APPOINTMENTS_API_URL}/${appointmentId}`, {
         status: nextStatus
       });
 
-      // Update local state
       setAppointments(prev => prev.map(app =>
         app.id === appointmentId ? { ...app, status: nextStatus } : app
       ));
 
-      // Refresh data untuk update dashboard
       fetchAllData();
 
     } catch (err) {
-      console.error('Error updating appointment status:', err);
-      alert('Gagal memperbarui status janji temu');
+      console.error('Error memperbarui status appointment:', err);
+      alert('Gagal memperbarui status appointment');
     }
   };
 
-  // Calculate member statistics from database data
   const calculateMemberStats = () => {
     const total = members.length;
-    const active = members.filter(m =>
-      m.status?.toLowerCase() === 'active'
-    ).length;
+    const active = members.filter(m => m.status?.toLowerCase() === 'active').length;
 
-    // Calculate total visits from appointments
     const totalVisits = appointments
       .filter(app => app.status?.toLowerCase() === 'completed')
-      .filter(app => app.customer_id) // Only appointments with customer_id
+      .filter(app => app.customer_id)
       .length;
 
-    // Calculate new members this month
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
@@ -224,7 +193,7 @@ const Dashboard = () => {
         return dateObj.getMonth() === currentMonth &&
           dateObj.getFullYear() === currentYear;
       } catch (error) {
-        console.warn('Error parsing join date:', error);
+        console.warn('Error parsing tanggal bergabung:', error);
         return false;
       }
     }).length;
@@ -234,7 +203,6 @@ const Dashboard = () => {
 
   const memberStats = calculateMemberStats();
 
-  // Get recent members (sorted by join date)
   const getRecentMembers = (count = 4) => {
     return [...members]
       .sort((a, b) => {
@@ -249,7 +217,7 @@ const Dashboard = () => {
 
           if (isNaN(dateAObj.getTime()) || isNaN(dateBObj.getTime())) return 0;
 
-          return dateBObj - dateAObj; // Newest first
+          return dateBObj - dateAObj;
         } catch (error) {
           return 0;
         }
@@ -259,9 +227,7 @@ const Dashboard = () => {
 
   const recentMembers = getRecentMembers(4);
 
-  // Get top members by visits
   const getTopMembersByVisits = (count = 4) => {
-    // Create a map of member visits from appointments
     const memberVisits = {};
 
     appointments
@@ -271,7 +237,7 @@ const Dashboard = () => {
         if (!memberVisits[memberId]) {
           memberVisits[memberId] = {
             memberId,
-            name: app.customer_name || 'Tidak Dikenal',
+            name: app.customer_name || 'Tidak Diketahui',
             visits: 0,
             email: ''
           };
@@ -279,7 +245,6 @@ const Dashboard = () => {
         memberVisits[memberId].visits++;
       });
 
-    // Merge with member data for additional info
     const topMembers = Object.values(memberVisits)
       .sort((a, b) => b.visits - a.visits)
       .slice(0, count)
@@ -300,12 +265,10 @@ const Dashboard = () => {
 
   const topMembers = getTopMembersByVisits(4);
 
-  // Filter completed treatments untuk Recent Treatments
   const recentTreatments = appointments
     .filter(appointment => appointment.status?.toLowerCase() === 'completed')
     .sort((a, b) => {
       try {
-        // Combine date and time for sorting
         const dateTimeA = a.date + ' ' + (a.time || '00:00');
         const dateTimeB = b.date + ' ' + (b.time || '00:00');
 
@@ -314,14 +277,13 @@ const Dashboard = () => {
 
         if (isNaN(dateAObj.getTime()) || isNaN(dateBObj.getTime())) return 0;
 
-        return dateBObj - dateAObj; // Newest first
+        return dateBObj - dateAObj;
       } catch (error) {
         return 0;
       }
     })
     .slice(0, 5);
 
-  // Calculate total revenue from all completed appointments
   const calculateTotalRevenue = () => {
     return appointments
       .filter(appointment => appointment.status?.toLowerCase() === 'completed')
@@ -333,16 +295,13 @@ const Dashboard = () => {
 
   const totalRevenue = calculateTotalRevenue();
 
-  // Format total revenue
   const formatRevenue = (amount) => {
     return `Rp ${amount.toLocaleString('id-ID')}`;
   };
 
   const formattedTotalRevenue = formatRevenue(totalRevenue);
 
-  // Get top therapists based on completed appointments
   const getTopTherapists = (count = 3) => {
-    // Hitung jumlah appointment completed per therapist
     const therapistStats = {};
 
     appointments
@@ -359,7 +318,6 @@ const Dashboard = () => {
         therapistStats[therapistName].completedAppointments++;
       });
 
-    // Hitung total appointments per therapist
     appointments
       .filter(app => app.therapist)
       .forEach(app => {
@@ -369,12 +327,10 @@ const Dashboard = () => {
         }
       });
 
-    // Convert ke array dan sort
     const sortedTherapists = Object.values(therapistStats)
       .sort((a, b) => b.completedAppointments - a.completedAppointments)
       .slice(0, count);
 
-    // Tambahkan data dari therapist database
     return sortedTherapists.map(therapistStat => {
       const therapistFromDb = therapists.find(t =>
         t.name?.toString().trim().toLowerCase() === therapistStat.name.toLowerCase()
@@ -392,7 +348,6 @@ const Dashboard = () => {
 
   const topTherapists = getTopTherapists(3);
 
-  // Loading state
   const isLoading = Object.values(loading).some(l => l === true);
 
   if (isLoading) {
@@ -414,7 +369,7 @@ const Dashboard = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Gagal Memuat Dashboard</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Memuat Dashboard</h3>
         <p className="text-gray-500 mb-4">{error}</p>
         <button
           onClick={fetchAllData}
@@ -428,11 +383,10 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 p-6 bg-white min-h-screen">
-      {/* Page Title */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Beranda</h1>
-          <p className="text-gray-600">Kelola seluruh data di Mochint!</p>
+          <p className="text-gray-600">Selamat datang kembali! Ini yang terjadi hari ini.</p>
         </div>
         <button
           onClick={fetchAllData}
@@ -441,60 +395,53 @@ const Dashboard = () => {
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Muat Ulang
+          Segarkan Data
         </button>
       </div>
 
-      {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Member"
+          title="Total Anggota"
           value={memberStats.total.toString()}
           icon={UsersIcon}
           color="brown"
-        //subtitle={`${memberStats.active} aktif`}
+          subtitle={`${memberStats.active} aktif`}
         />
         <StatCard
           title="Janji Temu Hari Ini"
           value={todayAppointments.length.toString()}
           icon={CalendarIcon}
           color="blue"
-        //subtitle="Pending & Confirmed only"
+          subtitle="Hanya pending & confirmed"
         />
         <StatCard
           title="Total Kunjungan"
           value={memberStats.totalVisits.toString()}
           icon={ChartBarIcon}
           color="green"
-        //subtitle={`${memberStats.newThisMonth} Terbaru Bulan Ini`}
+          subtitle={`${memberStats.newThisMonth} baru bulan ini`}
         />
         <StatCard
           title="Total Pendapatan"
           value={formattedTotalRevenue}
           icon={DollarIcon}
           color="orange"
-        //subtitle="From completed appointmenzs"
+          subtitle="Dari janji temu selesai"
         />
       </div>
 
-      {/* Today's Appointments - HANYA pending dan confirmed */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Janji Temu Hari Ini</h2>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center">
-              </div>
-            </div>
-            <a href="/admin/appointment" className="text-sm text-brown-600 hover:text-brown-700 font-medium">
-              Lihat Semua →
-            </a>
-          </div>
+          <a href="/admin/appointment" className="text-sm text-brown-600 hover:text-brown-700 font-medium">
+            Lihat Semua →
+          </a>
         </div>
 
         <div className="mb-4">
           <div className="text-sm text-gray-600">
             Menampilkan <span className="font-bold">{todayAppointments.length}</span> janji temu untuk hari ini
+            <span className="text-xs text-gray-500 ml-2">(Janji temu yang selesai tidak ditampilkan)</span>
           </div>
         </div>
 
@@ -532,7 +479,8 @@ const Dashboard = () => {
                     <div className="text-sm font-medium text-gray-800">
                       {formatAppointmentTime(appointment.time)}
                     </div>
-                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${appointment.status?.toLowerCase() === 'confirmed'
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                      appointment.status?.toLowerCase() === 'confirmed'
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-yellow-100 text-yellow-800'
                       }`}>
@@ -540,7 +488,6 @@ const Dashboard = () => {
                     </span>
                   </div>
 
-                  {/* Quick Action Buttons */}
                   <div className="flex space-x-1">
                     {appointment.status?.toLowerCase() === 'pending' && (
                       <button
@@ -555,9 +502,9 @@ const Dashboard = () => {
                       <button
                         onClick={() => handleQuickUpdateStatus(appointment.id, 'confirmed')}
                         className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors duration-200 font-medium"
-                        title="Tandai Selesai"
+                        title="Tandai sebagai Selesai"
                       >
-                        Selesai
+                        Selesaikan
                       </button>
                     )}
                   </div>
@@ -572,8 +519,8 @@ const Dashboard = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak Ada Janji Temu Hari Ini</h3>
-            <p className="text-gray-500 mb-4">Tidak ada janji temu pending atau confirmed untuk hari ini.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak Ada Janji Temu Aktif Hari Ini</h3>
+            <p className="text-gray-500 mb-4">Anda tidak memiliki janji temu pending atau confirmed untuk hari ini.</p>
             <div className="flex justify-center space-x-3">
               <a
                 href="/admin/appointment"
@@ -598,12 +545,10 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Grid untuk Recent Members dan Top Members */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Members */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">Member Terbaru</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Anggota Terbaru</h2>
             <a href="/admin/member" className="text-sm text-brown-600 hover:text-brown-700 font-medium">
               Lihat Semua →
             </a>
@@ -626,27 +571,27 @@ const Dashboard = () => {
                   <div className="text-sm font-medium text-gray-500">
                     {member.join_date ? new Date(member.join_date).toLocaleDateString('id-ID') : 'T/A'}
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${member.status?.toLowerCase() === 'active'
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    member.status?.toLowerCase() === 'active'
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
-                    }`}>
-                    {member.status || 'inactive'}
+                  }`}>
+                    {member.status || 'tidak aktif'}
                   </span>
                 </div>
               </div>
             ))}
             {recentMembers.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                Tidak ada member terbaru
+                Tidak ada anggota terbaru ditemukan
               </div>
             )}
           </div>
         </div>
 
-        {/* Top Members by Visits */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">Member Teratas Berdasarkan Kunjungan</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Anggota Teratas berdasarkan Kunjungan</h2>
             <a href="/admin/member" className="text-sm text-brown-600 hover:text-brown-700 font-medium">
               Lihat Semua →
             </a>
@@ -671,14 +616,13 @@ const Dashboard = () => {
             ))}
             {topMembers.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                Tidak ada data perawatan
+                Tidak ada data perawatan tersedia
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Recent Treatments (Completed only) */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Perawatan Selesai Terbaru</h2>
@@ -711,18 +655,17 @@ const Dashboard = () => {
           ))}
           {recentTreatments.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              Belum ada perawatan selesai
+              Belum ada perawatan yang selesai
             </div>
           )}
         </div>
       </div>
 
-      {/* Top Therapists */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Terapis</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Terapis Teratas</h2>
           <a href="/admin/therapist" className="text-sm text-brown-600 hover:text-brown-700 font-medium">
-            Lebih lengkap →
+            Lihat Semua →
           </a>
         </div>
         <div className="space-y-4">
@@ -745,18 +688,19 @@ const Dashboard = () => {
                 <div className="text-lg font-bold text-brown-600 mb-1">
                   {therapist.completedAppointments || 0}
                 </div>
-                <span className={`text-xs px-2 py-1 rounded-full ${therapist.status?.toLowerCase() === 'active'
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  therapist.status?.toLowerCase() === 'active'
                     ? 'bg-green-100 text-green-800'
                     : 'bg-gray-100 text-gray-800'
-                  }`}>
-                  {therapist.status || 'active'}
+                }`}>
+                  {therapist.status || 'aktif'}
                 </span>
               </div>
             </div>
           ))}
           {topTherapists.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              Tidak ada data terapis
+              Tidak ada data terapis tersedia
             </div>
           )}
         </div>
@@ -765,7 +709,6 @@ const Dashboard = () => {
   );
 };
 
-// StatCard Component dengan subtitle
 const StatCard = ({ title, value, icon: Icon, color, subtitle }) => {
   const colorClasses = {
     brown: 'bg-brown-100 text-brown-600',
@@ -792,7 +735,6 @@ const StatCard = ({ title, value, icon: Icon, color, subtitle }) => {
   );
 };
 
-// SVG Icon Components
 const UsersIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-2.645a4 4 0 00-5.197-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />

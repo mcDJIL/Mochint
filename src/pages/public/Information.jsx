@@ -15,7 +15,7 @@ const Information = () => {
       try {
         const response = await axios.get(API_URL);
         // Filter hanya yang Published dan urutkan berdasarkan updated_at/created_at terbaru
-        const publishedData = response.data
+        const publishedData = response.data.data
           .filter(a => a.status === 'Published')
           .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
         

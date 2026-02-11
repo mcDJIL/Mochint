@@ -31,7 +31,7 @@ const Treatment = () => {
       try {
         setLoading(true);
         const response = await axios.get(API_URL);
-        setTreatments(response.data);
+        setTreatments(response.data.data);
       } catch (err) {
         console.error("Error fetching treatments from database:", err);
       } finally {
