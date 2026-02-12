@@ -13,7 +13,6 @@ const Navbar = () => {
   useEffect(() => {
     const activeUser = JSON.parse(localStorage.getItem('active_user'));
     setUser(activeUser);
-    // Tutup semua menu saat pindah halaman
     setIsMenuOpen(false);
     setIsMemberMenuOpen(false);
   }, [location]);
@@ -73,7 +72,7 @@ const Navbar = () => {
             {/* Logo SVG dari public folder */}
             <div className="relative">
               <img
-                src={`/${LOGO_FILENAME}`}  // ← Logo diambil dari sini
+                src={`/${LOGO_FILENAME}`} 
                 alt="Mochint Beauty Care Logo"
                 className="h-11 w-auto transition-transform duration-300 group-hover:scale-105"
                 onError={(e) => {
