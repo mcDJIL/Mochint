@@ -235,36 +235,123 @@ const Navbar = () => {
             </div>
           </div>
 
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-[#3E2723] p-1">
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          {/* Right Side: Member/Admin Button or Hamburger */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                onClick={handleMemberClick}
+                className="flex items-center px-4 py-2 bg-[#3E2723] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md"
+              >
+                <User size={14} className="mr-1.5" />
+                {user ? user.name.split(' ')[0] : admin ? 'Admin' : 'Member'}
+              </button>
+
+              {/* Dropdown Menu Admin - Mobile */}
+              {admin && isAdminMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-50 py-2 z-[60] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-50 bg-[#FDFBF7]">
+                    <p className="font-bold text-[#3E2723] text-xs">Administrator</p>
+                    <p className="text-[9px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">ADMIN PANEL</p>
+                  </div>
+
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        navigate('/admin/dashboard');
+                        setIsAdminMenuOpen(false);
+                      }}
+                      className="flex items-center w-full px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-[#FDFBF7] hover:text-[#8D6E63] rounded-xl transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                      </svg>
+                      Dashboard Admin
+                    </button>
+                  </div>
+
+                  <div className="border-t border-gray-50 mt-1 p-2">
+                    <button
+                      onClick={handleAdminLogout}
+                      className="flex items-center w-full px-3 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                      <LogOut size={16} className="mr-2" /> Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Dropdown Menu Member - Mobile */}
+              {user && isMemberMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-50 py-2 z-[60] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-50 bg-[#FDFBF7]">
+                    <p className="font-bold text-[#3E2723] text-xs truncate">{user.name}</p>
+                    <p className="text-[9px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">{user.id}</p>
+                  </div>
+
+                  <div className="p-2">
+                    {memberMenuItems.map((menuItem) => (
+                      menuItem.isExternal ? (
+                        <button 
+                          key={menuItem.name} 
+                          onClick={() => {
+                            window.open('https://wa.me/6281234567890', '_blank');
+                            setIsMemberMenuOpen(false);
+                          }} 
+                          className="flex items-center w-full px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-green-50 hover:text-green-700 rounded-xl transition-colors"
+                        >
+                          <MessageCircle size={16} className="mr-2 text-green-500" /> {menuItem.name}
+                        </button>
+                      ) : (
+                        <NavLink 
+                          key={menuItem.name} 
+                          to={menuItem.path}
+                          onClick={() => setIsMemberMenuOpen(false)}
+                          className="flex items-center px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-[#FDFBF7] hover:text-[#8D6E63] rounded-xl transition-colors"
+                        >
+                          {menuItem.name}
+                        </NavLink>
+                      )
+                    ))}
+                  </div>
+
+                  <div className="border-t border-gray-50 mt-1 p-2">
+                    <button 
+                      onClick={handleLogout} 
+                      className="flex items-center w-full px-3 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                      <LogOut size={16} className="mr-2" /> Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-[#3E2723] p-1">
+              {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
 
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-6 bg-white space-y-1 border-t pt-4 animate-in fade-in zoom-in-95 duration-200">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                onClick={() => setIsMenuOpen(false)}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-xl font-bold text-sm tracking-wide ${isActive ? "bg-[#FDFBF7] text-[#8D6E63]" : "text-gray-600 hover:bg-gray-50"
-                  }`
-                }
-              >
-                {item.name}
-              </NavLink>
-            ))}
-            {user && (
-              <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-500 font-bold text-sm flex items-center gap-3 hover:bg-red-50 rounded-xl mt-2 transition-colors">
-                <LogOut size={18} /> Logout
-              </button>
-            )}
-            {admin && (
-              <button onClick={handleAdminLogout} className="w-full text-left px-4 py-3 text-red-500 font-bold text-sm flex items-center gap-3 hover:bg-red-50 rounded-xl mt-2 transition-colors">
-                <LogOut size={18} /> Logout Admin
-              </button>
-            )}
+            {navItems.map((item) => {
+              // Skip "Aplikasi Member" di mobile menu karena sudah ada button di kanan atas
+              if (item.isMember) return null;
+              
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `block px-4 py-3 rounded-xl font-bold text-sm tracking-wide ${isActive ? "bg-[#FDFBF7] text-[#8D6E63]" : "text-gray-600 hover:bg-gray-50"
+                    }`
+                  }
+                >
+                  {item.name}
+                </NavLink>
+              );
+            })}
           </div>
         )}
       </div>

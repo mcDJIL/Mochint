@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import api from '../../api/client';
 
-const Login = ({ onSwitch, onForgot, onLoginSuccess }) => {
+const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -68,6 +70,16 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess }) => {
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 font-sans">
       <div className="w-full max-w-md">
         
+        {/* Tombol Kembali */}
+        {onBack && (
+          <button 
+            onClick={onBack}
+            className="flex items-center text-[#8D6E63] hover:text-[#3E2723] font-bold mb-6 transition-colors"
+          >
+            <ArrowLeft size={20} className="mr-2" /> Kembali
+          </button>
+        )}
+        
         {/* Logo Section */}
         <div className="text-center mb-12">
           <div className="w-20 h-20 bg-[#3E2723] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
@@ -107,14 +119,23 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess }) => {
               <label className="block text-xs font-black text-[#A1887F] mb-2 uppercase tracking-[0.2em]">
                 PASSWORD
               </label>
-              <input 
-                type="password" 
-                placeholder="**********" 
-                required 
-                value={password}
-                className="w-full px-5 py-4 rounded-xl bg-[#FDFBF7] outline-none border-2 border-[#F0E6D6] focus:bg-white focus:border-[#8D6E63] focus:ring-0 transition-all text-[#3E2723] placeholder-[#A1887F] font-medium" 
-                onChange={(e) => setPassword(e.target.value)} 
-              />
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"}
+                  placeholder="**********" 
+                  required 
+                  value={password}
+                  className="w-full px-5 py-4 pr-12 rounded-xl bg-[#FDFBF7] outline-none border-2 border-[#F0E6D6] focus:bg-white focus:border-[#8D6E63] focus:ring-0 transition-all text-[#3E2723] placeholder-[#A1887F] font-medium" 
+                  onChange={(e) => setPassword(e.target.value)} 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A1887F] hover:text-[#8D6E63] transition-colors"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               
               <div className="text-right mt-3">
                 <button 

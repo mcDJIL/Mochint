@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../api/client';
-import { UserPlus, ShieldCheck } from 'lucide-react';
+import { UserPlus, ShieldCheck, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
-const Regist = ({ onSwitch, onRegisterSuccess }) => {
+const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -12,6 +12,7 @@ const Regist = ({ onSwitch, onRegisterSuccess }) => {
     address: '',
     password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,15 +60,28 @@ const Regist = ({ onSwitch, onRegisterSuccess }) => {
   };
 
   return (
-    <div className="p-8 md:p-12 bg-white rounded-[45px] shadow-2xl font-sans text-[#3E2723]">
-      {/* Header Logo */}
-      <div className="text-center mb-10">
-        <div className="w-14 h-14 bg-[#3E2723] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-          <span className="text-white font-display font-bold text-3xl">M</span>
-        </div>
-        <h2 className="text-3xl font-display font-bold text-[#3E2723] tracking-tighter">MOCHINT</h2>
-        <p className="text-[10px] text-[#8D6E63] tracking-[0.4em] uppercase font-black mt-1">Beauty Care</p>
-      </div>
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 font-sans">
+      <div className="w-full max-w-2xl">
+        
+        {/* Tombol Kembali */}
+        {onBack && (
+          <button 
+            onClick={onBack}
+            className="flex items-center text-[#8D6E63] hover:text-[#3E2723] font-bold mb-6 transition-colors"
+          >
+            <ArrowLeft size={20} className="mr-2" /> Kembali
+          </button>
+        )}
+
+        <div className="p-8 md:p-12 bg-white rounded-[45px] shadow-2xl font-sans text-[#3E2723]">
+          {/* Header Logo */}
+          <div className="text-center mb-10">
+            <div className="w-14 h-14 bg-[#3E2723] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+              <span className="text-white font-display font-bold text-3xl">M</span>
+            </div>
+            <h2 className="text-3xl font-display font-bold text-[#3E2723] tracking-tighter">MOCHINT</h2>
+            <p className="text-[10px] text-[#8D6E63] tracking-[0.4em] uppercase font-black mt-1">Beauty Care</p>
+          </div>
 
       <div className="flex items-center justify-center gap-2 mb-8">
         <UserPlus size={18} className="text-[#8D6E63]" />
@@ -122,15 +136,24 @@ const Regist = ({ onSwitch, onRegisterSuccess }) => {
           </div>
           <div className="text-left">
             <label className="block text-[10px] font-black text-[#A1887F] mb-2 uppercase tracking-widest font-sans">Password</label>
-            <input 
-              type="password" 
-              placeholder="Min. 6 Karakter" 
-              required 
-              minLength="6"
-              className="w-full px-5 py-3.5 rounded-2xl bg-[#FDFBF7] border-2 border-transparent focus:bg-white focus:border-[#8D6E63] outline-none text-sm transition-all font-medium placeholder:text-gray-300 shadow-sm"
-              value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"}
+                placeholder="Min. 8 Karakter" 
+                required 
+                minLength="8"
+                className="w-full px-5 py-3.5 pr-12 rounded-2xl bg-[#FDFBF7] border-2 border-transparent focus:bg-white focus:border-[#8D6E63] outline-none text-sm transition-all font-medium placeholder:text-gray-300 shadow-sm"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A1887F] hover:text-[#8D6E63] transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -174,6 +197,8 @@ const Regist = ({ onSwitch, onRegisterSuccess }) => {
           Login di sini
         </button>
       </p>
+    </div>
+      </div>
     </div>
   );
 };

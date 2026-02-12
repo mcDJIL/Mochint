@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { X, Mail, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Mail, ArrowLeft } from 'lucide-react';
 import Login from '../auth/Login';
 import Register from '../auth/Regist';
 
@@ -55,6 +55,68 @@ const MemberApp = () => {
     setShowForgotPassword(true);
   };
 
+  // Jika showLogin true, tampilkan halaman login penuh
+  if (showLogin) {
+    return <Login onSwitch={openRegister} onForgot={openForgot} onBack={() => setShowLogin(false)} />;
+  }
+
+  // Jika showRegister true, tampilkan halaman register penuh
+  if (showRegister) {
+    return <Register onSwitch={openLogin} onBack={() => setShowRegister(false)} />;
+  }
+
+  // Jika showForgotPassword true, tampilkan halaman forgot password
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 font-sans">
+        <div className="w-full max-w-md">
+          <button 
+            onClick={() => setShowForgotPassword(false)} 
+            className="flex items-center text-[#8D6E63] hover:text-[#3E2723] font-bold mb-8 transition-colors"
+          >
+            <ArrowLeft size={20} className="mr-2" /> Kembali ke Login
+          </button>
+          
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 bg-[#FDFBF7] text-[#8D6E63] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <Mail size={32} />
+            </div>
+            <h3 className="text-3xl font-display font-bold text-[#3E2723] tracking-tight">Reset Password</h3>
+            <p className="text-sm font-sans font-medium text-[#8D6E63] mt-3 leading-relaxed opacity-80">
+              Masukkan email Anda untuk menerima instruksi pemulihan kata sandi.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-lg p-8">
+            <form className="space-y-6">
+              <div className="text-left">
+                <label className="block text-[10px] font-black text-[#A1887F] mb-2 uppercase tracking-widest font-sans">Registered Email</label>
+                <input 
+                  type="email" 
+                  placeholder="username@gmail.com" 
+                  className="w-full px-6 py-4 rounded-2xl bg-[#FDFBF7] border-2 border-transparent focus:bg-white focus:border-[#8D6E63] outline-none transition-all font-sans font-medium text-sm"
+                  required
+                />
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  alert("Link reset password telah dikirim ke email Anda!");
+                  setShowForgotPassword(false);
+                  setShowLogin(true);
+                }}
+                className="w-full py-5 bg-[#3E2723] text-white font-display font-bold rounded-2xl shadow-xl hover:bg-[#8D6E63] transition-all uppercase tracking-widest text-xs"
+              >
+                Send Instructions
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Landing page default
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-6 text-center font-sans">
       
@@ -84,89 +146,6 @@ const MemberApp = () => {
           Daftar sekarang
         </button>
       </p>
-
-      {/* === 1. POPUP LOGIN === */}
-      {showLogin && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-500">
-          <div className="relative w-full max-w-md bg-white rounded-[45px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95 duration-300">
-            <button 
-              onClick={() => setShowLogin(false)} 
-              className="absolute top-8 right-8 p-2 bg-[#FDFBF7] text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-10"
-            >
-              <X size={20} />
-            </button>
-            <Login onSwitch={openRegister} onForgot={openForgot} />
-          </div>
-        </div>
-      )}
-
-      {/* === 2. POPUP REGISTER === */}
-      {showRegister && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-500">
-          <div className="relative w-full max-w-2xl bg-white rounded-[45px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] overflow-y-auto max-h-[90vh] animate-in zoom-in-95 duration-300">
-            <button 
-              onClick={() => setShowRegister(false)} 
-              className="absolute top-8 right-8 p-2 bg-[#FDFBF7] text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-10"
-            >
-              <X size={20} />
-            </button>
-            <Register onSwitch={openLogin} />
-          </div>
-        </div>
-      )}
-
-      {/* === 3. POPUP LUPA PASSWORD === */}
-      {showForgotPassword && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-500">
-          <div className="relative w-full max-w-md bg-white rounded-[45px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] p-12 animate-in zoom-in-95 duration-300">
-            <button 
-              onClick={() => setShowForgotPassword(false)} 
-              className="absolute top-8 right-8 p-2 bg-[#FDFBF7] text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-            >
-              <X size={20} />
-            </button>
-            
-            <div className="text-center mb-10">
-              <div className="w-16 h-16 bg-[#FDFBF7] text-[#8D6E63] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <Mail size={32} />
-              </div>
-              <h3 className="text-3xl font-display font-bold text-[#3E2723] tracking-tight">Reset Password</h3>
-              <p className="text-sm font-sans font-medium text-[#8D6E63] mt-3 leading-relaxed opacity-80">
-                Masukkan email Anda untuk menerima instruksi pemulihan kata sandi.
-              </p>
-            </div>
-
-            <form className="space-y-6">
-              <div className="text-left">
-                <label className="block text-[10px] font-black text-[#A1887F] mb-2 uppercase tracking-widest font-sans">Registered Email</label>
-                <input 
-                  type="email" 
-                  placeholder="username@gmail.com" 
-                  className="w-full px-6 py-4 rounded-2xl bg-[#FDFBF7] border-2 border-transparent focus:bg-white focus:border-[#8D6E63] outline-none transition-all font-sans font-medium text-sm"
-                  required
-                />
-              </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  alert("Link reset password telah dikirim ke email Anda!");
-                  setShowForgotPassword(false);
-                }}
-                className="w-full py-5 bg-[#3E2723] text-white font-display font-bold rounded-2xl shadow-xl hover:bg-[#8D6E63] transition-all uppercase tracking-widest text-xs"
-              >
-                Send Instructions
-              </button>
-            </form>
-            
-            <button 
-              onClick={openLogin} 
-              className="w-full flex items-center justify-center gap-2 mt-8 text-sm text-[#8D6E63] font-bold hover:text-[#3E2723] transition-colors font-sans"
-            >
-              <ArrowLeft size={16} /> Kembali ke Login
-            </button>
-          </div>
-        </div>
-      )}
 
     </div>
   );
