@@ -258,14 +258,52 @@ const Treatment = () => {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-        setFormData({ ...formData, image: reader.result });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validasi ukuran file (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Ukuran File Terlalu Besar',
+        message: 'File yang Anda pilih melebihi batas maksimal 2MB. Silakan pilih file yang lebih kecil.'
+      });
+      e.target.value = '';
+      return;
     }
+
+    // Validasi tipe file
+    if (!file.type.startsWith('image/')) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'File Bukan Gambar',
+        message: 'File yang Anda pilih bukan gambar. Silakan pilih file gambar (JPG, PNG, GIF).'
+      });
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+      setFormData({ ...formData, image: reader.result });
+      setNotification({
+        show: true,
+        type: 'success',
+        title: 'Gambar Berhasil Ditambahkan',
+        message: 'Gambar berhasil diupload dan siap disimpan.'
+      });
+    };
+    reader.onerror = () => {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Gagal Membaca File',
+        message: 'Terjadi kesalahan saat membaca file. Silakan coba lagi.'
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleImageUrlChange = (e) => {
@@ -552,7 +590,7 @@ const Treatment = () => {
                         onChange={handleImageUpload}
                         className="block w-full text-xs sm:text-sm text-gray-500 file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-brown-50 file:text-brown-700 hover:file:bg-brown-100"
                       />
-                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1">JPG, PNG, GIF maksimal 5MB</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1">JPG, PNG, GIF maksimal 2MB</p>
                     </div>
 
                     {/* OR Divider */}

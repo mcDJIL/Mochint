@@ -152,11 +152,30 @@ const BedManagement = () => {
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('id-ID', {
-      weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  // Format date from YYYY-MM-DD to DD/MM/YYYY for display
+  const formatDateForDisplay = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Format date from DD/MM/YYYY to YYYY-MM-DD for storage
+  const formatDateForStorage = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return dateStr;
   };
 
   if (loading) {
@@ -197,12 +216,51 @@ const BedManagement = () => {
             <Calendar size={18} className="text-brown-600" />
             Pilih Tanggal:
           </div>
-          <input 
-            type="date" 
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brown-500"
-          />
+          <div className="relative">
+            <input 
+              type="text" 
+              value={selectedDate ? formatDateForDisplay(selectedDate) : ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only numbers and forward slashes
+                const filtered = value.replace(/[^0-9/]/g, '');
+                
+                // Auto-add slashes
+                let formatted = filtered;
+                if (filtered.length === 2 && !filtered.includes('/')) {
+                  formatted = filtered + '/';
+                } else if (filtered.length === 5 && filtered.split('/').length === 2) {
+                  formatted = filtered + '/';
+                }
+                
+                // Update display value
+                e.target.value = formatted;
+                
+                // If complete date format (DD/MM/YYYY), convert and save
+                if (formatted.length === 10) {
+                  const storageDate = formatDateForStorage(formatted);
+                  setSelectedDate(storageDate);
+                }
+              }}
+              placeholder="DD/MM/YYYY"
+              maxLength="10"
+              className="border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brown-500 w-40"
+            />
+            {/* Hidden date input for calendar picker */}
+            <input 
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="absolute right-0 top-0 w-10 h-full opacity-0 cursor-pointer"
+              style={{ zIndex: 2 }}
+            />
+            {/* Calendar icon */}
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
           <div className="text-sm text-gray-600">
             {formatDate(selectedDate)}
           </div>
@@ -250,11 +308,11 @@ const BedManagement = () => {
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-purple-600">{stats.totalOccupied}</div>
+              <div className="text-2xl font-bold text-brown-600">{stats.totalOccupied}</div>
               <div className="text-xs text-gray-600">Total Appointment</div>
             </div>
-            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-              <Calendar className="text-purple-600" size={20} />
+            <div className="w-10 h-10 bg-brown-100 rounded-full flex items-center justify-center">
+              <Calendar className="text-brown-600" size={20} />
             </div>
           </div>
         </div>

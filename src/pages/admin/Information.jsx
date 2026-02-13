@@ -196,16 +196,16 @@ const Information = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validasi ukuran file (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file terlalu besar. Maksimal 5MB');
+    // Validasi ukuran file (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showNotification('error', 'Ukuran file terlalu besar. Maksimal 2MB. Silakan pilih file yang lebih kecil.');
       e.target.value = '';
       return;
     }
 
     // Validasi tipe file
     if (!file.type.startsWith('image/')) {
-      alert('File harus berupa gambar');
+      showNotification('error', 'File harus berupa gambar (JPG, PNG, GIF). Silakan pilih file gambar.');
       e.target.value = '';
       return;
     }
@@ -214,9 +214,10 @@ const Information = () => {
     reader.onloadend = () => {
       setPreviewImage(reader.result);
       setFormData(prev => ({ ...prev, image: reader.result }));
+      showNotification('success', 'Gambar berhasil diupload dan siap disimpan.');
     };
     reader.onerror = () => {
-      alert('Gagal membaca file');
+      showNotification('error', 'Gagal membaca file. Terjadi kesalahan saat membaca file, silakan coba lagi.');
     };
     reader.readAsDataURL(file);
   };
@@ -543,31 +544,65 @@ const Information = () => {
         </div>
       )}
 
-      {/* Filter */}
+      {/* Filter & View Toggle */}
       <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4">
-        <div className="flex flex-wrap gap-2">
-          {categories.map(cat => (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex flex-wrap gap-2">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors ${
+                  selectedCategory === cat
+                    ? 'bg-brown-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {cat}
+                {cat !== 'Semua' && (
+                  <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs">
+                    ({articles.filter(a => a.category === cat).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          {/* View Toggle */}
+          <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-brown-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
+                viewMode === 'grid'
+                  ? 'bg-white text-brown-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
+              title="Tampilan Grid"
             >
-              {cat}
-              {cat !== 'Semua' && (
-                <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs">
-                  ({articles.filter(a => a.category === cat).length})
-                </span>
-              )}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span className="text-xs font-medium hidden sm:inline">Grid</span>
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
+                viewMode === 'list'
+                  ? 'bg-white text-brown-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Tampilan List"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <span className="text-xs font-medium hidden sm:inline">List</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Articles Grid */}
+      {/* Articles Grid/List */}
       {filteredArticles.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-8 sm:p-12 text-center">
           <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-400 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -576,7 +611,7 @@ const Information = () => {
           <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Belum Ada Artikel</h3>
           <p className="text-sm sm:text-base text-gray-500">Klik tombol "Tambah Artikel" untuk membuat artikel baru</p>
         </div>
-      ) : (
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredArticles.map(article => (
             <div key={article._id || article.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
@@ -617,6 +652,70 @@ const Information = () => {
                   >
                     Hapus
                   </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3 sm:space-y-4">
+          {filteredArticles.map(article => (
+            <div key={article._id || article.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              <div className="flex flex-col sm:flex-row">
+                {article.image && (
+                  <img 
+                    src={article.image} 
+                    alt={article.title} 
+                    className="w-full sm:w-48 h-48 sm:h-auto object-cover flex-shrink-0" 
+                  />
+                )}
+                <div className="flex-1 p-4 sm:p-6">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(article.category)}`}>
+                      {article.category}
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(article.status)}`}>
+                      {article.status}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-lg sm:text-xl mb-2">{article.title}</h3>
+                  <p className="text-gray-600 text-sm sm:text-base mb-4 line-clamp-2">{article.content}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        {article.author}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {new Date(article.createdAt || Date.now()).toLocaleDateString('id-ID')}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(article)}
+                        className="px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-xs sm:text-sm font-medium transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(article._id || article.id, article.status)}
+                        className="px-3 sm:px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-xs sm:text-sm font-medium transition-colors"
+                      >
+                        {article.status === 'Published' ? 'Unpublish' : 'Publish'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(article._id || article.id)}
+                        className="px-3 sm:px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-xs sm:text-sm font-medium transition-colors"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

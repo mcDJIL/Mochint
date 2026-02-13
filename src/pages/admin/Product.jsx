@@ -273,20 +273,52 @@ const Product = () => {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validasi ukuran file (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Ukuran file terlalu besar. Maksimal 2MB');
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-        setFormData(prev => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    // Validasi ukuran file (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Ukuran File Terlalu Besar',
+        message: 'File yang Anda pilih melebihi batas maksimal 2MB. Silakan pilih file yang lebih kecil.'
+      });
+      e.target.value = '';
+      return;
     }
+
+    // Validasi tipe file
+    if (!file.type.startsWith('image/')) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'File Bukan Gambar',
+        message: 'File yang Anda pilih bukan gambar. Silakan pilih file gambar (JPG, PNG, GIF).'
+      });
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+      setFormData(prev => ({ ...prev, image: reader.result }));
+      setNotification({
+        show: true,
+        type: 'success',
+        title: 'Gambar Berhasil Ditambahkan',
+        message: 'Gambar berhasil diupload dan siap disimpan.'
+      });
+    };
+    reader.onerror = () => {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Gagal Membaca File',
+        message: 'Terjadi kesalahan saat membaca file. Silakan coba lagi.'
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleImageUrlChange = (e) => {
