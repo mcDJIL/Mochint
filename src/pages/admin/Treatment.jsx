@@ -258,14 +258,52 @@ const Treatment = () => {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-        setFormData({ ...formData, image: reader.result });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validasi ukuran file (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Ukuran File Terlalu Besar',
+        message: 'File yang Anda pilih melebihi batas maksimal 2MB. Silakan pilih file yang lebih kecil.'
+      });
+      e.target.value = '';
+      return;
     }
+
+    // Validasi tipe file
+    if (!file.type.startsWith('image/')) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'File Bukan Gambar',
+        message: 'File yang Anda pilih bukan gambar. Silakan pilih file gambar (JPG, PNG, GIF).'
+      });
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+      setFormData({ ...formData, image: reader.result });
+      setNotification({
+        show: true,
+        type: 'success',
+        title: 'Gambar Berhasil Ditambahkan',
+        message: 'Gambar berhasil diupload dan siap disimpan.'
+      });
+    };
+    reader.onerror = () => {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Gagal Membaca File',
+        message: 'Terjadi kesalahan saat membaca file. Silakan coba lagi.'
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleImageUrlChange = (e) => {
@@ -309,18 +347,18 @@ const Treatment = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Page Title */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Perawatan</h1>
-          <p className="text-gray-600">Kelola perawatan dan layanan yang tersedia.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Perawatan</h1>
+          <p className="text-sm sm:text-base text-gray-600">Kelola perawatan dan layanan yang tersedia.</p>
         </div>
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 flex items-center"
+          className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-brown-600 text-white text-sm sm:text-base rounded-lg hover:bg-brown-700 flex items-center justify-center"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Tambah Perawatan
@@ -329,30 +367,30 @@ const Treatment = () => {
 
       {/* Error Alert */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
           <div className="flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {error}
+            <span className="text-sm sm:text-base">{error}</span>
           </div>
         </div>
       )}
 
       {/* Search Bar */}
-      <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 border border-gray-200">
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+            <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
           <input
             type="search"
-            placeholder="Cari perawatan berdasarkan nama, kategori, atau deskripsi..."
+            placeholder="Cari perawatan..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
+            className="block w-full pl-8 sm:pl-10 pr-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
           />
         </div>
         {searchTerm && (
@@ -368,7 +406,7 @@ const Treatment = () => {
       </div>
 
       {/* Treatments Grid View */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {Array.isArray(treatments) && treatments
           .filter(treatment => 
             (treatment.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -472,18 +510,18 @@ const Treatment = () => {
 
       {/* Edit/Add Modal */}
       {(editingTreatment || isAdding) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
               {isAdding ? 'Tambah Perawatan Baru' : 'Edit Perawatan'}
             </h3>
 
             {/* Tabs */}
-            <div className="mb-6 border-b border-gray-200">
-              <nav className="flex space-x-8">
+            <div className="mb-4 sm:mb-6 border-b border-gray-200">
+              <nav className="flex space-x-4 sm:space-x-8">
                 <button
                   onClick={() => setActiveTab('details')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'details'
+                  className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm ${activeTab === 'details'
                     ? 'border-brown-500 text-brown-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
@@ -492,7 +530,7 @@ const Treatment = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('facilities')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'facilities'
+                  className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm ${activeTab === 'facilities'
                     ? 'border-brown-500 text-brown-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
@@ -506,12 +544,12 @@ const Treatment = () => {
             {activeTab === 'details' ? (
               <>
                 {/* Image Upload Section */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gambar Perawatan</label>
+                <div className="mb-4 sm:mb-6">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Gambar Perawatan</label>
 
                   {/* Image Preview */}
-                  <div className="mb-4 flex justify-center">
-                    <div className="w-64 h-48 rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300">
+                  <div className="mb-3 sm:mb-4 flex justify-center">
+                    <div className="w-48 h-36 sm:w-64 sm:h-48 rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300">
                       {previewImage ? (
                         <div className="relative w-full h-full">
                           <img
@@ -531,28 +569,28 @@ const Treatment = () => {
                         </div>
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                          <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-8 h-8 sm:w-12 sm:h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          <span className="text-sm">Unggah gambar perawatan</span>
-                          <span className="text-xs mt-1">Rekomendasi: 800x600 px</span>
+                          <span className="text-xs sm:text-sm">Unggah gambar perawatan</span>
+                          <span className="text-[10px] sm:text-xs mt-1">Rekomendasi: 800x600 px</span>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Upload Options */}
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {/* Upload from Computer */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Unggah Gambar</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Unggah Gambar</label>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handleImageUpload}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brown-50 file:text-brown-700 hover:file:bg-brown-100"
+                        className="block w-full text-xs sm:text-sm text-gray-500 file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-brown-50 file:text-brown-700 hover:file:bg-brown-100"
                       />
-                      <p className="text-xs text-gray-500 mt-1">JPG, PNG, GIF maksimal 5MB</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1">JPG, PNG, GIF maksimal 2MB</p>
                     </div>
 
                     {/* OR Divider */}
@@ -560,47 +598,47 @@ const Treatment = () => {
                       <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-300"></div>
                       </div>
-                      <div className="relative flex justify-center text-sm">
+                      <div className="relative flex justify-center text-xs sm:text-sm">
                         <span className="px-2 bg-white text-gray-500">ATAU</span>
                       </div>
                     </div>
 
                     {/* Image URL Input */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">URL Gambar</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">URL Gambar</label>
                       <input
                         type="text"
                         value={previewImage || ''}
                         onChange={handleImageUrlChange}
                         placeholder="https://example.com/gambar-perawatan.jpg"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Treatment Details Form */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Nama Perawatan</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">Nama Perawatan</label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name || ''}
                       onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
                       placeholder="Masukkan nama perawatan"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Kategori</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700">Kategori</label>
                       <select
                         name="category"
                         value={formData.category || ''}
                         onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                        className="mt-1 block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
                       >
                         <option value="">Pilih Kategori</option>
                         <option value="Perawatan Wajah">Perawatan Wajah</option>
@@ -611,12 +649,12 @@ const Treatment = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Durasi</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700">Durasi</label>
                       <select
                         name="duration"
                         value={formData.duration || ''}
                         onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                        className="mt-1 block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
                       >
                         <option value="">Pilih Durasi</option>
                         <option value="30 menit">30 menit</option>
@@ -631,33 +669,33 @@ const Treatment = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Harga</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">Harga</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500">Rp</span>
+                      <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+                        <span className="text-xs sm:text-sm text-gray-500">Rp</span>
                       </div>
                       <input
                         type="text"
                         name="price"
                         value={formData.price || ''}
                         onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md pl-10 pr-3 py-2"
+                        className="mt-1 block w-full border border-gray-300 rounded-md pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 text-sm sm:text-base"
                         placeholder="0"
                       />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                       Harga akhir akan ditampilkan sebagai: {formatRupiah(formData.price)}
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Deskripsi</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">Deskripsi</label>
                     <textarea
                       name="description"
                       value={formData.description || ''}
                       onChange={handleChange}
-                      rows="4"
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                      rows="3"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
                       placeholder="Jelaskan detail perawatan, manfaat, dll."
                     />
                   </div>
@@ -665,67 +703,67 @@ const Treatment = () => {
               </>
             ) : (
               /* Facilities Tab */
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Add New Facility Form */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-700 mb-3">Tambah Fasilitas</h4>
-                  <div className="flex space-x-2">
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                  <h4 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">Tambah Fasilitas</h4>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={newFacility}
                       onChange={(e) => setNewFacility(e.target.value)}
-                      className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+                      className="flex-1 border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
                       placeholder="cth: Facial Wash, Deep Masker, Head Massage"
                       onKeyPress={(e) => e.key === 'Enter' && handleAddFacility()}
                     />
                     <button
                       onClick={handleAddFacility}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
                       Tambah
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
                     Tekan Enter atau klik Tambah untuk menambahkan fasilitas
                   </p>
                 </div>
 
                 {/* Facilities List */}
                 <div>
-                  <h4 className="font-medium text-gray-700 mb-3">
+                  <h4 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
                     Fasilitas yang Termasuk ({formData.facilities.length})
                   </h4>
 
                   {formData.facilities.length === 0 ? (
-                    <div className="text-center py-8 bg-gray-50 rounded-lg">
-                      <svg className="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg">
+                      <svg className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-2 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <p className="text-gray-500">Belum ada fasilitas ditambahkan.</p>
-                      <p className="text-sm text-gray-400">Tambahkan fasilitas yang akan didapatkan pelanggan selama perawatan ini.</p>
+                      <p className="text-sm sm:text-base text-gray-500">Belum ada fasilitas ditambahkan.</p>
+                      <p className="text-xs sm:text-sm text-gray-400 mt-1">Tambahkan fasilitas yang akan didapatkan pelanggan selama perawatan ini.</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {formData.facilities.map((facility, index) => (
-                        <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center">
-                              <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div key={index} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center flex-1">
+                              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
                               <input
                                 type="text"
                                 value={facility}
                                 onChange={(e) => handleFacilityChange(index, e.target.value)}
-                                className="font-medium text-gray-800 bg-transparent border-none focus:outline-none focus:ring-0 w-full"
+                                className="text-sm sm:text-base font-medium text-gray-800 bg-transparent border-none focus:outline-none focus:ring-0 w-full"
                                 placeholder="Nama fasilitas"
                               />
                             </div>
                             <button
                               onClick={() => handleRemoveFacility(index)}
-                              className="text-red-500 hover:text-red-700"
+                              className="text-red-500 hover:text-red-700 flex-shrink-0"
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             </button>
@@ -739,23 +777,23 @@ const Treatment = () => {
             )}
 
             {/* Modal Actions */}
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-gray-500">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-4 sm:mt-6">
+              <div className="text-xs sm:text-sm text-gray-500">
                 {activeTab === 'facilities' && (
                   <span>{formData.facilities.length} fasilitas termasuk</span>
                 )}
               </div>
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                  className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 order-2 sm:order-1"
                 >
                   Batal
                 </button>
                 {activeTab === 'details' ? (
                   <button
                     onClick={() => setActiveTab('facilities')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 order-1 sm:order-2"
                   >
                     Selanjutnya: Tambah Fasilitas
                   </button>
@@ -763,13 +801,13 @@ const Treatment = () => {
                   <>
                     <button
                       onClick={() => setActiveTab('details')}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                      className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-gray-600 text-white rounded-lg hover:bg-gray-700 order-1 sm:order-2"
                     >
                       Kembali ke Detail
                     </button>
                     <button
                       onClick={handleSave}
-                      className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700"
+                      className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-brown-600 text-white rounded-lg hover:bg-brown-700 order-1 sm:order-3"
                     >
                       {isAdding ? 'Tambah Perawatan' : 'Simpan Perubahan'}
                     </button>

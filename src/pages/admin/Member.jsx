@@ -588,18 +588,18 @@ const Member = () => {
       )}
 
       {/* Page Title and Stats */}
-      <div>
-        <div className="flex justify-between items-center mb-4">
+      <div className="px-4 sm:px-0">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Manajemen Member</h1>
-            <p className="text-gray-600">Kelola member klinik dan riwayat perawatan mereka.</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manajemen Member</h1>
+            <p className="text-sm sm:text-base text-gray-600">Kelola member klinik dan riwayat perawatan mereka.</p>
           </div>
           <button
             onClick={handleAdd}
             disabled={loading}
-            className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 flex items-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-brown-600 text-white text-sm sm:text-base rounded-lg hover:bg-brown-700 flex items-center justify-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             {loading ? 'Memuat...' : 'Tambah Member'}
@@ -607,22 +607,22 @@ const Member = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <div className="text-2xl font-bold text-gray-800">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total Member</div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200">
+            <div className="text-lg sm:text-2xl font-bold text-gray-800">{stats.total}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Total Member</div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <div className="text-sm text-gray-600">Member Aktif</div>
+          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.active}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Member Aktif</div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <div className="text-2xl font-bold text-blue-600">{stats.totalVisits}</div>
-            <div className="text-sm text-gray-600">Total Kunjungan</div>
+          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200">
+            <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.totalVisits}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Total Kunjungan</div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <div className="text-2xl font-bold text-purple-600">{stats.newThisMonth}</div>
-            <div className="text-sm text-gray-600">Baru Bulan Ini</div>
+          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200">
+            <div className="text-lg sm:text-2xl font-bold text-purple-600">{stats.newThisMonth}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Baru Bulan Ini</div>
           </div>
         </div>
       </div>
@@ -797,12 +797,12 @@ const Member = () => {
 
       {/* Add/Edit Modal */}
       {(editingMember || isAdding) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
               {isAdding ? 'Tambah Member Baru' : 'Edit Member'}
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {!isAdding && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -819,7 +819,7 @@ const Member = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Nama Lengkap <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -827,14 +827,14 @@ const Member = () => {
                   name="name"
                   value={formData.name || ''}
                   onChange={handleChange}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Masukkan nama lengkap"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Alamat Email
                 </label>
                 <input
@@ -842,13 +842,13 @@ const Member = () => {
                   name="email"
                   value={formData.email || ''}
                   onChange={handleChange}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="email@contoh.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Nomor Telepon
                 </label>
                 <input
@@ -856,25 +856,25 @@ const Member = () => {
                   name="phone"
                   value={formData.phone || ''}
                   onChange={handleChange}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="081234567890"
                 />
               </div>
 
               {/* Field Alamat Baru */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Alamat
                 </label>
                 <textarea
                   name="address"
                   value={formData.address || ''}
                   onChange={handleChange}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Masukkan alamat lengkap"
                   rows="2"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                   Alamat lengkap (jalan, kota, kode pos)
                 </p>
               </div>

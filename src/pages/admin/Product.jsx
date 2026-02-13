@@ -273,20 +273,52 @@ const Product = () => {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validasi ukuran file (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Ukuran file terlalu besar. Maksimal 2MB');
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-        setFormData(prev => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    // Validasi ukuran file (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Ukuran File Terlalu Besar',
+        message: 'File yang Anda pilih melebihi batas maksimal 2MB. Silakan pilih file yang lebih kecil.'
+      });
+      e.target.value = '';
+      return;
     }
+
+    // Validasi tipe file
+    if (!file.type.startsWith('image/')) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'File Bukan Gambar',
+        message: 'File yang Anda pilih bukan gambar. Silakan pilih file gambar (JPG, PNG, GIF).'
+      });
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+      setFormData(prev => ({ ...prev, image: reader.result }));
+      setNotification({
+        show: true,
+        type: 'success',
+        title: 'Gambar Berhasil Ditambahkan',
+        message: 'Gambar berhasil diupload dan siap disimpan.'
+      });
+    };
+    reader.onerror = () => {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Gagal Membaca File',
+        message: 'Terjadi kesalahan saat membaca file. Silakan coba lagi.'
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleImageUrlChange = (e) => {
@@ -307,14 +339,14 @@ const Product = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Katalog Produk</h1>
-          <p className="text-gray-600">Kelola produk kecantikan dan tautan marketplace.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Katalog Produk</h1>
+          <p className="text-sm sm:text-base text-gray-600">Kelola produk kecantikan dan tautan marketplace.</p>
         </div>
-        <button onClick={handleAdd} className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 flex items-center transition-colors duration-200">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button onClick={handleAdd} className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-brown-600 text-white text-sm sm:text-base rounded-lg hover:bg-brown-700 flex items-center justify-center transition-colors duration-200">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Tambah Produk
@@ -322,19 +354,19 @@ const Product = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 border border-gray-200">
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+            <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
           <input
             type="search"
-            placeholder="Cari produk berdasarkan nama, kategori, atau deskripsi..."
+            placeholder="Cari produk..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
+            className="block w-full pl-8 sm:pl-10 pr-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent transition-colors duration-200"
           />
         </div>
         {searchTerm && (
@@ -350,9 +382,9 @@ const Product = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Katalog Produk</h2>
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Katalog Produk</h2>
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {products
               .filter(product => 
                 (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -414,17 +446,17 @@ const Product = () => {
 
       {/* MODAL TAMBAH/EDIT */}
       {(editingProduct || isAdding) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
               {isAdding ? 'Tambah Produk Baru' : 'Edit Produk'}
             </h3>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Bagian Input Gambar */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Gambar Produk</label>
-                <div className="mb-4">
-                  <div className="w-40 h-40 rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Gambar Produk</label>
+                <div className="mb-3 sm:mb-4">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300">
                     {previewImage ? (
                       <div className="relative w-full h-full">
                         <img src={previewImage} className="w-full h-full object-cover" alt="Preview" />
@@ -457,9 +489,9 @@ const Product = () => {
               </div>
 
               {/* Nama & Kategori */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Nama Produk <span className="text-red-500">*</span>
                   </label>
                   <input 
@@ -467,19 +499,19 @@ const Product = () => {
                     name="name" 
                     value={formData.name || ''} 
                     onChange={handleChange} 
-                    className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                    className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base" 
                     required 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Kategori <span className="text-red-500">*</span>
                   </label>
                   <select 
                     name="category" 
                     value={formData.category || ''} 
                     onChange={handleChange} 
-                    className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                    className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base" 
                     required
                   >
                     {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -488,98 +520,98 @@ const Product = () => {
               </div>
 
               {/* Harga & Berat */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Harga <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500">Rp</span>
+                    <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+                      <span className="text-xs sm:text-sm text-gray-500">Rp</span>
                     </div>
                     <input 
                       type="text" 
                       name="price" 
                       value={formData.price || ''} 
                       onChange={handleChange} 
-                      className="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2" 
+                      className="w-full border border-gray-300 rounded-md pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 text-sm sm:text-base" 
                       required 
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                     Preview: {formData.price ? formatRupiah(formData.price) : 'Rp 0'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Berat (Gram)</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Berat (Gram)</label>
                   <div className="relative">
                     <input 
                       type="text" 
                       name="weight" 
                       value={formData.weight || ''} 
                       onChange={handleChange} 
-                      className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                      className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base" 
                       placeholder="0" 
                     />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 text-sm">gr</span>
+                    <div className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 text-xs sm:text-sm">gr</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
                 <textarea 
                   name="description" 
                   value={formData.description || ''} 
                   onChange={handleChange} 
                   rows="3" 
-                  className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base" 
                 />
               </div>
 
-              <div className="border-t pt-4">
-                <h4 className="text-md font-semibold text-gray-800 mb-3">Tautan Marketplace</h4>
-                <div className="space-y-3">
+              <div className="border-t pt-3 sm:pt-4">
+                <h4 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">Tautan Marketplace</h4>
+                <div className="space-y-2 sm:space-y-3">
                   <input 
                     type="url" 
                     value={formData.marketplaceLinks?.shopee || ''} 
                     onChange={(e) => handleMarketplaceLinkChange('shopee', e.target.value)} 
                     placeholder="URL Shopee" 
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" 
+                    className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm" 
                   />
                   <input 
                     type="url" 
                     value={formData.marketplaceLinks?.tokopedia || ''} 
                     onChange={(e) => handleMarketplaceLinkChange('tokopedia', e.target.value)} 
                     placeholder="URL Tokopedia" 
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" 
+                    className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm" 
                   />
                   <input 
                     type="url" 
                     value={formData.marketplaceLinks?.lazada || ''} 
                     onChange={(e) => handleMarketplaceLinkChange('lazada', e.target.value)} 
                     placeholder="URL Lazada" 
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" 
+                    className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm" 
                   />
                   <input 
                     type="url" 
                     value={formData.marketplaceLinks?.other || ''} 
                     onChange={(e) => handleMarketplaceLinkChange('other', e.target.value)} 
                     placeholder="URL Marketplace Lainnya" 
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" 
+                    className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm" 
                   /> 
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end space-x-2 mt-6">
-              <button onClick={handleCancel} className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4 sm:mt-6">
+              <button onClick={handleCancel} className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
                 Batal
               </button>
-              <button onClick={handleSave} className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700">
+              <button onClick={handleSave} className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-brown-600 text-white rounded-lg hover:bg-brown-700">
                 {isAdding ? 'Tambah Produk' : 'Simpan Perubahan'}
               </button>
             </div>

@@ -196,16 +196,16 @@ const Information = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validasi ukuran file (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file terlalu besar. Maksimal 5MB');
+    // Validasi ukuran file (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showNotification('error', 'Ukuran file terlalu besar. Maksimal 2MB. Silakan pilih file yang lebih kecil.');
       e.target.value = '';
       return;
     }
 
     // Validasi tipe file
     if (!file.type.startsWith('image/')) {
-      alert('File harus berupa gambar');
+      showNotification('error', 'File harus berupa gambar (JPG, PNG, GIF). Silakan pilih file gambar.');
       e.target.value = '';
       return;
     }
@@ -214,9 +214,10 @@ const Information = () => {
     reader.onloadend = () => {
       setPreviewImage(reader.result);
       setFormData(prev => ({ ...prev, image: reader.result }));
+      showNotification('success', 'Gambar berhasil diupload dan siap disimpan.');
     };
     reader.onerror = () => {
-      alert('Gagal membaca file');
+      showNotification('error', 'Gagal membaca file. Terjadi kesalahan saat membaca file, silakan coba lagi.');
     };
     reader.readAsDataURL(file);
   };
@@ -302,18 +303,18 @@ const Information = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Informasi & Artikel</h1>
-          <p className="text-gray-500 mt-1">Kelola artikel dan informasi klinik</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Informasi & Artikel</h1>
+          <p className="text-sm sm:text-base text-gray-500 mt-1">Kelola artikel dan informasi klinik</p>
         </div>
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 flex items-center gap-2"
+          className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-brown-600 text-white text-sm sm:text-base rounded-lg hover:bg-brown-700 flex items-center justify-center gap-2"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Tambah Artikel
@@ -334,11 +335,11 @@ const Information = () => {
 
       {/* Modal Pop-up Tambah/Edit */}
       {(isAdding || editingArticle) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header Modal */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
-              <h2 className="text-xl font-semibold text-gray-900">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between rounded-t-xl">
+              <h2 className="text-base sm:text-xl font-semibold text-gray-900">
                 {isAdding ? 'Tambah Artikel Baru' : 'Edit Artikel'}
               </h2>
               <button
@@ -346,14 +347,14 @@ const Information = () => {
                 disabled={saveLoading}
                 className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {/* Content Modal */}
-            <div className="px-6 py-4 space-y-4">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
               {/* Error Message dalam Modal */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
@@ -373,19 +374,19 @@ const Information = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Judul *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Judul *</label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Masukkan judul artikel"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
                   <select
@@ -415,26 +416,26 @@ const Information = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Penulis *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Penulis *</label>
                 <input
                   type="text"
                   name="author"
                   value={formData.author}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Nama penulis"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Konten *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Konten *</label>
                 <textarea
                   name="content"
                   value={formData.content}
                   onChange={handleChange}
-                  rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  rows={4}
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Tulis konten artikel di sini..."
                   required
                 />
@@ -543,41 +544,75 @@ const Information = () => {
         </div>
       )}
 
-      {/* Filter */}
-      <div className="bg-white rounded-xl shadow-sm p-4">
-        <div className="flex flex-wrap gap-2">
-          {categories.map(cat => (
+      {/* Filter & View Toggle */}
+      <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex flex-wrap gap-2">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors ${
+                  selectedCategory === cat
+                    ? 'bg-brown-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {cat}
+                {cat !== 'Semua' && (
+                  <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs">
+                    ({articles.filter(a => a.category === cat).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          {/* View Toggle */}
+          <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-brown-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
+                viewMode === 'grid'
+                  ? 'bg-white text-brown-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
+              title="Tampilan Grid"
             >
-              {cat}
-              {cat !== 'Semua' && (
-                <span className="ml-2 text-xs">
-                  ({articles.filter(a => a.category === cat).length})
-                </span>
-              )}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span className="text-xs font-medium hidden sm:inline">Grid</span>
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
+                viewMode === 'list'
+                  ? 'bg-white text-brown-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Tampilan List"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <span className="text-xs font-medium hidden sm:inline">List</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Articles Grid */}
+      {/* Articles Grid/List */}
       {filteredArticles.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white rounded-xl shadow-sm p-8 sm:p-12 text-center">
+          <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-400 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Artikel</h3>
-          <p className="text-gray-500">Klik tombol "Tambah Artikel" untuk membuat artikel baru</p>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Belum Ada Artikel</h3>
+          <p className="text-sm sm:text-base text-gray-500">Klik tombol "Tambah Artikel" untuk membuat artikel baru</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredArticles.map(article => (
             <div key={article._id || article.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
               {article.image && (
@@ -617,6 +652,70 @@ const Information = () => {
                   >
                     Hapus
                   </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3 sm:space-y-4">
+          {filteredArticles.map(article => (
+            <div key={article._id || article.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              <div className="flex flex-col sm:flex-row">
+                {article.image && (
+                  <img 
+                    src={article.image} 
+                    alt={article.title} 
+                    className="w-full sm:w-48 h-48 sm:h-auto object-cover flex-shrink-0" 
+                  />
+                )}
+                <div className="flex-1 p-4 sm:p-6">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(article.category)}`}>
+                      {article.category}
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(article.status)}`}>
+                      {article.status}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-lg sm:text-xl mb-2">{article.title}</h3>
+                  <p className="text-gray-600 text-sm sm:text-base mb-4 line-clamp-2">{article.content}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        {article.author}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {new Date(article.createdAt || Date.now()).toLocaleDateString('id-ID')}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(article)}
+                        className="px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-xs sm:text-sm font-medium transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(article._id || article.id, article.status)}
+                        className="px-3 sm:px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-xs sm:text-sm font-medium transition-colors"
+                      >
+                        {article.status === 'Published' ? 'Unpublish' : 'Publish'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(article._id || article.id)}
+                        className="px-3 sm:px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-xs sm:text-sm font-medium transition-colors"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -131,7 +131,7 @@ const Navbar = () => {
                       }`}
                   >
                     <User size={16} className="mr-2" />
-                    {user ? `Hi, ${user.name.split(' ')[0]}` : admin ? 'Administrator' : 'Aplikasi Member'}
+                    {user ? `Hi, ${user.name.split(' ')[0]}` : admin ? 'Administrator' : 'Masuk'}
                     {(user || admin) && <ChevronDown size={14} className="ml-1" />}
                   </button>
 
