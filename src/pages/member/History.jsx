@@ -132,13 +132,6 @@ const History = () => {
           </p>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-3 mb-6">
-          {['Treatment', 'Waktu', 'Harga'].map(f => (
-            <FilterButton key={f} label={f} />
-          ))}
-        </div>
-
         {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
