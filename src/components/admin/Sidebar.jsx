@@ -5,6 +5,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = [
     { name: 'Beranda', path: '/admin' },
     { name: 'Janji Temu', path: '/admin/appointment' },
+    { name: 'Manajemen Bed', path: '/admin/bed-management' },
     { name: 'Member', path: '/admin/member' },
     { name: 'Perawatan', path: '/admin/treatment' },
     { name: 'Produk', path: '/admin/product' },

@@ -302,18 +302,18 @@ const Information = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Informasi & Artikel</h1>
-          <p className="text-gray-500 mt-1">Kelola artikel dan informasi klinik</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Informasi & Artikel</h1>
+          <p className="text-sm sm:text-base text-gray-500 mt-1">Kelola artikel dan informasi klinik</p>
         </div>
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-brown-600 text-white rounded-lg hover:bg-brown-700 flex items-center gap-2"
+          className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-brown-600 text-white text-sm sm:text-base rounded-lg hover:bg-brown-700 flex items-center justify-center gap-2"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Tambah Artikel
@@ -334,11 +334,11 @@ const Information = () => {
 
       {/* Modal Pop-up Tambah/Edit */}
       {(isAdding || editingArticle) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header Modal */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
-              <h2 className="text-xl font-semibold text-gray-900">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between rounded-t-xl">
+              <h2 className="text-base sm:text-xl font-semibold text-gray-900">
                 {isAdding ? 'Tambah Artikel Baru' : 'Edit Artikel'}
               </h2>
               <button
@@ -346,14 +346,14 @@ const Information = () => {
                 disabled={saveLoading}
                 className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {/* Content Modal */}
-            <div className="px-6 py-4 space-y-4">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
               {/* Error Message dalam Modal */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
@@ -373,19 +373,19 @@ const Information = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Judul *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Judul *</label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Masukkan judul artikel"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
                   <select
@@ -415,26 +415,26 @@ const Information = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Penulis *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Penulis *</label>
                 <input
                   type="text"
                   name="author"
                   value={formData.author}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Nama penulis"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Konten *</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Konten *</label>
                 <textarea
                   name="content"
                   value={formData.content}
                   onChange={handleChange}
-                  rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  rows={4}
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
                   placeholder="Tulis konten artikel di sini..."
                   required
                 />
@@ -544,13 +544,13 @@ const Information = () => {
       )}
 
       {/* Filter */}
-      <div className="bg-white rounded-xl shadow-sm p-4">
+      <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4">
         <div className="flex flex-wrap gap-2">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors ${
                 selectedCategory === cat
                   ? 'bg-brown-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -558,7 +558,7 @@ const Information = () => {
             >
               {cat}
               {cat !== 'Semua' && (
-                <span className="ml-2 text-xs">
+                <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs">
                   ({articles.filter(a => a.category === cat).length})
                 </span>
               )}
@@ -569,15 +569,15 @@ const Information = () => {
 
       {/* Articles Grid */}
       {filteredArticles.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white rounded-xl shadow-sm p-8 sm:p-12 text-center">
+          <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-400 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Artikel</h3>
-          <p className="text-gray-500">Klik tombol "Tambah Artikel" untuk membuat artikel baru</p>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Belum Ada Artikel</h3>
+          <p className="text-sm sm:text-base text-gray-500">Klik tombol "Tambah Artikel" untuk membuat artikel baru</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredArticles.map(article => (
             <div key={article._id || article.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
               {article.image && (
