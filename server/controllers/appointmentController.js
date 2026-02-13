@@ -23,7 +23,7 @@ exports.getAllAppointments = async (req, res) => {
 exports.getAppointmentById = async (req, res) => {
   try {
     const { id } = req.params;
-    const appointment = await Appointment.getById(id);
+    const appointment = await Appointment.getByIdWithDetails(id);
     
     if (!appointment) {
       return res.status(404).json({ 

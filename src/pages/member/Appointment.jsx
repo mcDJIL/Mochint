@@ -9,7 +9,6 @@ const Appointment = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'pending', 'confirmed'
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -52,11 +51,11 @@ const Appointment = () => {
         const response = await appointmentAPI.getByMember(memberId);
         console.log('✅ API Response:', response.data);
 
-        // Filter appointment dengan status 'pending' atau 'confirmed'
+        // Filter appointment dengan status 'confirmed' saja
         const upcomingAppointments = response.data.data.filter(
-          item => item.status === 'pending' || item.status === 'confirmed'
+          item => item.status === 'confirmed'
         );
-        console.log('✅ Upcoming appointments:', upcomingAppointments.length);
+        console.log('✅ Confirmed appointments:', upcomingAppointments.length);
 
         // Mapping data dari database ke format yang dibutuhkan
         const formattedAppointments = upcomingAppointments.map(item => ({
@@ -89,7 +88,7 @@ const Appointment = () => {
           console.log("⚠️ Menggunakan data fallback dari mockData.js");
           // Fallback ke mockData jika API tidak tersedia
           const localUpcoming = mockAppointments.filter(
-            item => item.status === 'Pending' || item.status === 'Confirmed'
+            item => item.status === 'Confirmed'
           );
           const formattedMockData = localUpcoming.map(item => ({
             id: item.id,
@@ -98,7 +97,7 @@ const Appointment = () => {
             time: '10:00 WIB',
             price: parseInt(item.price.replace(/[^0-9]/g, '')),
             therapistName: 'Dr. Sarah',
-            status: item.status === 'Pending' ? 'pending' : 'confirmed',
+            status: 'confirmed',
             customerName: 'Siti Maulana'
           }));
           setAppointments(formattedMockData);
@@ -111,20 +110,13 @@ const Appointment = () => {
     fetchAppointments();
   }, []);
 
-  // Filter berdasarkan status
-  const getFilteredAppointments = () => {
-    if (filterStatus === 'all') return appointments;
-    return appointments.filter(item => item.status === filterStatus);
-  };
-
   // Status badge component
   const StatusBadge = ({ status }) => {
     const statusConfig = {
-      pending: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Pending' },
       confirmed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'Confirmed' }
     };
 
-    const config = statusConfig[status] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig.confirmed;
 
     return (
       <span className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider font-sans ${config.bg} ${config.text}`}>
@@ -132,22 +124,6 @@ const Appointment = () => {
       </span>
     );
   };
-
-  // Filter Button Component
-  const FilterButton = ({ label, active, onClick }) => (
-    <button
-      onClick={onClick}
-      className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all font-sans ${
-        active
-          ? 'bg-[#8D6E63] text-white shadow-md shadow-[#8D6E63]/30'
-          : 'bg-white border border-gray-200 text-gray-600 hover:border-[#8D6E63] hover:text-[#8D6E63]'
-      }`}
-    >
-      {label}
-    </button>
-  );
-
-  const filteredAppointments = getFilteredAppointments();
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 font-sans">
@@ -172,7 +148,7 @@ const Appointment = () => {
             Jadwal Appointment
           </h1>
           <p className="text-gray-600 text-sm md:text-base font-medium font-sans">
-            Kelola jadwal perawatan Anda yang akan datang
+            Kelola jadwal perawatan Anda yang sudah dikonfirmasi
           </p>
         </div>
 
@@ -190,25 +166,6 @@ const Appointment = () => {
             )}
           </div>
         )}
-
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          <FilterButton
-            label="Semua"
-            active={filterStatus === 'all'}
-            onClick={() => setFilterStatus('all')}
-          />
-          <FilterButton
-            label="Pending"
-            active={filterStatus === 'pending'}
-            onClick={() => setFilterStatus('pending')}
-          />
-          <FilterButton
-            label="Confirmed"
-            active={filterStatus === 'confirmed'}
-            onClick={() => setFilterStatus('confirmed')}
-          />
-        </div>
 
         {loading ? (
           <div className="flex justify-center py-20">
@@ -243,8 +200,8 @@ const Appointment = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {filteredAppointments.length > 0 ? (
-                      filteredAppointments.map((item, index) => (
+                    {appointments.length > 0 ? (
+                      appointments.map((item, index) => (
                         <tr
                           key={item.id}
                           className={`hover:bg-[#FFF8F5] transition-all duration-200 group cursor-pointer ${
@@ -282,7 +239,7 @@ const Appointment = () => {
                           </td>
                           <td className="px-6 py-5 text-right">
                             <span className="text-base font-display font-bold text-[#3E2723]">
-                              Rp {item.price.toLocaleString('id-ID')}
+                              Rp {item.price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
                           </td>
                           <td className="px-6 py-5 text-center">
@@ -309,7 +266,7 @@ const Appointment = () => {
                               Tidak ada jadwal appointment
                             </p>
                             <button
-                              onClick={() => navigate('/member/appointment/new')}
+                              onClick={() => navigate('/member/booking/step1')}
                               className="mt-2 px-6 py-2.5 bg-[#8D6E63] text-white rounded-lg text-sm font-bold hover:bg-[#6D4C41] transition-colors"
                             >
                               Buat Appointment
@@ -325,8 +282,8 @@ const Appointment = () => {
 
             {/* Mobile Card View */}
             <div className="md:hidden space-y-4">
-              {filteredAppointments.length > 0 ? (
-                filteredAppointments.map((item, index) => (
+              {appointments.length > 0 ? (
+                appointments.map((item, index) => (
                   <div
                     key={item.id}
                     onClick={() => navigate(`/member/appointment/${item.id}`)}
@@ -401,7 +358,7 @@ const Appointment = () => {
                           </span>
                         </div>
                         <span className="text-xl font-display font-bold text-[#8D6E63]">
-                          Rp {item.price.toLocaleString('id-ID')}
+                          Rp {item.price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
                       </div>
 
@@ -422,7 +379,7 @@ const Appointment = () => {
                       Tidak ada jadwal appointment
                     </p>
                     <button
-                      onClick={() => navigate('/member/appointment/new')}
+                      onClick={() => navigate('/member/booking/step1')}
                       className="mt-4 px-6 py-2.5 bg-[#8D6E63] text-white rounded-lg text-sm font-bold hover:bg-[#6D4C41] transition-colors"
                     >
                       Buat Appointment

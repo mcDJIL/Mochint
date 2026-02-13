@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Calendar, MessageCircle, Clock, ChevronRight, LogOut, Award, X, Save, Settings, Star, Send } from 'lucide-react';
+import { User, Calendar, MessageCircle, Clock, ChevronRight, LogOut, Award, X, Save, Settings, Star, Send, Loader2 } from 'lucide-react';
 import { reviewsAPI } from '../../api/client';
+import { memberAPI, appointmentAPI } from '../../services/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -14,10 +15,19 @@ const Dashboard = () => {
   // State untuk Fitur Review
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  
+  // State untuk Appointments
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
+  
+  // Loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUserData = () => {
+    const loadUserData = async () => {
       try {
+        setLoading(true);
+        
         // Coba ambil dari active_user dulu, lalu user sebagai fallback
         const activeUserStr = localStorage.getItem('active_user');
         const userStr = localStorage.getItem('user');
@@ -32,30 +42,110 @@ const Dashboard = () => {
           localStorage.setItem('active_user', userStr);
         }
         
-        if (!userData) {
+        if (!userData || !userData.id) {
           console.warn('No user data found, redirecting to login');
           navigate('/login');
           return;
         }
         
-        setUser(userData);
-        setFormData(userData);
+        console.log('📝 Loading user from localStorage:', userData.id);
         
-        console.log('User loaded:', {
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          role: userData.role
-        });
+        try {
+          // Fetch fresh data from backend
+          const response = await memberAPI.getAll();
+          
+          if (response.data && response.data.success) {
+            // Find current user from backend data
+            const backendUser = response.data.data.find(m => m.id === userData.id);
+            
+            if (backendUser) {
+              // Merge backend data with localStorage (keep role from localStorage)
+              const mergedUser = {
+                ...backendUser,
+                role: userData.role || 'member'
+              };
+              
+              console.log('✅ User data loaded from backend:', mergedUser);
+              
+              // Update localStorage with fresh data
+              localStorage.setItem('active_user', JSON.stringify(mergedUser));
+              
+              setUser(mergedUser);
+              setFormData(mergedUser);
+            } else {
+              // Backend data not found, use localStorage
+              console.warn('⚠️ User not found in backend, using localStorage');
+              setUser(userData);
+              setFormData(userData);
+            }
+          } else {
+            // Backend error, use localStorage
+            console.warn('⚠️ Backend error, using localStorage');
+            setUser(userData);
+            setFormData(userData);
+          }
+        } catch (backendError) {
+          // Backend unreachable, use localStorage
+          console.warn('⚠️ Cannot connect to backend, using localStorage:', backendError.message);
+          setUser(userData);
+          setFormData(userData);
+        }
         
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error('❌ Error loading user data:', error);
         navigate('/login');
+      } finally {
+        setLoading(false);
       }
     };
     
     loadUserData();
   }, [navigate]);
+  
+  // Load upcoming appointments
+  useEffect(() => {
+    const loadAppointments = async () => {
+      if (!user || !user.id) return;
+      
+      try {
+        setLoadingAppointments(true);
+        console.log('📅 Loading appointments for member:', user.id);
+        
+        const response = await appointmentAPI.getByMember(user.id);
+        
+        if (response.data && response.data.success) {
+          const appointments = response.data.data;
+          
+          // Filter only confirmed appointments that are upcoming (today or future)
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const upcoming = appointments.filter(apt => {
+            if (apt.status !== 'confirmed') return false;
+            
+            const aptDate = new Date(apt.date);
+            return aptDate >= today;
+          }).sort((a, b) => {
+            // Sort by date, then by time
+            const dateCompare = new Date(a.date) - new Date(b.date);
+            if (dateCompare !== 0) return dateCompare;
+            return a.time.localeCompare(b.time);
+          }).slice(0, 3); // Take first 3 upcoming appointments
+          
+          console.log('✅ Found', upcoming.length, 'upcoming appointments');
+          setUpcomingAppointments(upcoming);
+        }
+      } catch (error) {
+        console.error('❌ Error loading appointments:', error);
+        // Don't show error to user, just set empty array
+        setUpcomingAppointments([]);
+      } finally {
+        setLoadingAppointments(false);
+      }
+    };
+    
+    loadAppointments();
+  }, [user]);
 
   const handleLogout = () => {
     console.log('Logging out user:', user?.email);
@@ -75,22 +165,38 @@ const Dashboard = () => {
     }, 100);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name?.trim()) {
       alert('Nama wajib diisi');
       return;
     }
     
-    console.log('Saving profile update:', formData);
+    console.log('📝 Saving profile update:', formData);
     
     try {
-      // 1. Update active_user di localStorage
+      // 1. Update to backend database
+      try {
+        const response = await memberAPI.update(formData.id, {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address
+        });
+        
+        if (response.data && response.data.success) {
+          console.log('✅ Profile updated in backend');
+        }
+      } catch (backendError) {
+        console.warn('⚠️ Backend update failed, continuing with localStorage:', backendError.message);
+      }
+      
+      // 2. Update active_user di localStorage
       localStorage.setItem('active_user', JSON.stringify(formData));
       
-      // 2. Update user data juga (untuk konsistensi)
+      // 3. Update user data juga (untuk konsistensi)
       localStorage.setItem('user', JSON.stringify(formData));
       
-      // 3. Update database lokal (mochint_users) jika ada
+      // 4. Update database lokal (mochint_users) jika ada
       const allUsers = JSON.parse(localStorage.getItem('mochint_users')) || [];
       if (allUsers.length > 0) {
         const updatedUsers = allUsers.map(u => 
@@ -99,14 +205,14 @@ const Dashboard = () => {
         localStorage.setItem('mochint_users', JSON.stringify(updatedUsers));
       }
       
-      // 4. Update state
+      // 5. Update state
       setUser(formData);
       setIsEditModalOpen(false);
       
       alert('✅ Profil berhasil diperbarui!');
       
     } catch (error) {
-      console.error('Error saving profile:', error);
+      console.error('❌ Error saving profile:', error);
       alert('❌ Gagal menyimpan profil. Silakan coba lagi.');
     }
   };
@@ -149,12 +255,12 @@ const Dashboard = () => {
   };
 
   // Loading state
-  if (!user) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8D6E63] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Memuat dashboard...</p>
+          <Loader2 className="animate-spin text-[#8D6E63] mx-auto mb-4" size={48} />
+          <p className="mt-4 text-gray-600 font-sans font-medium">Memuat dashboard...</p>
         </div>
       </div>
     );
@@ -237,22 +343,74 @@ const Dashboard = () => {
             {/* BAGIAN PENGINGAT */}
             <div className="bg-white rounded-3xl md:rounded-[30px] p-6 shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-display font-bold text-[#5D4037]">Pengingat</h3>
-                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-black uppercase tracking-widest font-sans">
-                  Dikonfirmasi
-                </span>
+                <h3 className="font-display font-bold text-[#5D4037]">Pengingat Appointment</h3>
+                {upcomingAppointments.length > 0 && (
+                  <span className="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-black uppercase tracking-widest font-sans">
+                    {upcomingAppointments.length} Aktif
+                  </span>
+                )}
               </div>
               
-              <div className="flex items-start gap-4 p-4 bg-[#FDFBF7] rounded-2xl border border-[#F5F1EE]">
-                <div className="bg-[#8D6E63]/10 p-3 rounded-xl text-[#8D6E63] shrink-0">
-                  <Clock size={20} />
+              {loadingAppointments ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="animate-spin text-[#8D6E63]" size={24} />
                 </div>
-                <div className="font-sans">
-                  <p className="text-sm font-bold text-[#5D4037]">Facial Detox</p>
-                  <p className="text-xs text-gray-500">Kamis, 1 Januari 2026</p>
-                  <p className="text-xs text-[#8D6E63] font-black mt-1">10:00 AM</p>
+              ) : upcomingAppointments.length > 0 ? (
+                <div className="space-y-3">
+                  {upcomingAppointments.map((appointment) => {
+                    const aptDate = new Date(appointment.date);
+                    const formattedDate = aptDate.toLocaleDateString('id-ID', { 
+                      weekday: 'long', 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    });
+                    
+                    return (
+                      <div 
+                        key={appointment.id}
+                        className="flex items-start gap-4 p-4 bg-[#FDFBF7] rounded-2xl border border-[#F5F1EE] hover:border-[#8D6E63]/30 transition-all cursor-pointer"
+                        onClick={() => navigate(`/member/appointment/${appointment.id}`)}
+                      >
+                        <div className="bg-[#8D6E63]/10 p-3 rounded-xl text-[#8D6E63] shrink-0">
+                          <Clock size={20} />
+                        </div>
+                        <div className="font-sans flex-1">
+                          <p className="text-sm font-bold text-[#5D4037]">
+                            {appointment.treatment_name || 'Treatment'}
+                          </p>
+                          <p className="text-xs text-gray-500">{formattedDate}</p>
+                          <p className="text-xs text-[#8D6E63] font-black mt-1">
+                            {appointment.time}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={() => navigate('/member/appointment')}
+                    className="w-full mt-2 py-2 text-xs font-bold text-[#8D6E63] hover:bg-[#8D6E63]/5 rounded-xl transition-all"
+                  >
+                    Lihat Semua Appointment →
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Calendar size={28} className="text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 font-sans mb-3">
+                    Belum ada appointment terjadwal
+                  </p>
+                  <button
+                    onClick={() => navigate('/member/booking/step-1')}
+                    className="px-4 py-2 bg-[#8D6E63] text-white text-xs font-bold rounded-xl hover:bg-[#5D4037] transition-all"
+                  >
+                    Buat Appointment Baru
+                  </button>
+                </div>
+              )}
             </div>
 
             <button 

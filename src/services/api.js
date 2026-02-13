@@ -68,4 +68,18 @@ export const appointmentAPI = {
   delete: (id) => api.delete(`/appointments/${id}`),
 };
 
+export const treatmentAPI = {
+  getAll: () => api.get('/treatments'),
+  getById: (id) => api.get(`/treatments/${id}`),
+  getByCategory: (category) => api.get(`/treatments/category/${category}`),
+  getCategories: () => api.get('/treatments/categories'),
+  getPopular: (limit = 5) => api.get(`/treatments/popular?limit=${limit}`),
+  getStats: () => api.get('/treatments/stats'),
+  getWithStats: () => api.get('/treatments/with-stats'),
+  search: (query) => api.get(`/treatments/search?q=${query}`),
+  create: (treatmentData) => api.post('/treatments', treatmentData),
+  update: (id, treatmentData) => api.put(`/treatments/${id}`, treatmentData),
+  delete: (id) => api.delete(`/treatments/${id}`),
+};
+
 export default api;

@@ -296,7 +296,7 @@ const Dashboard = () => {
   const totalRevenue = calculateTotalRevenue();
 
   const formatRevenue = (amount) => {
-    return `Rp ${amount.toLocaleString('id-ID')}`;
+    return `Rp ${amount.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   const formattedTotalRevenue = formatRevenue(totalRevenue);
@@ -636,7 +636,7 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-1">
                   <h3 className="text-sm sm:text-base font-medium text-gray-800 truncate">{treatment.customer_name || 'T/A'}</h3>
                   <span className="text-xs sm:text-sm font-bold text-green-600 whitespace-nowrap">
-                    Rp {(treatment.amount || 0).toLocaleString('id-ID')}
+                    Rp {(treatment.amount || 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </span>
                 </div>
                 <div className="flex flex-col text-xs sm:text-sm text-gray-500 space-y-0.5">

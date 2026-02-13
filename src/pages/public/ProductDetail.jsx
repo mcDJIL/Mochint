@@ -5,7 +5,7 @@ const ProductDetail = ({ isOpen, onClose, product }) => {
   if (!isOpen || !product) return null;
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('id-ID').format(price);
+    return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
   };
 
   // Cek apakah ada setidaknya satu link marketplace

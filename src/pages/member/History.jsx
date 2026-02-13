@@ -212,7 +212,7 @@ const History = () => {
                           </td>
                           <td className="px-6 py-5 text-right">
                             <span className="text-base font-display font-bold text-[#3E2723]">
-                              Rp {item.price.toLocaleString('id-ID')}
+                              Rp {item.price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
                           </td>
                         </tr>
@@ -298,7 +298,7 @@ const History = () => {
                       <div className="flex items-center justify-between pt-2">
                         <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide font-sans">Total Biaya</span>
                         <span className="text-xl font-display font-bold text-[#8D6E63]">
-                          Rp {item.price.toLocaleString('id-ID')}
+                          Rp {item.price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
                       </div>
                     </div>

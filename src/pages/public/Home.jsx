@@ -125,7 +125,7 @@ const Home = () => {
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
                   <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition duration-300">
                     <span className="bg-white/90 text-[#5D4037] px-4 py-2 rounded-full text-xs font-bold font-sans">
-                      Rp {product.price.toLocaleString('id-ID')}
+                      Rp {product.price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 </div>

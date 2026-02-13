@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Calendar as CalendarIcon, Clock, Info, Bed } from 'lucide-react';
+import { Home, Calendar as CalendarIcon, Clock, Info, Bed, Loader2 } from 'lucide-react';
+import { appointmentAPI } from '../../../services/api';
 
 const BookingStep3 = () => {
   const navigate = useNavigate();
   
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(''); // Format YYYY-MM-DD untuk backend
+  const [displayDate, setDisplayDate] = useState(''); // Format DD/MM/YYYY untuk display
   const [selectedTime, setSelectedTime] = useState('');
   const [treatment, setTreatment] = useState(null);
   const [bookings, setBookings] = useState([]); // Data booking dari API/backend
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null); // Error untuk fetching data
+  const [dateError, setDateError] = useState(null); // Error untuk validasi tanggal
 
   useEffect(() => {
     const savedTreatment = sessionStorage.getItem('selectedTreatment');
@@ -17,11 +22,14 @@ const BookingStep3 = () => {
     } else {
       navigate('/member/booking/step-2');
     }
-    
-    // Simulasi fetch data booking dari backend
-    // Dalam implementasi nyata, ini akan mengambil data berdasarkan selectedDate
-    fetchBookingsForDate();
   }, [navigate]);
+
+  // Fetch appointments when date changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchBookingsForDate(selectedDate);
+    }
+  }, [selectedDate]);
 
   const CLINIC_HOURS = {
     open: 8,    // 08:00
@@ -29,18 +37,71 @@ const BookingStep3 = () => {
   };
   
   const BEDS_CAPACITY = 3;
-  const TREATMENT_DURATION = treatment?.duration || 90; // 90 menit default
+  
+  // PENTING: Semua treatment menggunakan durasi DEFAULT 90 menit (1 jam 30 menit)
+  // Ini standar sistem booking klinik dan konsisten dengan BedManagement
+  const TREATMENT_DURATION = 90; // Fixed 90 menit untuk semua treatment
 
-  // Simulasi fetch data booking
-  const fetchBookingsForDate = () => {
-    // Contoh data booking (dalam implementasi nyata dari API)
-    const mockBookings = [
-      { date: selectedDate, startTime: "09:00", duration: 90, bedsUsed: 2 },
-      { date: selectedDate, startTime: "10:30", duration: 60, bedsUsed: 1 },
-      { date: selectedDate, startTime: "14:00", duration: 90, bedsUsed: 3 },
-      { date: selectedDate, startTime: "16:00", duration: 60, bedsUsed: 1 },
-    ];
-    setBookings(mockBookings);
+  // Fetch appointments from backend
+  const fetchBookingsForDate = async (date) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch all appointments
+      const response = await appointmentAPI.getAll();
+      
+      if (response.data && response.data.success) {
+        const allAppointments = response.data.data;
+        
+        console.log('📅 Fetching appointments for date:', date);
+        console.log('📊 Total appointments from API:', allAppointments.length);
+        
+        // Filter appointments for selected date and ONLY confirmed status
+        // Appointment yang sudah completed tidak mengurangi ketersediaan bed masa depan
+        const filteredAppointments = allAppointments.filter(appointment => {
+          // Parse date dari backend - bisa dalam format YYYY-MM-DD atau timestamp
+          const appointmentDate = appointment.date?.split('T')[0] || appointment.date;
+          const dateMatch = appointmentDate === date;
+          const statusMatch = appointment.status === 'confirmed';
+          
+          return dateMatch && statusMatch;
+        });
+        
+        console.log('✅ Filtered appointments (confirmed only):', filteredAppointments.length);
+        console.log('📋 Appointments:', filteredAppointments.map(a => ({ 
+          time: a.time, 
+          treatment: a.treatment_name,
+          status: a.status 
+        })));
+        
+        // Convert to format needed for bed calculation
+        const convertedBookings = filteredAppointments.map(appointment => {
+          // PENTING: Gunakan durasi 90 menit DEFAULT untuk semua treatment
+          // Ini konsisten dengan BedManagement.jsx dan sistem booking
+          const duration = 90; // 1 jam 30 menit untuk semua treatment
+          
+          return {
+            date: date,
+            startTime: appointment.time, // Format: "HH:MM" dari database
+            duration: duration,
+            bedsUsed: 1 // Setiap appointment menggunakan 1 bed
+          };
+        });
+        
+        console.log('🛏️ Converted bookings:', convertedBookings);
+        
+        setBookings(convertedBookings);
+      } else {
+        throw new Error('Failed to fetch appointments');
+      }
+    } catch (err) {
+      console.error('❌ Error fetching appointments:', err);
+      setError('Gagal memuat data jadwal. Menggunakan data offline.');
+      setBookings([]); // Set empty if error
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Generate semua slot waktu dari jam buka hingga tutup
@@ -82,11 +143,16 @@ const BookingStep3 = () => {
       availability[slot] = BEDS_CAPACITY;
     });
     
+    console.log('🛏️ Calculating bed availability...');
+    console.log('📋 Bookings to process:', bookings.length);
+    
     // Kurangi bed untuk setiap booking yang ada
-    bookings.forEach(booking => {
+    bookings.forEach((booking, index) => {
       if (booking.date === selectedDate) {
         const startTime = booking.startTime;
         const endTime = calculateEndTime(startTime, booking.duration);
+        
+        console.log(`📌 Booking ${index + 1}: ${startTime} - ${endTime} (${booking.duration} menit)`);
         
         // Kurangi bed untuk setiap slot yang overlap dengan booking
         allSlots.forEach(slot => {
@@ -96,11 +162,20 @@ const BookingStep3 = () => {
           
           // Jika slot berada dalam rentang waktu booking, kurangi bed
           if (slotTime >= bookingStart && slotTime < bookingEnd) {
+            const before = availability[slot];
             availability[slot] = Math.max(0, availability[slot] - booking.bedsUsed);
+            if (before !== availability[slot]) {
+              console.log(`  ⏰ ${slot}: ${before} → ${availability[slot]} bed`);
+            }
           }
         });
       }
     });
+    
+    // Log summary
+    const fullSlots = Object.values(availability).filter(v => v === 0).length;
+    const availableSlots = Object.values(availability).filter(v => v > 0).length;
+    console.log(`📊 Summary: ${availableSlots} slots available, ${fullSlots} slots full`);
     
     return availability;
   }, [selectedDate, bookings]);
@@ -155,14 +230,101 @@ const BookingStep3 = () => {
     });
   };
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-    setSelectedTime(''); // Reset waktu ketika tanggal berubah
-    // Dalam implementasi nyata, fetch data booking untuk tanggal ini
-    // fetchBookingsForDate(date);
+  // Format date from DD/MM/YYYY to YYYY-MM-DD for storage
+  const formatDateForStorage = (dateStr) => {
+    if (!dateStr || dateStr.length !== 10) return '';
+    const [day, month, year] = dateStr.split('/');
+    if (!day || !month || !year) return '';
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   };
 
-  const handleNextStep = () => {
+  // Format date from YYYY-MM-DD to DD/MM/YYYY for display
+  const formatDateForDisplay = (dateStr) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    if (!year || !month || !day) return '';
+    return `${day}/${month}/${year}`;
+  };
+
+  // Validate DD/MM/YYYY format
+  const isValidDateFormat = (dateStr) => {
+    if (!dateStr || dateStr.length !== 10) return false;
+    const [day, month, year] = dateStr.split('/');
+    if (!day || !month || !year) return false;
+    
+    const dayNum = parseInt(day);
+    const monthNum = parseInt(month);
+    const yearNum = parseInt(year);
+    
+    if (dayNum < 1 || dayNum > 31) return false;
+    if (monthNum < 1 || monthNum > 12) return false;
+    if (yearNum < 2000 || yearNum > 2100) return false;
+    
+    // Validate actual date
+    const date = new Date(yearNum, monthNum - 1, dayNum);
+    return date.getFullYear() === yearNum && 
+           date.getMonth() === monthNum - 1 && 
+           date.getDate() === dayNum;
+  };
+
+  const handleDateChange = (value) => {
+    // Remove non-numeric characters except /
+    let cleaned = value.replace(/[^0-9/]/g, '');
+    
+    // Auto-format: add / after day and month
+    if (cleaned.length === 2 && !cleaned.includes('/')) {
+      cleaned = cleaned + '/';
+    } else if (cleaned.length === 5 && cleaned.split('/').length === 2) {
+      cleaned = cleaned + '/';
+    }
+    
+    // Limit to 10 characters (DD/MM/YYYY)
+    if (cleaned.length > 10) {
+      cleaned = cleaned.substring(0, 10);
+    }
+    
+    setDisplayDate(cleaned);
+    
+    // If complete date format, validate and convert
+    if (cleaned.length === 10 && isValidDateFormat(cleaned)) {
+      const storageDate = formatDateForStorage(cleaned);
+      
+      // Check if date is not in the past
+      const selectedDateObj = new Date(storageDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDateObj >= today) {
+        setSelectedDate(storageDate);
+        setSelectedTime(''); // Reset waktu ketika tanggal berubah
+        setDateError(null);
+      } else {
+        setSelectedDate('');
+        setDateError('Tidak dapat memilih tanggal yang sudah berlalu');
+      }
+    } else if (cleaned.length === 10) {
+      setSelectedDate('');
+      setDateError('Format tanggal tidak valid');
+    } else {
+      setSelectedDate('');
+      if (dateError) {
+        setDateError(null);
+      }
+    }
+  };
+
+  // Handle date picker change (from calendar)
+  const handleDatePickerChange = (e) => {
+    const dateValue = e.target.value; // Format: YYYY-MM-DD
+    if (dateValue) {
+      setSelectedDate(dateValue);
+      setDisplayDate(formatDateForDisplay(dateValue));
+      setSelectedTime('');
+      setDateError(null);
+    }
+  };
+
+  const handleNextStep = async () => {
     if (!selectedDate || !selectedTime) {
       alert("Silakan pilih tanggal dan jam terlebih dahulu!");
       return;
@@ -173,17 +335,69 @@ const BookingStep3 = () => {
       return;
     }
     
-    const finalData = {
-      ...treatment,
-      date: selectedDate,
-      startTime: selectedTime,
-      endTime: calculateEndTime(selectedTime),
-      duration: `${TREATMENT_DURATION} menit`,
-      bedsNeeded: 1 // Default 1 bed per treatment
-    };
-    
-    sessionStorage.setItem('finalBooking', JSON.stringify(finalData));
-    navigate('/member/booking/success');
+    try {
+      setLoading(true);
+      
+      // Get user data from localStorage
+      const activeUser = JSON.parse(localStorage.getItem('active_user'));
+      
+      if (!activeUser || !activeUser.id) {
+        alert("User tidak ditemukan. Silakan login kembali.");
+        navigate('/auth/login');
+        return;
+      }
+      
+      // Convert price from "685.000" format to number
+      const priceString = treatment.price?.toString().replace(/\./g, '') || '0';
+      const priceNumber = parseInt(priceString);
+      
+      // Prepare appointment data
+      const appointmentData = {
+        member_id: activeUser.id,
+        customer_name: activeUser.name,
+        treatment_id: treatment.id,
+        therapist_id: null, // Will be assigned by admin or system
+        date: selectedDate,
+        time: selectedTime,
+        amount: priceNumber,
+        status: 'confirmed'
+      };
+      
+      console.log('📝 Creating appointment:', appointmentData);
+      
+      // Create appointment in database
+      const response = await appointmentAPI.create(appointmentData);
+      
+      if (response.data && response.data.success) {
+        const createdAppointment = response.data.data;
+        
+        console.log('✅ Appointment created:', createdAppointment);
+        
+        // Prepare data for success page
+        const finalData = {
+          ...treatment,
+          appointmentId: createdAppointment.id,
+          appointment_id: createdAppointment.appointment_id,
+          date: selectedDate,
+          startTime: selectedTime,
+          endTime: calculateEndTime(selectedTime),
+          duration: `${TREATMENT_DURATION} menit`,
+          bedsNeeded: 1,
+          status: createdAppointment.status
+        };
+        
+        sessionStorage.setItem('finalBooking', JSON.stringify(finalData));
+        navigate('/member/booking/success');
+      } else {
+        throw new Error('Failed to create appointment');
+      }
+      
+    } catch (err) {
+      console.error('❌ Error creating appointment:', err);
+      alert('Gagal membuat appointment. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Format tanggal untuk display
@@ -233,20 +447,83 @@ const BookingStep3 = () => {
                 <label className="text-[10px] font-black text-[#5D4037] mb-4 uppercase flex items-center gap-2 tracking-widest font-sans ml-1">
                   <CalendarIcon size={14} className="text-[#8D6E63]" /> 1. Pilih Tanggal Perawatan
                 </label>
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-                  <input 
-                    type="date" 
-                    value={selectedDate}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full md:w-1/2 px-8 py-4 bg-[#FDFBF7] border-2 border-transparent rounded-[20px] outline-none focus:border-[#8D6E63] font-bold text-[#3E2723] font-sans appearance-none cursor-pointer"
-                    onChange={(e) => handleDateChange(e.target.value)}
-                  />
-                  {selectedDate && (
-                    <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
-                      <CalendarIcon size={14} />
-                      <span>{formatSelectedDate()}</span>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col lg:flex-row gap-4 items-start">
+                    {/* Input tanggal dengan icon kalender di dalam */}
+                    <div className="w-full lg:w-2/3 relative group">
+                      {/* Text input for manual entry with DD/MM/YYYY format */}
+                      <input 
+                        type="text" 
+                        value={displayDate}
+                        placeholder="Pilih tanggal (DD/MM/YYYY)"
+                        maxLength={10}
+                        className={`w-full pl-4 pr-14 py-4 bg-[#FDFBF7] border-2 rounded-[20px] outline-none font-bold text-[#3E2723] font-sans cursor-text transition-all placeholder:text-gray-400 placeholder:font-normal ${
+                          displayDate.length === 10 && !selectedDate 
+                            ? 'border-red-300 focus:border-red-500' 
+                            : selectedDate 
+                              ? 'border-green-300 focus:border-green-500'
+                              : 'border-transparent focus:border-[#8D6E63]'
+                        } text-sm md:text-base`}
+                        onChange={(e) => handleDateChange(e.target.value)}
+                      />
+                      
+                      {/* Calendar picker overlay - icon di dalam input */}
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                        <div className="relative">
+                          <input 
+                            type="date" 
+                            value={selectedDate}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-11 h-11 z-10"
+                            onChange={handleDatePickerChange}
+                            title="Buka kalender"
+                          />
+                          <div className="w-11 h-11 flex items-center justify-center bg-[#8D6E63] text-white rounded-xl hover:bg-[#5D4037] transition-all cursor-pointer hover:scale-105 active:scale-95 shadow-sm">
+                            <CalendarIcon size={20} strokeWidth={2.5} />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Tooltip on hover - desktop only */}
+                      <div className="hidden md:block absolute -top-10 right-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                        <div className="bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap">
+                          Klik untuk buka kalender
+                        </div>
+                      </div>
                     </div>
-                  )}
+                    
+                    {/* Display selected date */}
+                    {selectedDate && (
+                      <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-[20px] text-sm text-green-700 font-medium w-full lg:w-auto animate-fadeIn">
+                        <CalendarIcon size={16} />
+                        <span className="text-xs md:text-sm">{formatSelectedDate()}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Helper text */}
+                  <div className="text-xs text-gray-500 ml-2 space-y-1">
+                    {!displayDate && (
+                      <>
+                        <p className="flex items-center gap-2">
+                          <span>💡</span>
+                          <span><span className="font-bold">Ketik manual</span> (DD/MM/YYYY) atau <span className="font-bold text-[#8D6E63]">klik icon 📅</span> di kanan untuk buka kalender</span>
+                        </p>
+                      </>
+                    )}
+                    {displayDate && displayDate.length < 10 && (
+                      <p className="text-blue-600">⌨️ Terus ketik untuk melengkapi tanggal...</p>
+                    )}
+                    {displayDate.length === 10 && !selectedDate && dateError && (
+                      <p className="text-red-600">❌ {dateError}</p>
+                    )}
+                    {selectedDate && (
+                      <p className="text-green-600 font-medium flex items-center gap-1">
+                        <span>✅</span>
+                        <span>Tanggal valid - Silakan pilih waktu di bawah</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -261,10 +538,19 @@ const BookingStep3 = () => {
                     <Clock size={48} className="mx-auto text-gray-300 mb-4" />
                     <p className="text-gray-500 font-medium">Silakan pilih tanggal terlebih dahulu</p>
                   </div>
+                ) : loading ? (
+                  <div className="text-center py-12 bg-gray-50 rounded-2xl">
+                    <Loader2 className="animate-spin text-[#8D6E63] mx-auto mb-4" size={48} />
+                    <p className="text-gray-500 font-medium">Memuat jadwal tersedia...</p>
+                  </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {getAvailableTimeSlots().map((time) => {
+                    {error && (
+                      <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                        <p className="text-sm text-amber-700 font-medium">{error}</p>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{getAvailableTimeSlots().map((time) => {
                         const availableBeds = getAvailableBedsForSlot(time);
                         const isSelected = selectedTime === time;
                         
@@ -315,7 +601,12 @@ const BookingStep3 = () => {
                     </div>
                     
                     {/* Informasi jam operasional dan legenda */}
-                    <div className="mt-6 p-4 bg-[#FDFBF7] rounded-2xl border border-gray-100">
+                    <div className="mt-6 p-4 bg-[#FDFBF7] rounded-2xl border border-gray-100">{getAvailableTimeSlots().length === 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-gray-500 font-medium mb-2">Tidak ada slot tersedia untuk tanggal ini</p>
+                          <p className="text-xs text-gray-400">Semua waktu sudah terisi penuh atau di luar jam operasional</p>
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1">
@@ -342,13 +633,7 @@ const BookingStep3 = () => {
                       </div>
                     </div>
                     
-                    {/* Informasi durasi treatment */}
-                    <div className="mt-4 text-sm text-gray-600 ml-1">
-                      <p className="font-medium">
-                        Durasi treatment: <span className="text-[#8D6E63] font-bold">{TREATMENT_DURATION} menit</span> 
-                        (≈ {Math.floor(TREATMENT_DURATION / 60)} jam {TREATMENT_DURATION % 60} menit)
-                      </p>
-                    </div>
+      
                   </>
                 )}
               </div>
@@ -367,18 +652,35 @@ const BookingStep3 = () => {
               {/* Treatment Info */}
               <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-gray-100">
                 <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Treatment</p>
-                <p className="text-sm font-bold leading-snug">{treatment?.name || "-"}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <Clock size={12} className="text-gray-500" />
-                  <p className="text-xs text-gray-600">{treatment?.duration || `${TREATMENT_DURATION} menit`}</p>
+                <p className="text-sm font-bold leading-snug mb-2">{treatment?.name || "-"}</p>
+                <div className="flex items-center gap-2 mt-2 text-xs text-gray-600 bg-white px-3 py-2 rounded-lg">
+                  <Clock size={12} className="text-[#8D6E63]" />
+                  <p>Durasi standar: <span className="font-bold text-[#8D6E63]">90 menit</span></p>
                 </div>
+                <p className="text-[9px] text-gray-500 mt-2 leading-relaxed">
+                  * Semua treatment di klinik kami berdurasi 1 jam 30 menit
+                </p>
               </div>
               
               {/* Date Info */}
               {selectedDate && (
                 <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-gray-100">
                   <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Tanggal Kunjungan</p>
-                  <p className="text-sm font-bold leading-snug">{formatSelectedDate()}</p>
+                  <p className="text-sm font-bold leading-snug mb-2">{formatSelectedDate()}</p>
+                  <div className="space-y-2 mt-3 pt-3 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600">Total Slots:</span>
+                      <span className="font-bold text-[#3E2723]">{generateAllTimeSlots().length} slot</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600">Terjadwal:</span>
+                      <span className="font-bold text-amber-600">{bookings.length} appointment</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600">Tersedia:</span>
+                      <span className="font-bold text-green-600">{getAvailableTimeSlots().length} slot</span>
+                    </div>
+                  </div>
                 </div>
               )}
               
@@ -427,14 +729,23 @@ const BookingStep3 = () => {
             {/* Konfirmasi Button */}
             <button 
               onClick={handleNextStep}
-              disabled={!selectedDate || !selectedTime}
-              className={`w-full mt-10 py-5 rounded-[20px] font-display font-bold uppercase text-[11px] tracking-[0.3em] transition-all shadow-lg ${
-                selectedDate && selectedTime 
+              disabled={!selectedDate || !selectedTime || loading}
+              className={`w-full mt-10 py-5 rounded-[20px] font-display font-bold uppercase text-[11px] tracking-[0.3em] transition-all shadow-lg flex items-center justify-center gap-3 ${
+                selectedDate && selectedTime && !loading
                 ? 'bg-gradient-to-r from-[#8D6E63] to-[#6D4C41] text-white hover:from-white hover:to-white hover:text-[#3E2723] hover:border-2 hover:border-[#8D6E63] active:scale-95' 
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
               }`}
             >
-              {selectedDate && selectedTime ? 'Konfirmasi Booking' : 'Pilih Tanggal & Waktu'}
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  <span>Membuat Appointment...</span>
+                </>
+              ) : selectedDate && selectedTime ? (
+                'Konfirmasi Booking'
+              ) : (
+                'Pilih Tanggal & Waktu'
+              )}
             </button>
             
             {/* Informasi tambahan */}

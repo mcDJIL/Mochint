@@ -60,7 +60,7 @@ const Treatment = () => {
   // Format Rupiah
   const formatRupiah = (angka) => {
     const number = parseInt(angka) || 0;
-    return 'Rp ' + number.toLocaleString('id-ID');
+    return 'Rp ' + number.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   };
 
   // Parse Rupiah

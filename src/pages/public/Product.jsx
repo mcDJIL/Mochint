@@ -133,7 +133,7 @@ const Product = () => {
                     <div className="flex flex-col items-start text-left">
                       <span className="text-[10px] font-black uppercase opacity-60 font-sans tracking-widest leading-none mb-1">Harga</span>
                       <span className="text-sm font-display font-bold">
-                        Rp {new Intl.NumberFormat('id-ID').format(product.price)}
+                        Rp {new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(product.price)}
                       </span>
                     </div>
                     <div className="bg-[#8D6E63] group-hover:bg-white p-2 rounded-xl transition-colors">
