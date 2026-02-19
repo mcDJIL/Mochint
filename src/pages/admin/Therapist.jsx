@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Therapist = () => {
+  const navigate = useNavigate();
   const [therapists, setTherapists] = useState([]);
   const [editingTherapist, setEditingTherapist] = useState(null);
   const [formData, setFormData] = useState({
@@ -297,7 +299,7 @@ const Therapist = () => {
   };
 
   const handleView = (therapist) => {
-    setViewingDetails(therapist);
+    navigate(`/admin/therapist/${therapist.id}`);
   };
 
   // Format mata uang

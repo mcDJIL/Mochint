@@ -18,7 +18,8 @@ import AdminAppointment from '../pages/admin/Appointment';
 import AdminMemberManajemen from '../pages/admin/Member';
 import AdminTreatment from '../pages/admin/Treatment';
 import AdminProduct from '../pages/admin/Product';
-import AdminTherapist from '../pages/admin/Therapist'; 
+import AdminTherapist from '../pages/admin/Therapist';
+import AdminTherapistDetail from '../pages/admin/TherapistDetail';
 import AdminInformation from '../pages/admin/Information';
 import AdminBedManagement from '../pages/admin/BedManagement';
 
@@ -304,7 +305,8 @@ const AppRoutes = () => {
                 <Route path="appointment" element={<AdminAppointment />} />                <Route path="bed-management" element={<AdminBedManagement />} />                <Route path="member" element={<AdminMemberManajemen />} />
                 <Route path="treatment" element={<AdminTreatment />} />
                 <Route path="product" element={<AdminProduct />} />
-                <Route path="therapist" element={<AdminTherapist />} /> 
+                <Route path="therapist" element={<AdminTherapist />} />
+                <Route path="therapist/:id" element={<AdminTherapistDetail />} />
                 <Route path="information" element={<AdminInformation />} />
               </Route>
 

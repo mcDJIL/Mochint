@@ -13,6 +13,7 @@ exports.getAllAppointments = async (req, res) => {
     console.error('Error getting appointments:', error);
     res.status(500).json({ 
       success: false, 
+      
       error: 'Failed to get appointments',
       message: error.message 
     });
