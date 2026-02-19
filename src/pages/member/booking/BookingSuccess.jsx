@@ -50,12 +50,12 @@ const BookingSuccess = () => {
         </button>
         <span>/</span>
         <span className="text-[#8D6E63] bg-[#8D6E63]/10 px-4 py-1.5 rounded-full font-display font-bold lowercase first-letter:uppercase">
-          Appointment
+          Reservasi
         </span>
       </nav>
 
       <div className="max-w-6xl mx-auto text-left">
-        <h1 className="text-4xl md:text-6xl font-display font-bold text-[#8D6E63] mb-2 tracking-tighter leading-tight">Detail Appointment</h1>
+        <h1 className="text-4xl md:text-6xl font-display font-bold text-[#8D6E63] mb-2 tracking-tighter leading-tight">Detail</h1>
         <p className="text-gray-500 mb-12 text-sm md:text-base leading-relaxed font-sans font-medium">
           Tampil memukau setiap hari dengan solusi kecantikan modern yang disesuaikan hanya untuk Anda!
         </p>
@@ -141,10 +141,10 @@ const BookingSuccess = () => {
               <div className="flex items-start gap-3">
                 <CheckCircle className="text-green-600 flex-shrink-0 mt-0.5" size={20} />
                 <div className="text-xs text-gray-700 space-y-2">
-                  <p className="font-bold text-green-800 text-sm">✅ Appointment Berhasil Terdaftar!</p>
+                  <p className="font-bold text-green-800 text-sm">✅ Reservasi Berhasil Terdaftar!</p>
                   <p className="leading-relaxed">
-                    Data appointment Anda sudah tersimpan di sistem database klinik. 
-                    Anda dapat melihat detail appointment ini di halaman History atau Dashboard Member.
+                    Reservasi Anda sudah tersimpan di sistem database klinik. 
+                    Anda dapat melihat detail reservasu ini di halaman History atau Dashboard Member.
                   </p>
                   {booking.appointment_id && (
                     <p className="font-mono text-xs bg-white px-3 py-2 rounded-lg border border-green-200 inline-block">
@@ -194,7 +194,7 @@ const BookingSuccess = () => {
               onClick={() => navigate('/member/appointment')}
               className="w-full py-5 bg-[#8D6E63] text-white font-display font-bold rounded-[20px] shadow-xl shadow-[#8D6E63]/20 hover:bg-[#5D4037] transition-all uppercase text-[10px] tracking-[0.2em]"
             >
-              Lihat Appointment List
+              Lihat Reservasi
             </button>
             
             {/* Informasi Tambahan */}
@@ -203,7 +203,7 @@ const BookingSuccess = () => {
               <ul className="space-y-2 text-xs text-gray-600">
                 <li className="flex items-start gap-2">
                   <span className="text-[#8D6E63] font-bold">1.</span>
-                  <span>Silakan datang <span className="font-bold text-[#5D4037]">15 menit sebelum</span> waktu appointment</span>
+                  <span>Silakan datang <span className="font-bold text-[#5D4037]">15 menit sebelum</span> waktu</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#8D6E63] font-bold">2.</span>

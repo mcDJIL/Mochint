@@ -16,6 +16,14 @@ const Home = () => {
   const API_URL_PRODUCTS = 'http://localhost:5000/api/products';
   const API_URL_REVIEWS = 'http://localhost:5000/api/reviews';
 
+  // ✨ Format harga konsisten dengan Product.jsx
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('id-ID', { 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 0 
+    }).format(price);
+  };
+
   // --- LOAD DATA DARI DATABASE ---
   useEffect(() => {
     const loadData = async () => {
@@ -159,7 +167,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Rekomendasi Produk */}
+      {/* ✨ Rekomendasi Produk - FIXED PRICE FORMAT */}
       <section className="py-24 bg-[#FAFAFA]">
         <div className="container mx-auto px-6 text-center">
           <div className="mb-16">
@@ -172,8 +180,9 @@ const Home = () => {
                 <div className="w-full aspect-[4/5] bg-white mb-6 overflow-hidden rounded-2xl shadow-sm relative" onClick={() => navigate(`/product`)}>
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
                   <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition duration-300">
+                    {/* ✨ FIXED: Gunakan formatPrice yang konsisten */}
                     <span className="bg-white/90 text-[#5D4037] px-4 py-2 rounded-full text-xs font-bold font-sans">
-                      Rp {product.price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      Rp {formatPrice(product.price)}
                     </span>
                   </div>
                 </div>
@@ -235,7 +244,6 @@ const Home = () => {
                 </div>
               ) : testimonials.length > 0 ? (
                 testimonials.map((item, index) => {
-                  // Debug setiap item yang akan di-render
                   console.log(`Rendering review ${index + 1}:`, {
                     name: item.name,
                     location: item.location,
@@ -274,12 +282,7 @@ const Home = () => {
                             {item.name || 'Anonim'}
                           </h4>
                           <p className="font-sans text-[10px] text-[#A1887F] font-black uppercase tracking-widest">
-                            {/* Debug inline */}
-                            {(() => {
-                              const loc = item.location || item.member_address || item.display_location || 'Member Terverifikasi';
-                              console.log('Final location rendered:', loc);
-                              return loc;
-                            })()}
+                            {item.location || item.member_address || item.display_location || 'Member Terverifikasi'}
                           </p>
                         </div>
                       </div>

@@ -87,7 +87,8 @@ const Product = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] pb-20 font-sans text-[#3E2723]">
-      <div className="container mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+      {/* ✨ CONTAINER dengan MARGIN KANAN KIRI */}
+      <div className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 pt-6 sm:pt-8 max-w-[1400px]">
         
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8D6E63] font-sans mb-8 sm:mb-12">

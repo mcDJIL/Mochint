@@ -11,7 +11,6 @@ import {
   Menu,
   X
 } from 'lucide-react';
-// Hapus import authAPI karena tidak digunakan
 
 const Sidebar = () => {
   const location = useLocation();
@@ -67,12 +66,31 @@ const Sidebar = () => {
     };
   }, [isMobileMenuOpen]);
 
-  // Fungsi untuk mengecek rute aktif
+  // ✨ FUNGSI UNTUK MENGECEK RUTE AKTIF - UPDATED
   const isActive = (path) => {
-    if (path === '/member' && location.pathname === '/member') return true;
+    // Exact match untuk beranda
+    if (path === '/member' && location.pathname === '/member') {
+      return true;
+    }
+    
+    // Match untuk booking dan semua sub-routenya
     if (path.startsWith('/member/booking') && location.pathname.startsWith('/member/booking')) {
       return true;
     }
+    
+    // ✨ Match untuk appointment dan detail appointment
+    if (path === '/member/appointment') {
+      return location.pathname === '/member/appointment' || 
+             location.pathname.startsWith('/member/appointment/');
+    }
+    
+    // ✨ Match untuk history dan detail history
+    if (path === '/member/history') {
+      return location.pathname === '/member/history' || 
+             location.pathname.startsWith('/member/history/');
+    }
+    
+    // Default exact match
     return location.pathname === path;
   };
 

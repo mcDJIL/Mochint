@@ -127,7 +127,7 @@ const AppointmentDetail = () => {
             onClick={() => navigate('/member/appointment')} 
             className="block mt-4 mx-auto text-sm text-gray-500 font-sans hover:text-[#8D6E63] transition-colors underline"
           >
-            Kembali ke Daftar Appointment
+            Kembali ke Daftar Janji Temu
           </button>
         </div>
       </div>
@@ -320,7 +320,7 @@ const AppointmentDetail = () => {
             onClick={() => navigate('/member/appointment')} 
             className="hidden md:inline hover:text-[#8D6E63] transition-colors font-sans"
           >
-            Appointment
+            Janji Temu
           </button>
           <span className="hidden md:inline">/</span>
           <span className="text-[#8D6E63] bg-[#8D6E63]/10 px-3 md:px-4 py-1 md:py-1.5 rounded-full font-display lowercase first-letter:uppercase text-[9px] md:text-[10px]">
@@ -335,7 +335,7 @@ const AppointmentDetail = () => {
             {/* Print Header - Only visible when printing */}
             <div className="print-header hidden">
               <div className="print-title">MOCHINT BEAUTY CLINIC</div>
-              <div className="print-subtitle">Detail Appointment</div>
+              <div className="print-subtitle">Detail Janji Temu</div>
             </div>
 
             {/* Header Status - Font Display (Poppins) */}
@@ -346,7 +346,7 @@ const AppointmentDetail = () => {
               data.status === 'Cancelled' ? 'bg-[#D32F2F]' : 'bg-[#757575]'
             }`}>
               <div className="flex-1">
-                <p className="text-[9px] md:text-[10px] font-black uppercase opacity-80 tracking-wider md:tracking-widest mb-1 font-sans">Status Appointment</p>
+                <p className="text-[9px] md:text-[10px] font-black uppercase opacity-80 tracking-wider md:tracking-widest mb-1 font-sans">Status Janji Temu</p>
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold tracking-tight md:tracking-tighter leading-none">{data.status}</h2>
               </div>
               <CheckCircle size={36} className="opacity-25 md:hidden" />

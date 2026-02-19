@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Calendar, MessageCircle, Clock, ChevronRight, LogOut, Award, X, Save, Settings, Star, Send, Loader2 } from 'lucide-react';
-import { reviewsAPI, membersAPI } from '../../api/client';
+import { reviewsAPI } from '../../api/client';
 import { memberAPI, appointmentAPI } from '../../services/api';
 
 const Dashboard = () => {
@@ -52,7 +52,7 @@ const Dashboard = () => {
         
         try {
           // Fetch fresh data from backend
-          const response = await membersAPI.getAll();
+          const response = await memberAPI.getAll();
           
           if (response.data && response.data.success) {
             // Find current user from backend data
@@ -61,11 +61,7 @@ const Dashboard = () => {
             if (backendUser) {
               // Merge backend data with localStorage (keep role from localStorage)
               const mergedUser = {
-                id: backendUser.id,
-                name: backendUser.name,
-                email: backendUser.email,
-                phone: backendUser.phone,
-                address: backendUser.address,
+                ...backendUser,
                 role: userData.role || 'member'
               };
               
@@ -74,54 +70,25 @@ const Dashboard = () => {
               // Update localStorage with fresh data
               localStorage.setItem('active_user', JSON.stringify(mergedUser));
               
-              // PENTING: Set user state dan formData dengan data lengkap
               setUser(mergedUser);
-              setFormData({
-                id: mergedUser.id,
-                name: mergedUser.name || '',
-                email: mergedUser.email || '',
-                phone: mergedUser.phone || '',
-                address: mergedUser.address || '',
-                role: mergedUser.role
-              });
+              setFormData(mergedUser);
             } else {
               // Backend data not found, use localStorage
               console.warn('⚠️ User not found in backend, using localStorage');
               setUser(userData);
-              setFormData({
-                id: userData.id,
-                name: userData.name || '',
-                email: userData.email || '',
-                phone: userData.phone || '',
-                address: userData.address || '',
-                role: userData.role
-              });
+              setFormData(userData);
             }
           } else {
             // Backend error, use localStorage
             console.warn('⚠️ Backend error, using localStorage');
             setUser(userData);
-            setFormData({
-              id: userData.id,
-              name: userData.name || '',
-              email: userData.email || '',
-              phone: userData.phone || '',
-              address: userData.address || '',
-              role: userData.role
-            });
+            setFormData(userData);
           }
         } catch (backendError) {
           // Backend unreachable, use localStorage
           console.warn('⚠️ Cannot connect to backend, using localStorage:', backendError.message);
           setUser(userData);
-          setFormData({
-            id: userData.id,
-            name: userData.name || '',
-            email: userData.email || '',
-            phone: userData.phone || '',
-            address: userData.address || '',
-            role: userData.role
-          });
+          setFormData(userData);
         }
         
       } catch (error) {
@@ -204,71 +171,42 @@ const Dashboard = () => {
       return;
     }
     
-    if (!formData.email?.trim()) {
-      alert('Email wajib diisi');
-      return;
-    }
-    
     console.log('📝 Saving profile update:', formData);
     
     try {
-      // Prepare update data
-      const updateData = {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone?.trim() || '',
-        address: formData.address?.trim() || ''
-      };
-      
-      console.log('Update payload:', updateData);
-      
       // 1. Update to backend database
       try {
-        const response = await memberAPI.update(formData.id, updateData);
+        const response = await memberAPI.update(formData.id, {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address
+        });
         
         if (response.data && response.data.success) {
-          console.log('✅ Profile updated in backend:', response.data);
+          console.log('✅ Profile updated in backend');
         }
       } catch (backendError) {
-        console.warn('⚠️ Backend update failed:', backendError.message);
-        // Lanjutkan dengan localStorage update
+        console.warn('⚠️ Backend update failed, continuing with localStorage:', backendError.message);
       }
       
-      // 2. Prepare updated user object
-      const updatedUser = {
-        id: formData.id,
-        name: updateData.name,
-        email: updateData.email,
-        phone: updateData.phone,
-        address: updateData.address,
-        role: formData.role || user.role || 'member'
-      };
+      // 2. Update active_user di localStorage
+      localStorage.setItem('active_user', JSON.stringify(formData));
       
-      console.log('Updated user object:', updatedUser);
+      // 3. Update user data juga (untuk konsistensi)
+      localStorage.setItem('user', JSON.stringify(formData));
       
-      // 3. Update active_user di localStorage
-      localStorage.setItem('active_user', JSON.stringify(updatedUser));
-      
-      // 4. Update user data juga (untuk konsistensi)
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      // 5. Update database lokal (mochint_users) jika ada
-      try {
-        const allUsers = JSON.parse(localStorage.getItem('mochint_users')) || [];
-        if (allUsers.length > 0) {
-          const updatedUsers = allUsers.map(u => 
-            u.id === updatedUser.id ? updatedUser : u
-          );
-          localStorage.setItem('mochint_users', JSON.stringify(updatedUsers));
-          console.log('✅ Updated mochint_users localStorage');
-        }
-      } catch (e) {
-        console.warn('mochint_users update skipped');
+      // 4. Update database lokal (mochint_users) jika ada
+      const allUsers = JSON.parse(localStorage.getItem('mochint_users')) || [];
+      if (allUsers.length > 0) {
+        const updatedUsers = allUsers.map(u => 
+          u.id === formData.id ? formData : u
+        );
+        localStorage.setItem('mochint_users', JSON.stringify(updatedUsers));
       }
       
-      // 6. Update state
-      setUser(updatedUser);
-      setFormData(updatedUser);
+      // 5. Update state
+      setUser(formData);
       setIsEditModalOpen(false);
       
       alert('✅ Profil berhasil diperbarui!');
@@ -290,43 +228,50 @@ const Dashboard = () => {
     setIsSubmittingReview(true);
     
     try {
+      // Ambil data user terbaru dari localStorage
       const currentUser = JSON.parse(localStorage.getItem('active_user')) || user;
       
-      console.log('Submitting review for user:', currentUser.name);
+      console.log('Submitting review with user:', currentUser.name);
       
-      // HANYA kirim userId, rating, comment
-      // Name dan location akan diambil dari table members via JOIN
+      // Pastikan data yang dikirim sesuai dengan struktur yang diharapkan backend
       const reviewPayload = {
-        userId: currentUser.id,  // HANYA userId
+        name: currentUser.name || 'Member Mochint',
+        location: currentUser.address || "Pelanggan Setia Mochint",
         rating: reviewData.rating,
-        comment: reviewData.comment.trim()
+        comment: reviewData.comment.trim(),
+        userId: currentUser.id,
+        email: currentUser.email
       };
       
       console.log('Review payload:', reviewPayload);
       
+      // Gunakan reviewsAPI.create() - INI PERBAIKAN UTAMA
       const response = await reviewsAPI.create(reviewPayload);
       
-      console.log('✅ Review submitted successfully:', response);
+      console.log('Review submitted successfully:', response.data);
       
       alert("✅ Terima kasih atas ulasan Anda! Review Anda akan segera muncul di halaman utama.");
       
       // Reset form
       setReviewData({ rating: 5, comment: '' });
       
-      // Refresh page setelah 1.5 detik
+      // Optional: Refresh page setelah 1 detik untuk melihat review baru
       setTimeout(() => {
         window.location.reload();
       }, 1500);
       
     } catch (error) {
-      console.error('❌ Error submitting review:', error);
+      console.error('Error submitting review:', error);
       
+      // Tampilkan error yang lebih detail
       if (error.response) {
-        console.error('Response error:', error.response);
-        alert(`❌ Gagal mengirim ulasan: ${error.response.message || 'Server error'}`);
-      } else if (error.message) {
-        alert(`❌ Gagal mengirim ulasan: ${error.message}`);
+        console.error('Response error:', error.response.data);
+        alert(`❌ Gagal mengirim ulasan: ${error.response.data.message || 'Server error'}`);
+      } else if (error.request) {
+        console.error('Request error:', error.request);
+        alert("❌ Tidak dapat terhubung ke server. Periksa koneksi internet Anda.");
       } else {
+        console.error('Error:', error.message);
         alert("❌ Gagal mengirim ulasan. Silakan coba lagi.");
       }
     } finally {

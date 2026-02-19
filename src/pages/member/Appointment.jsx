@@ -137,7 +137,7 @@ const Appointment = () => {
         </button>
         <span>/</span>
         <span className="text-[#8D6E63] bg-[#8D6E63]/10 px-4 py-1.5 rounded-full font-bold">
-          Appointment
+          Janji Temu
         </span>
       </nav>
 
@@ -145,7 +145,7 @@ const Appointment = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl font-display font-extrabold text-[#8D6E63] mb-3 tracking-tight leading-none">
-            Jadwal Appointment
+            Jadwal Janji Temu Anda
           </h1>
           <p className="text-gray-600 text-sm md:text-base font-medium font-sans">
             Kelola jadwal perawatan Anda yang sudah dikonfirmasi
