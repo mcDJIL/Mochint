@@ -7,18 +7,47 @@ const Navbar = () => {
   const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [admin, setAdmin] = useState(null);
+  const [userType, setUserType] = useState(null); // 'member', 'admin', atau null
 
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const activeUser = JSON.parse(localStorage.getItem('active_user'));
-    const adminToken = localStorage.getItem('token');
-    const adminUser = JSON.parse(localStorage.getItem('user'));
+    // Debug: Lihat apa yang ada di localStorage
+    console.log('=== Navbar Debug ===');
+    console.log('localStorage active_user:', localStorage.getItem('active_user'));
     
-    setUser(activeUser);
-    setAdmin(adminToken && adminUser ? adminUser : null);
+    // Parsing data user
+    let userData = null;
+    try {
+      userData = JSON.parse(localStorage.getItem('active_user'));
+      console.log('Parsed userData:', userData);
+    } catch (e) {
+      console.error('Error parsing active_user:', e);
+    }
+    
+    // Tentukan tipe user berdasarkan role
+    if (userData) {
+      setUser(userData);
+      
+      // Log detail untuk debugging
+      console.log('User role:', userData.role);
+      
+      // Cek role dengan berbagai kemungkinan penulisan
+      const role = userData.role ? userData.role.toLowerCase() : '';
+      if (role === 'admin' || role === 'administrator') {
+        console.log('✅ User TERDETEKSI sebagai ADMIN');
+        setUserType('admin');
+      } else {
+        console.log('✅ User TERDETEKSI sebagai MEMBER');
+        setUserType('member');
+      }
+    } else {
+      console.log('❌ User TIDAK LOGIN');
+      setUser(null);
+      setUserType(null);
+    }
+    
     setIsMenuOpen(false);
     setIsMemberMenuOpen(false);
     setIsAdminMenuOpen(false);
@@ -26,15 +55,13 @@ const Navbar = () => {
 
   const LOGO_FILENAME = "logomochint.svg"; 
 
-  const brandBg = "bg-[#8D6E63]";
-
   const navItems = [
     { name: 'Beranda', path: '/' },
     { name: 'Perawatan', path: '/treatment' },
     { name: 'Skincare', path: '/product' },
     { name: 'Reseller', path: '/promo' },
     { name: 'Blog', path: '/information' },
-    { name: 'Aplikasi Member', path: user ? '/member' : '/member-app', isMember: true },
+    { name: 'Aplikasi Member', path: userType === 'member' ? '/member' : '/member-app', isMember: true },
   ];
 
   const memberMenuItems = [
@@ -46,35 +73,75 @@ const Navbar = () => {
 
   const handleMemberClick = (e) => {
     e.preventDefault();
-    if (!user && !admin) {
+    
+    console.log('Button clicked, userType:', userType);
+    
+    if (!userType) {
+      console.log('Navigasi ke /member-app (belum login)');
       navigate('/member-app');
-    } else if (user) {
+    } else if (userType === 'member') {
+      console.log('Toggle menu MEMBER');
       setIsMemberMenuOpen(!isMemberMenuOpen);
       setIsAdminMenuOpen(false);
-    } else if (admin) {
+    } else if (userType === 'admin') {
+      console.log('Toggle menu ADMIN');
       setIsAdminMenuOpen(!isAdminMenuOpen);
       setIsMemberMenuOpen(false);
     }
   };
 
   const handleLogout = () => {
+    console.log('Logout');
     localStorage.removeItem('active_user');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    setAdmin(null);
+    setUserType(null);
     setIsMemberMenuOpen(false);
+    setIsAdminMenuOpen(false);
     setIsMenuOpen(false);
     navigate('/');
   };
 
-  const handleAdminLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setAdmin(null);
-    setIsAdminMenuOpen(false);
-    setIsMenuOpen(false);
-    navigate('/');
+  // Fungsi untuk mendapatkan nama depan user
+  const getUserFirstName = () => {
+    if (!user) return '';
+    
+    // Coba ambil dari full_name dulu
+    if (user.full_name) {
+      return user.full_name.split(' ')[0];
+    }
+    
+    // Kalau tidak ada, ambil dari username
+    if (user.username) {
+      return user.username.split(' ')[0];
+    }
+    
+    // Kalau tidak ada keduanya, return 'Member'
+    return 'Member';
+  };
+
+  const getButtonText = () => {
+    console.log('getButtonText - userType:', userType, 'user:', user, 'role:', user?.role);
+    
+    if (userType === 'admin' && user) {
+      return 'Administrator';
+    } else if (userType === 'member' && user) {
+      const firstName = getUserFirstName();
+      return `Hi, ${firstName}`;
+    } else {
+      return 'Masuk';
+    }
+  };
+
+  const getMobileButtonText = () => {
+    if (userType === 'admin' && user) {
+      return 'Admin';
+    } else if (userType === 'member' && user) {
+      return getUserFirstName();
+    } else {
+      return 'Member';
+    }
   };
 
   return (
@@ -88,14 +155,13 @@ const Navbar = () => {
       )}
 
       <div className="container mx-auto px-6 py-4 relative z-50">
+        {/* DESKTOP MENU */}
         <div className="hidden md:flex items-center justify-between">
-
-          {/* LOGO - Menggunakan Logo SVG */}
+          {/* LOGO */}
           <div
             className="flex items-center space-x-3 cursor-pointer group"
             onClick={() => navigate('/')}
           >
-            {/* Logo SVG dari public folder */}
             <div className="relative">
               <img
                 src={`/${LOGO_FILENAME}`} 
@@ -103,21 +169,18 @@ const Navbar = () => {
                 className="h-11 w-auto transition-transform duration-300 group-hover:scale-105"
                 onError={(e) => {
                   console.error(`Logo ${LOGO_FILENAME} tidak ditemukan di public folder`);
-                  // Fallback ke placeholder
                   e.target.style.display = 'none';
                   const fallback = e.target.parentElement.querySelector('.logo-fallback');
                   if (fallback) fallback.classList.remove('hidden');
                 }}
               />
-
-              {/* Fallback jika logo tidak load */}
               <div className="logo-fallback w-11 h-11 bg-[#8D6E63] rounded-xl flex items-center justify-center shadow-lg hidden">
                 <span className="text-white font-display font-bold text-2xl uppercase">M</span>
               </div>
             </div>
           </div>
 
-          {/* MENU ITEMS - Inter */}
+          {/* MENU ITEMS */}
           <div className="flex items-center space-x-8">
             {navItems.map((item) => (
               item.isMember ? (
@@ -125,27 +188,32 @@ const Navbar = () => {
                   <button
                     onClick={handleMemberClick}
                     className={`flex items-center px-6 py-2.5 font-sans font-bold text-[13px] uppercase tracking-wider transition-all rounded-xl border-2 ${
-                      location.pathname.includes('/member') || location.pathname.includes('/admin') || user || admin
+                      userType
                         ? `bg-[#3E2723] text-white border-[#3E2723] shadow-lg`
                         : `text-[#8D6E63] border-[#8D6E63] hover:bg-[#8D6E63] hover:text-white`
                       }`}
                   >
                     <User size={16} className="mr-2" />
-                    {user ? `Hi, ${user.name?.split(' ')[0] || 'Member'}` : admin ? 'Administrator' : 'Masuk'}
-                    {(user || admin) && <ChevronDown size={14} className="ml-1" />}
+                    {getButtonText()}
+                    {userType && <ChevronDown size={14} className="ml-1" />}
                   </button>
 
                   {/* Dropdown Menu Admin */}
-                  {admin && isAdminMenuOpen && (
+                  {userType === 'admin' && isAdminMenuOpen && (
                     <div className="absolute right-0 mt-4 w-64 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-50 py-2 z-50 overflow-hidden animate-in slide-in-from-top-2 duration-200">
                       <div className="px-6 py-4 border-b border-gray-50 bg-[#FDFBF7]">
-                        <p className="font-display font-bold text-[#3E2723] truncate text-sm">Administrator</p>
-                        <p className="text-[10px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">ADMIN PANEL</p>
+                        <p className="font-display font-bold text-[#3E2723] truncate text-sm">
+                          {user?.username || user?.full_name || 'Administrator'}
+                        </p>
+                        <p className="text-[10px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">
+                          ADMIN PANEL
+                        </p>
                       </div>
 
                       <div className="p-2">
                         <button
                           onClick={() => {
+                            console.log('Navigasi ke dashboard admin');
                             navigate('/admin/dashboard');
                             setIsAdminMenuOpen(false);
                           }}
@@ -160,7 +228,7 @@ const Navbar = () => {
 
                       <div className="border-t border-gray-50 mt-1 p-2">
                         <button
-                          onClick={handleAdminLogout}
+                          onClick={handleLogout}
                           className="flex items-center w-full px-4 py-3 text-[13px] font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors font-sans"
                         >
                           <LogOut size={18} className="mr-3" /> Logout
@@ -170,21 +238,45 @@ const Navbar = () => {
                   )}
 
                   {/* Dropdown Menu Member */}
-                  {user && isMemberMenuOpen && (
+                  {userType === 'member' && isMemberMenuOpen && (
                     <div className="absolute right-0 mt-4 w-64 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-50 py-2 z-50 overflow-hidden animate-in slide-in-from-top-2 duration-200">
                       <div className="px-6 py-4 border-b border-gray-50 bg-[#FDFBF7]">
-                        <p className="font-display font-bold text-[#3E2723] truncate text-sm">{user.name || 'Member'}</p>
-                        <p className="text-[10px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">{user.id || ''}</p>
+                        <p className="font-display font-bold text-[#3E2723] truncate text-sm">
+                          {user?.full_name || user?.username || 'Member'}
+                        </p>
+                        <p className="text-[10px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">
+                          ID: {user?.id || ''}
+                        </p>
                       </div>
 
                       <div className="p-2">
                         {memberMenuItems.map((menuItem) => (
                           menuItem.isExternal ? (
-                            <button key={menuItem.name} onClick={() => window.open('https://wa.me/6281234567890', '_blank')} className="flex items-center w-full px-4 py-3 text-[13px] font-bold text-gray-600 hover:bg-green-50 hover:text-green-700 rounded-xl transition-colors font-sans">
-                              <MessageCircle size={18} className="mr-3 text-green-500" /> {menuItem.name}
+                            <button 
+                              key={menuItem.name} 
+                              onClick={() => {
+                                console.log('Buka WhatsApp');
+                                window.open('https://wa.me/6281234567890', '_blank');
+                                setIsMemberMenuOpen(false);
+                              }} 
+                              className="flex items-center w-full px-4 py-3 text-[13px] font-bold text-gray-600 hover:bg-green-50 hover:text-green-700 rounded-xl transition-colors font-sans"
+                            >
+                              <MessageCircle size={18} className="mr-3 text-green-500" /> 
+                              {menuItem.name}
                             </button>
                           ) : (
-                            <NavLink key={menuItem.name} to={menuItem.path} className="flex items-center px-4 py-3 text-[13px] font-bold text-gray-600 hover:bg-[#FDFBF7] hover:text-[#8D6E63] rounded-xl transition-colors font-sans">
+                            <NavLink 
+                              key={menuItem.name} 
+                              to={menuItem.path}
+                              onClick={() => {
+                                console.log('Navigasi ke:', menuItem.path);
+                                setIsMemberMenuOpen(false);
+                              }}
+                              className="flex items-center px-4 py-3 text-[13px] font-bold text-gray-600 hover:bg-[#FDFBF7] hover:text-[#8D6E63] rounded-xl transition-colors font-sans"
+                            >
+                              {menuItem.name === 'Profil' && <User size={18} className="mr-3" />}
+                              {menuItem.name === 'Reservasi' && <Calendar size={18} className="mr-3" />}
+                              {menuItem.name === 'Janji Temu' && <Calendar size={18} className="mr-3" />}
                               {menuItem.name}
                             </NavLink>
                           )
@@ -192,7 +284,10 @@ const Navbar = () => {
                       </div>
 
                       <div className="border-t border-gray-50 mt-1 p-2">
-                        <button onClick={handleLogout} className="flex items-center w-full px-4 py-3 text-[13px] font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors font-sans">
+                        <button 
+                          onClick={handleLogout} 
+                          className="flex items-center w-full px-4 py-3 text-[13px] font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors font-sans"
+                        >
                           <LogOut size={18} className="mr-3" /> Logout
                         </button>
                       </div>
@@ -204,7 +299,10 @@ const Navbar = () => {
                   key={item.name}
                   to={item.path}
                   className={({ isActive }) =>
-                    `text-[13px] font-sans font-bold uppercase tracking-widest transition-all ${isActive ? "text-[#3E2723] border-b-2 border-[#8D6E63] pb-1" : "text-gray-400 hover:text-[#8D6E63]"
+                    `text-[13px] font-sans font-bold uppercase tracking-widest transition-all ${
+                      isActive 
+                        ? "text-[#3E2723] border-b-2 border-[#8D6E63] pb-1" 
+                        : "text-gray-400 hover:text-[#8D6E63]"
                     }`
                   }
                 >
@@ -224,18 +322,19 @@ const Navbar = () => {
               alt="Mochint Logo"
               className="h-8 w-auto"
               onError={(e) => {
-                // Fallback untuk mobile
                 e.target.style.display = 'none';
                 const fallback = document.getElementById('mobile-logo-fallback');
                 if (fallback) fallback.classList.remove('hidden');
               }}
             />
             <div id="mobile-logo-fallback" className="hidden">
-              <span className="text-xl font-display font-bold text-[#3E2723] tracking-tighter">MOCHINT</span>
+              <span className="text-xl font-display font-bold text-[#3E2723] tracking-tighter">
+                MOCHINT
+              </span>
             </div>
           </div>
 
-          {/* Right Side: Member/Admin Button or Hamburger */}
+          {/* Right Side: Member/Admin Button */}
           <div className="flex items-center gap-3">
             <div className="relative">
               <button
@@ -243,15 +342,20 @@ const Navbar = () => {
                 className="flex items-center px-4 py-2 bg-[#3E2723] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md"
               >
                 <User size={14} className="mr-1.5" />
-                {user ? user.name?.split(' ')[0] || 'Member' : admin ? 'Admin' : 'Member'}
+                {getMobileButtonText()}
+                {userType && <ChevronDown size={12} className="ml-1" />}
               </button>
 
               {/* Dropdown Menu Admin - Mobile */}
-              {admin && isAdminMenuOpen && (
+              {userType === 'admin' && isAdminMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-50 py-2 z-[60] overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-50 bg-[#FDFBF7]">
-                    <p className="font-bold text-[#3E2723] text-xs">Administrator</p>
-                    <p className="text-[9px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">ADMIN PANEL</p>
+                    <p className="font-bold text-[#3E2723] text-xs">
+                      {user?.username || user?.full_name || 'Administrator'}
+                    </p>
+                    <p className="text-[9px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">
+                      ADMIN PANEL
+                    </p>
                   </div>
 
                   <div className="p-2">
@@ -271,7 +375,7 @@ const Navbar = () => {
 
                   <div className="border-t border-gray-50 mt-1 p-2">
                     <button
-                      onClick={handleAdminLogout}
+                      onClick={handleLogout}
                       className="flex items-center w-full px-3 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                     >
                       <LogOut size={16} className="mr-2" /> Logout
@@ -281,11 +385,15 @@ const Navbar = () => {
               )}
 
               {/* Dropdown Menu Member - Mobile */}
-              {user && isMemberMenuOpen && (
+              {userType === 'member' && isMemberMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-50 py-2 z-[60] overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-50 bg-[#FDFBF7]">
-                    <p className="font-bold text-[#3E2723] text-xs truncate">{user.name || 'Member'}</p>
-                    <p className="text-[9px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">{user.id || ''}</p>
+                    <p className="font-bold text-[#3E2723] text-xs truncate">
+                      {user?.full_name || user?.username || 'Member'}
+                    </p>
+                    <p className="text-[9px] text-[#8D6E63] font-black uppercase tracking-widest mt-0.5">
+                      ID: {user?.id || ''}
+                    </p>
                   </div>
 
                   <div className="p-2">
@@ -299,7 +407,8 @@ const Navbar = () => {
                           }} 
                           className="flex items-center w-full px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-green-50 hover:text-green-700 rounded-xl transition-colors"
                         >
-                          <MessageCircle size={16} className="mr-2 text-green-500" /> {menuItem.name}
+                          <MessageCircle size={16} className="mr-2 text-green-500" /> 
+                          {menuItem.name}
                         </button>
                       ) : (
                         <NavLink 
@@ -308,6 +417,9 @@ const Navbar = () => {
                           onClick={() => setIsMemberMenuOpen(false)}
                           className="flex items-center px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-[#FDFBF7] hover:text-[#8D6E63] rounded-xl transition-colors"
                         >
+                          {menuItem.name === 'Profil' && <User size={16} className="mr-2" />}
+                          {menuItem.name === 'Reservasi' && <Calendar size={16} className="mr-2" />}
+                          {menuItem.name === 'Janji Temu' && <Calendar size={16} className="mr-2" />}
                           {menuItem.name}
                         </NavLink>
                       )
@@ -332,10 +444,10 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Mobile Menu Items */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-6 bg-white space-y-1 border-t pt-4 animate-in fade-in zoom-in-95 duration-200">
             {navItems.map((item) => {
-              // Skip "Aplikasi Member" di mobile menu karena sudah ada button di kanan atas
               if (item.isMember) return null;
               
               return (
@@ -344,7 +456,10 @@ const Navbar = () => {
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
                   className={({ isActive }) =>
-                    `block px-4 py-3 rounded-xl font-bold text-sm tracking-wide ${isActive ? "bg-[#FDFBF7] text-[#8D6E63]" : "text-gray-600 hover:bg-gray-50"
+                    `block px-4 py-3 rounded-xl font-bold text-sm tracking-wide ${
+                      isActive 
+                        ? "bg-[#FDFBF7] text-[#8D6E63]" 
+                        : "text-gray-600 hover:bg-gray-50"
                     }`
                   }
                 >
