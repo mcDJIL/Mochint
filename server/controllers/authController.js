@@ -171,9 +171,11 @@ const googleCallback = async (req, res) => {
 // Send OTP to email
 const sendOTP = async (req, res) => {
   try {
+    console.log('📨 Received OTP request:', req.body);
     const { email, name } = req.body;
 
     if (!email) {
+      console.log('⚠️ No email provided');
       return res.status(400).json({ success: false, message: 'Email diperlukan' });
     }
 
@@ -182,11 +184,15 @@ const sendOTP = async (req, res) => {
     
     // Store OTP with expiry (5 minutes)
     const expiryTime = Date.now() + 5 * 60 * 1000; // 5 minutes
-    otpStorage.set(email.toLowerCase().trim(), {
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    otpStorage.set(normalizedEmail, {
       otp,
       expiryTime,
       verified: false
     });
+
+    console.log('✅ OTP stored for:', normalizedEmail);
 
     // TODO: Implement actual email sending with nodemailer or other service
     // For now, log to console (in production, send actual email)

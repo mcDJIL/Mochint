@@ -72,6 +72,7 @@ const SetPassword = () => {
   const handleSetPassword = async () => {
     if (!validatePassword()) return;
 
+    console.log('🔐 Setting password for:', userData.email);
     setLoading(true);
     try {
       const response = await axios.post('http://localhost:5000/api/auth/set-password', {
@@ -79,6 +80,8 @@ const SetPassword = () => {
         password: password,
         userId: userData.id
       });
+
+      console.log('✅ Password set response:', response.data);
 
       if (response.data.success) {
         setNotification({
@@ -94,13 +97,16 @@ const SetPassword = () => {
         localStorage.setItem('user_type', 'member');
         localStorage.setItem('login_time', new Date().toISOString());
 
+        console.log('✅ Redirecting to member dashboard...');
+
         // Redirect to member dashboard after 1.5 seconds
         setTimeout(() => {
           navigate('/member', { replace: true });
         }, 1500);
       }
     } catch (error) {
-      console.error('Error setting password:', error);
+      console.error('❌ Error setting password:', error);
+      console.error('Error details:', error.response?.data);
       setNotification({
         show: true,
         type: 'error',
