@@ -5,6 +5,11 @@ const authController = require('../controllers/authController');
 router.post('/login', authController.login);
 router.post('/register', authController.register);
 
+// OTP and Password routes for Google OAuth users
+router.post('/send-otp', authController.sendOTP);
+router.post('/verify-otp', authController.verifyOTP);
+router.post('/set-password', authController.setPassword);
+
 // Google OAuth routes - lazy load passport only when needed
 router.get('/google', (req, res, next) => {
   try {

@@ -3,6 +3,9 @@ const jwt = require('jsonwebtoken');
 const adminModel = require('../models/Admin');
 const memberModel = require('../models/Member');
 
+// In-memory storage untuk OTP (dalam production, gunakan Redis atau database)
+const otpStorage = new Map();
+
 const normalizeRow = (res) => {
   if (!res) return null;
   if (Array.isArray(res)) return res[0] || null;
@@ -165,4 +168,151 @@ const googleCallback = async (req, res) => {
   }
 };
 
-module.exports = { login, register, googleCallback };
+// Send OTP to email
+const sendOTP = async (req, res) => {
+  try {
+    const { email, name } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email diperlukan' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store OTP with expiry (5 minutes)
+    const expiryTime = Date.now() + 5 * 60 * 1000; // 5 minutes
+    otpStorage.set(email.toLowerCase().trim(), {
+      otp,
+      expiryTime,
+      verified: false
+    });
+
+    // TODO: Implement actual email sending with nodemailer or other service
+    // For now, log to console (in production, send actual email)
+    console.log('=================================');
+    console.log('📧 OTP EMAIL VERIFICATION');
+    console.log('=================================');
+    console.log(`To: ${email}`);
+    console.log(`Name: ${name || 'Member'}`);
+    console.log(`OTP Code: ${otp}`);
+    console.log(`Expires in: 5 minutes`);
+    console.log('=================================');
+
+    // Clean up expired OTPs periodically
+    cleanupExpiredOTPs();
+
+    return res.json({ 
+      success: true, 
+      message: 'Kode OTP berhasil dikirim ke email Anda',
+      // In development, return OTP for testing (remove in production!)
+      devOTP: process.env.NODE_ENV === 'development' ? otp : undefined
+    });
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    return res.status(500).json({ success: false, message: 'Gagal mengirim OTP' });
+  }
+};
+
+// Verify OTP
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email dan OTP diperlukan' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const storedData = otpStorage.get(normalizedEmail);
+
+    if (!storedData) {
+      return res.status(400).json({ success: false, message: 'OTP tidak ditemukan atau sudah kadaluarsa' });
+    }
+
+    // Check if OTP expired
+    if (Date.now() > storedData.expiryTime) {
+      otpStorage.delete(normalizedEmail);
+      return res.status(400).json({ success: false, message: 'OTP sudah kadaluarsa' });
+    }
+
+    // Check if OTP matches
+    if (storedData.otp !== otp) {
+      return res.status(400).json({ success: false, message: 'Kode OTP tidak valid' });
+    }
+
+    // Mark as verified
+    storedData.verified = true;
+    otpStorage.set(normalizedEmail, storedData);
+
+    return res.json({ 
+      success: true, 
+      message: 'Email berhasil diverifikasi' 
+    });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    return res.status(500).json({ success: false, message: 'Gagal memverifikasi OTP' });
+  }
+};
+
+// Set password for Google OAuth users
+const setPassword = async (req, res) => {
+  try {
+    const { email, password, userId } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email dan password diperlukan' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password minimal 8 karakter' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    // Check if OTP was verified
+    const storedData = otpStorage.get(normalizedEmail);
+    if (!storedData || !storedData.verified) {
+      return res.status(400).json({ success: false, message: 'Email belum diverifikasi' });
+    }
+
+    // Find member by email
+    const memberRes = await memberModel.findByEmail(normalizedEmail);
+    const member = normalizeRow(memberRes);
+
+    if (!member) {
+      return res.status(404).json({ success: false, message: 'Member tidak ditemukan' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update member password
+    await memberModel.updatePassword(member.id, hashedPassword);
+
+    // Clean up OTP storage
+    otpStorage.delete(normalizedEmail);
+
+    console.log(`✅ Password set successfully for user: ${normalizedEmail}`);
+
+    return res.json({ 
+      success: true, 
+      message: 'Password berhasil dibuat' 
+    });
+  } catch (error) {
+    console.error('Set password error:', error);
+    return res.status(500).json({ success: false, message: 'Gagal membuat password' });
+  }
+};
+
+// Helper function to clean up expired OTPs
+const cleanupExpiredOTPs = () => {
+  const now = Date.now();
+  for (const [email, data] of otpStorage.entries()) {
+    if (now > data.expiryTime) {
+      otpStorage.delete(email);
+    }
+  }
+};
+
+module.exports = { login, register, googleCallback, sendOTP, verifyOTP, setPassword };

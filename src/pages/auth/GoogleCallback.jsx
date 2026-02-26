@@ -13,19 +13,16 @@ const GoogleCallback = () => {
       try {
         const user = JSON.parse(decodeURIComponent(userString));
         
-        // Store authentication data (save to both 'user' and 'active_user' for compatibility)
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('active_user', JSON.stringify(user));
-        localStorage.setItem('user_type', 'member');
-        localStorage.setItem('login_time', new Date().toISOString());
-        
-        console.log('✅ Google login success, redirecting to /member');
+        console.log('✅ Google login success, redirecting to email verification');
         console.log('Token:', token);
         console.log('User:', user);
         
-        // Redirect to member dashboard
-        navigate('/member');
+        // Redirect to email verification page first
+        // User needs to verify email and set password before accessing dashboard
+        navigate('/auth/verify-email', {
+          state: { user, token },
+          replace: true
+        });
       } catch (error) {
         console.error('Error parsing user data:', error);
         navigate('/auth/login?error=invalid_callback');

@@ -148,6 +148,23 @@ class Member {
       throw error;
     }
   }
+
+  // Update password only (for Google OAuth users)
+  static async updatePassword(id, hashedPassword) {
+    try {
+      const [result] = await promisePool.query(
+        'UPDATE members SET password = ? WHERE id = ?',
+        [hashedPassword, id]
+      );
+      
+      console.log('✅ Password updated for member ID:', id);
+      
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('❌ Error in Member.updatePassword:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = Member;

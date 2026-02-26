@@ -27,6 +27,8 @@ import AdminBedManagement from '../pages/admin/BedManagement';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Regist';
 import GoogleCallback from '../pages/auth/GoogleCallback';
+import EmailVerification from '../pages/auth/EmailVerification';
+import SetPassword from '../pages/auth/SetPassword';
 import Home from '../pages/public/Home';
 import About from '../pages/public/About';
 import PublicTreatment from '../pages/public/Treatment';
@@ -272,6 +274,8 @@ const AppRoutes = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/auth/google/callback" element={<GoogleCallback />} />
+              <Route path="/auth/verify-email" element={<EmailVerification />} />
+              <Route path="/auth/set-password" element={<SetPassword />} />
 
               {/* === ZONA 3: MEMBER AREA === */}
               <Route path="/member" element={
