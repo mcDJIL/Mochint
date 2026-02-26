@@ -729,31 +729,27 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* POPUP: PERBARUI INFORMASI SAYA */}
+      {/* EDIT PROFILE MODAL - CENTERED */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div 
-            className="fixed inset-0 bg-black/40 backdrop-blur-md animate-in fade-in" 
-            onClick={() => {
-              // Prevent close if profile is incomplete
-              const isIncomplete = !formData.phone?.trim() || !formData.address?.trim();
-              if (isIncomplete) {
-                setNotification({
-                  show: true,
-                  type: 'error',
-                  title: 'Profil Belum Lengkap',
-                  message: 'Silakan lengkapi nomor telepon dan alamat terlebih dahulu'
-                });
-              } else {
-                setIsEditModalOpen(false);
-              }
-            }}
-          ></div>
-          <div className="relative w-full max-w-lg bg-white rounded-3xl md:rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="bg-[#8D6E63] p-8 md:p-10 text-white text-center relative">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl lg:max-w-3xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-[#8D6E63] px-6 sm:px-8 py-5 sm:py-6 text-white relative flex items-center justify-between rounded-t-2xl sm:rounded-t-3xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center border border-white/20">
+                  <Settings size={20} className="sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg md:text-xl font-display font-bold tracking-tight">
+                    Lengkapi Profil Anda
+                  </h3>
+                  <p className="text-[10px] sm:text-xs text-white/70 mt-0.5 font-sans">
+                    Informasi diperlukan untuk layanan kami
+                  </p>
+                </div>
+              </div>
               <button 
                 onClick={() => {
-                  // Prevent close if profile is incomplete
                   const isIncomplete = !formData.phone?.trim() || !formData.address?.trim();
                   if (isIncomplete) {
                     setNotification({
@@ -766,124 +762,125 @@ const Dashboard = () => {
                     setIsEditModalOpen(false);
                   }
                 }} 
-                className="absolute right-6 top-6 md:right-8 md:top-8 opacity-50 hover:opacity-100 transition-opacity"
+                className="opacity-70 hover:opacity-100 transition-opacity bg-white/10 rounded-full p-2 hover:bg-white/20"
               >
-                <X size={20}/>
+                <X size={18} className="sm:w-5 sm:h-5"/>
               </button>
-              <div className="w-14 h-14 bg-white/20 rounded-2xl mx-auto mb-4 flex items-center justify-center border border-white/20">
-                <Settings size={24} />
-              </div>
-              <h3 className="text-xl md:text-2xl font-display font-bold italic tracking-tight">
-                Lengkapi Profil Anda
-              </h3>
-              <p className="text-xs text-white/70 mt-2 font-sans">
-                Informasi ini diperlukan untuk layanan kami
-              </p>
             </div>
-            <div className="p-6 md:p-10 space-y-5 text-left font-sans text-[#3E2723]">
-              <div>
-                <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Nama Lengkap <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text" 
-                  value={formData.name || ''} 
-                  onChange={(e) => setFormData({...formData, name: e.target.value})} 
-                  placeholder="Masukkan nama lengkap Anda"
-                  className="w-full bg-[#FDFBF7] px-6 py-3 rounded-2xl outline-none border-2 border-transparent focus:border-[#8D6E63] text-sm font-bold placeholder:text-gray-400 placeholder:font-normal" 
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Nomor Telepon <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="tel" 
-                  value={formData.phone || ''} 
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-                  placeholder="Contoh: 08123456789"
-                  className="w-full bg-[#FDFBF7] px-6 py-3 rounded-2xl outline-none border-2 border-transparent focus:border-[#8D6E63] text-sm font-bold placeholder:text-gray-400 placeholder:font-normal" 
-                  required
-                />
-                {!formData.phone?.trim() && (
-                  <p className="text-xs text-red-500 mt-1 ml-1">
-                    ⚠️ Nomor telepon wajib diisi untuk konfirmasi appointment
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Alamat Email <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="email" 
-                  value={formData.email || ''} 
-                  onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                  placeholder="nama@email.com"
-                  className="w-full bg-[#FDFBF7] px-6 py-3 rounded-2xl outline-none border-2 border-transparent focus:border-[#8D6E63] text-sm font-bold placeholder:text-gray-400 placeholder:font-normal" 
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest block mb-1">
-                  Alamat Lengkap <span className="text-red-500">*</span>
-                </label>
-                <textarea 
-                  value={formData.address || ''} 
-                  onChange={(e) => setFormData({...formData, address: e.target.value})} 
-                  placeholder="Contoh: Jl. Merdeka No. 123, Kota Malang, Jawa Timur"
-                  className="w-full bg-[#FDFBF7] px-6 py-3 rounded-2xl outline-none border-2 border-transparent focus:border-[#8D6E63] text-sm font-bold resize-none placeholder:text-gray-400 placeholder:font-normal" 
-                  rows="3" 
-                  required
-                />
-                {!formData.address?.trim() && (
-                  <p className="text-xs text-red-500 mt-1 ml-1">
-                    ⚠️ Alamat wajib diisi untuk keperluan administrasi
-                  </p>
-                )}
-              </div>
-              
-              {/* Info text */}
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-                <div className="text-amber-600 shrink-0 mt-0.5">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
+            
+            {/* Form Body */}
+            <div className="p-6 sm:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                {/* Nama Lengkap */}
+                <div className="md:col-span-2">
+                  <label className="text-[10px] sm:text-xs font-bold text-[#8D6E63] uppercase tracking-wider block mb-2 font-sans">
+                    Nama Lengkap <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    value={formData.name || ''} 
+                    onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                    placeholder="Masukkan nama lengkap Anda"
+                    className="w-full bg-[#FDFBF7] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl outline-none border-2 border-gray-200 focus:border-[#8D6E63] text-sm sm:text-base font-medium font-sans text-[#5D4037] placeholder:text-gray-400 transition-all" 
+                    required
+                  />
                 </div>
-                <div className="flex-1">
-                  <p className="text-xs text-amber-800 font-medium">
-                    Data ini diperlukan untuk konfirmasi appointment dan komunikasi layanan.
+                
+                {/* Nomor Telepon */}
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-[#8D6E63] uppercase tracking-wider block mb-2 font-sans">
+                    Nomor Telepon <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="tel" 
+                    value={formData.phone || ''} 
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                    placeholder="08123456789"
+                    className="w-full bg-[#FDFBF7] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl outline-none border-2 border-gray-200 focus:border-[#8D6E63] text-sm sm:text-base font-medium font-sans text-[#5D4037] placeholder:text-gray-400 transition-all" 
+                    required
+                  />
+                  {!formData.phone?.trim() && (
+                    <p className="text-[10px] text-red-500 mt-1.5 ml-1 font-sans">
+                      ⚠️ Wajib diisi
+                    </p>
+                  )}
+                </div>
+                
+                {/* Email */}
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-[#8D6E63] uppercase tracking-wider block mb-2 font-sans">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="email" 
+                    value={formData.email || ''} 
+                    onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                    placeholder="nama@email.com"
+                    className="w-full bg-[#FDFBF7] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl outline-none border-2 border-gray-200 focus:border-[#8D6E63] text-sm sm:text-base font-medium font-sans text-[#5D4037] placeholder:text-gray-400 transition-all" 
+                    required
+                  />
+                </div>
+                
+                {/* Alamat */}
+                <div className="md:col-span-2">
+                  <label className="text-[10px] sm:text-xs font-bold text-[#8D6E63] uppercase tracking-wider block mb-2 font-sans">
+                    Alamat Lengkap <span className="text-red-500">*</span>
+                  </label>
+                  <textarea 
+                    value={formData.address || ''} 
+                    onChange={(e) => setFormData({...formData, address: e.target.value})} 
+                    placeholder="Jl. Merdeka No. 123, Kota Malang"
+                    className="w-full bg-[#FDFBF7] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl outline-none border-2 border-gray-200 focus:border-[#8D6E63] text-sm sm:text-base font-medium font-sans text-[#5D4037] resize-none placeholder:text-gray-400 transition-all" 
+                    rows="2" 
+                    required
+                  />
+                  {!formData.address?.trim() && (
+                    <p className="text-[10px] text-red-500 mt-1.5 ml-1 font-sans">
+                      ⚠️ Wajib diisi
+                    </p>
+                  )}
+                </div>
+                
+                {/* Info Box */}
+                <div className="md:col-span-2 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4 flex items-start gap-2.5">
+                  <div className="text-amber-600 shrink-0 mt-0.5">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <p className="text-[10px] sm:text-xs text-amber-800 font-medium font-sans leading-relaxed">
+                    Data diperlukan untuk konfirmasi appointment.
                   </p>
                 </div>
               </div>
-              
-              <div className="flex gap-4 pt-4">
-                <button 
-                  onClick={() => {
-                    const isIncomplete = !formData.phone?.trim() || !formData.address?.trim();
-                    if (isIncomplete) {
-                      setNotification({
-                        show: true,
-                        type: 'error',
-                        title: 'Profil Belum Lengkap',
-                        message: 'Silakan lengkapi nomor telepon dan alamat terlebih dahulu'
-                      });
-                    } else {
-                      setIsEditModalOpen(false);
-                    }
-                  }} 
-                  className="flex-1 py-4 bg-gray-50 rounded-2xl font-display font-bold text-[10px] uppercase tracking-widest text-[#A1887F] hover:bg-gray-100 transition-all"
-                >
-                  Batal
-                </button>
-                <button 
-                  onClick={handleSave} 
-                  className="flex-1 py-4 bg-[#8D6E63] text-white rounded-2xl font-display font-bold text-[10px] uppercase tracking-widest shadow-xl shadow-[#8D6E63]/20 hover:bg-[#5D4037] transition-all flex items-center justify-center active:scale-95"
-                >
-                  <Save size={16} className="mr-2"/> Simpan Profil
-                </button>
-              </div>
+            </div>
+            
+            {/* Footer - Action Buttons */}
+            <div className="bg-gray-50 px-6 sm:px-8 py-4 sm:py-5 flex gap-3 sm:gap-4 rounded-b-2xl sm:rounded-b-3xl border-t border-gray-200">
+              <button 
+                onClick={() => {
+                  const isIncomplete = !formData.phone?.trim() || !formData.address?.trim();
+                  if (isIncomplete) {
+                    setNotification({
+                      show: true,
+                      type: 'error',
+                      title: 'Profil Belum Lengkap',
+                      message: 'Silakan lengkapi nomor telepon dan alamat terlebih dahulu'
+                    });
+                  } else {
+                    setIsEditModalOpen(false);
+                  }
+                }} 
+                className="flex-1 max-w-[140px] py-2.5 sm:py-3 bg-white border-2 border-gray-200 rounded-xl font-sans font-bold text-xs uppercase tracking-wider text-[#8D6E63] hover:bg-gray-100 transition-all active:scale-95"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={handleSave} 
+                className="flex-1 py-2.5 sm:py-3 bg-[#8D6E63] text-white rounded-xl font-sans font-bold text-xs uppercase tracking-wider shadow-lg shadow-[#8D6E63]/20 hover:bg-[#5D4037] transition-all flex items-center justify-center gap-2 active:scale-95"
+              >
+                <Save size={14} className="sm:w-4 sm:h-4"/> Simpan Profil
+              </button>
             </div>
           </div>
         </div>
