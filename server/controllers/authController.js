@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const adminModel = require('../models/Admin');
 const memberModel = require('../models/Member');
+const emailService = require('../services/emailService');
 
 // In-memory storage untuk OTP (dalam production, gunakan Redis atau database)
 const otpStorage = new Map();
@@ -200,27 +201,62 @@ const sendOTP = async (req, res) => {
 
     console.log('✅ OTP stored for:', normalizedEmail);
 
-    // TODO: Implement actual email sending with nodemailer or other service
-    // For now, log to console (in production, send actual email)
-    console.log('=================================');
-    console.log('📧 OTP EMAIL VERIFICATION');
-    console.log('=================================');
-    console.log(`To: ${email}`);
-    console.log(`Name: ${name || 'Member'}`);
-    console.log(`OTP Code: ${otp}`);
-    console.log(`Expires in: 5 minutes`);
-    console.log('=================================');
+    // Send OTP via email service
+    try {
+      const emailResult = await emailService.sendOTPEmail(normalizedEmail, otp, name || 'Member');
+      
+      // Clean up expired OTPs periodically
+      cleanupExpiredOTPs();
 
-    // Clean up expired OTPs periodically
-    cleanupExpiredOTPs();
-
-    return res.json({ 
-      success: true, 
-      message: 'Kode OTP berhasil dikirim ke email Anda',
-      // Always return OTP for testing in development
-      otp: otp, // For easy testing
-      devOTP: otp
-    });
+      // Response berdasarkan mode
+      if (emailResult.devMode) {
+        // Development mode - email service tidak aktif
+        console.log('=================================');
+        console.log('📧 OTP EMAIL VERIFICATION (DEV MODE)');
+        console.log('=================================');
+        console.log(`To: ${email}`);
+        console.log(`Name: ${name || 'Member'}`);
+        console.log(`OTP Code: ${otp}`);
+        console.log(`Expires in: 5 minutes`);
+        console.log('=================================');
+        
+        return res.json({ 
+          success: true, 
+          message: 'Kode OTP berhasil dikirim (Dev Mode)',
+          otp: otp, // Return OTP in development mode for easy testing
+          devOTP: otp,
+          devMode: true
+        });
+      } else {
+        // Production mode - email terkirim
+        console.log(`✅ OTP email sent successfully to: ${normalizedEmail}`);
+        
+        return res.json({ 
+          success: true, 
+          message: 'Kode OTP berhasil dikirim ke email Anda',
+          // Jangan return OTP di production mode untuk keamanan
+          ...(process.env.NODE_ENV === 'development' && { devOTP: otp })
+        });
+      }
+    } catch (emailError) {
+      console.error('❌ Failed to send email:', emailError.message);
+      
+      // Fallback ke console log jika email gagal
+      console.log('=================================');
+      console.log('📧 OTP EMAIL (FALLBACK TO CONSOLE)');
+      console.log('=================================');
+      console.log(`To: ${email}`);
+      console.log(`OTP Code: ${otp}`);
+      console.log('=================================');
+      
+      return res.json({ 
+        success: true, 
+        message: 'Kode OTP tersimpan (Email service error, check console)',
+        otp: otp,
+        devOTP: otp,
+        warning: 'Email service temporarily unavailable'
+      });
+    }
   } catch (error) {
     console.error('Send OTP error:', error);
     return res.status(500).json({ success: false, message: 'Gagal mengirim OTP' });

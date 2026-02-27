@@ -52,6 +52,18 @@ try {
   console.log('⚠️  Passport not initialized (Google OAuth will not work):', error.message);
 }
 
+// Initialize email service
+const emailService = require('./services/emailService');
+emailService.initialize().then(initialized => {
+  if (initialized) {
+    console.log('✅ Email service ready - OTP will be sent to actual emails');
+  } else {
+    console.log('⚠️  Email service not configured - Using development mode (OTP in console)');
+  }
+}).catch(err => {
+  console.log('⚠️  Email service initialization error:', err.message);
+});
+
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
   next();
