@@ -29,6 +29,7 @@ import Register from '../pages/auth/Regist';
 import GoogleCallback from '../pages/auth/GoogleCallback';
 import EmailVerification from '../pages/auth/EmailVerification';
 import SetPassword from '../pages/auth/SetPassword';
+import ForgotPassword from '../pages/auth/ForgotPassword';
 import Home from '../pages/public/Home';
 import About from '../pages/public/About';
 import PublicTreatment from '../pages/public/Treatment';
@@ -276,6 +277,7 @@ const AppRoutes = () => {
               <Route path="/auth/google/callback" element={<GoogleCallback />} />
               <Route path="/auth/verify-email" element={<EmailVerification />} />
               <Route path="/auth/set-password" element={<SetPassword />} />
+              <Route path="/auth/forgot-password" element={<ForgotPassword />} />
 
               {/* === ZONA 3: MEMBER AREA === */}
               <Route path="/member" element={

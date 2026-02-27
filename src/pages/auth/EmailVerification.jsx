@@ -13,9 +13,10 @@ const EmailVerification = () => {
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [devOtpCode, setDevOtpCode] = useState(''); // Store OTP for development
 
-  // Get user data from location state (passed from GoogleCallback)
+  // Get user data from location state (passed from GoogleCallback or ForgotPassword)
   const userData = location.state?.user;
   const token = location.state?.token;
+  const isForgotPassword = location.state?.isForgotPassword || false; // Check if this is forgot password flow
 
   useEffect(() => {
     // If no user data, redirect back to login
@@ -26,6 +27,7 @@ const EmailVerification = () => {
     }
 
     console.log('✅ User data received:', userData);
+    console.log('🔐 Flow type:', isForgotPassword ? 'Forgot Password' : 'Google OAuth');
     // Auto-send OTP on mount
     handleSendOtp();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,7 +158,11 @@ const EmailVerification = () => {
         // Redirect to set password page after 1 second
         setTimeout(() => {
           navigate('/auth/set-password', {
-            state: { user: userData, token: token },
+            state: { 
+              user: userData, 
+              token: token,
+              isForgotPassword: isForgotPassword // Pass the flag to SetPassword
+            },
             replace: true
           });
         }, 1000);
@@ -198,10 +204,13 @@ const EmailVerification = () => {
             <Mail size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-display font-bold text-[#3E2723] mb-2">
-            Verifikasi Email
+            {isForgotPassword ? 'Reset Password' : 'Verifikasi Email'}
           </h1>
           <p className="text-[#A1887F] text-sm">
-            Kami telah mengirim kode 6 digit ke
+            {isForgotPassword 
+              ? 'Masukkan kode verifikasi untuk reset password'
+              : 'Kami telah mengirim kode 6 digit ke'
+            }
           </p>
           <p className="text-[#3E2723] font-bold mt-1">
             {userData.email}

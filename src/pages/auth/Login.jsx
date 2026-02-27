@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import api from '../../api/client';
 
@@ -9,12 +9,21 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   useEffect(() => {
     const activeUser = localStorage.getItem('active_user');
     const adminToken = localStorage.getItem('token');
+    
+    // Check for password reset success
+    if (location.state?.passwordResetSuccess) {
+      setSuccessMessage('Password berhasil diubah! Silakan login dengan password baru.');
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
     
     // Check for Google OAuth error
     const googleError = searchParams.get('error');
@@ -31,7 +40,7 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
     } else if (adminToken) {
       navigate('/admin/dashboard');
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, location]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -105,6 +114,15 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
               </div>
             )}
 
+            {successMessage && (
+              <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-r-xl text-sm animate-pulse">
+                <div className="flex items-center">
+                  <span className="mr-2">✅</span>
+                  <span>{successMessage}</span>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleLogin} className="space-y-5">
               {/* Input Email */}
               <div className="space-y-2">
@@ -150,7 +168,7 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
                 <div className="flex justify-end pr-1">
                   <button 
                     type="button" 
-                    onClick={onForgot}
+                    onClick={onForgot || (() => navigate('/auth/forgot-password'))}
                     className="text-xs text-[#8D6E63] hover:text-[#3E2723] font-bold transition-colors"
                   >
                     Lupa Password?

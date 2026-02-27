@@ -16,13 +16,15 @@ const SetPassword = () => {
   // Get user data from location state
   const userData = location.state?.user;
   const token = location.state?.token;
+  const isForgotPassword = location.state?.isForgotPassword || false; // Check if this is forgot password flow
 
   useEffect(() => {
     // If no user data, redirect to login
     if (!userData || !userData.email) {
       navigate('/auth/login', { replace: true });
     }
-  }, [userData, navigate]);
+    console.log('🔐 SetPassword - Flow type:', isForgotPassword ? 'Forgot Password' : 'Google OAuth');
+  }, [userData, navigate, isForgotPassword]);
 
   useEffect(() => {
     if (notification.show) {
@@ -84,25 +86,45 @@ const SetPassword = () => {
       console.log('✅ Password set response:', response.data);
 
       if (response.data.success) {
-        setNotification({
-          show: true,
-          type: 'success',
-          message: 'Password berhasil dibuat! Mengalihkan ke dashboard...'
-        });
+        if (isForgotPassword) {
+          // Forgot password flow - redirect to login with success message
+          setNotification({
+            show: true,
+            type: 'success',
+            message: 'Password berhasil diubah! Silakan login dengan password baru...'
+          });
 
-        // Store authentication data
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('active_user', JSON.stringify(userData));
-        localStorage.setItem('user_type', 'member');
-        localStorage.setItem('login_time', new Date().toISOString());
+          console.log('✅ Password reset successful, redirecting to login...');
 
-        console.log('✅ Redirecting to member dashboard...');
+          // Redirect to login after 2 seconds
+          setTimeout(() => {
+            navigate('/auth/login', { 
+              replace: true,
+              state: { passwordResetSuccess: true }
+            });
+          }, 2000);
+        } else {
+          // Google OAuth flow - store auth data and redirect to dashboard
+          setNotification({
+            show: true,
+            type: 'success',
+            message: 'Password berhasil dibuat! Mengalihkan ke dashboard...'
+          });
 
-        // Redirect to member dashboard after 1.5 seconds
-        setTimeout(() => {
-          navigate('/member', { replace: true });
-        }, 1500);
+          // Store authentication data
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('active_user', JSON.stringify(userData));
+          localStorage.setItem('user_type', 'member');
+          localStorage.setItem('login_time', new Date().toISOString());
+
+          console.log('✅ Redirecting to member dashboard...');
+
+          // Redirect to member dashboard after 1.5 seconds
+          setTimeout(() => {
+            navigate('/member', { replace: true });
+          }, 1500);
+        }
       }
     } catch (error) {
       console.error('❌ Error setting password:', error);
@@ -136,10 +158,13 @@ const SetPassword = () => {
             <Lock size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-display font-bold text-[#3E2723] mb-2">
-            Buat Password
+            {isForgotPassword ? 'Reset Password' : 'Buat Password'}
           </h1>
           <p className="text-[#A1887F] text-sm">
-            Buat password untuk akun Mochint Anda
+            {isForgotPassword 
+              ? 'Buat password baru untuk akun Anda'
+              : 'Buat password untuk akun Mochint Anda'
+            }
           </p>
           <p className="text-[#3E2723] font-bold mt-1">
             {userData.email}
