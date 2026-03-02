@@ -125,7 +125,7 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { name: 'Beranda', path: '/member', icon: <LayoutDashboard size={20} />, mobileIcon: <LayoutDashboard size={24} /> },
+    { name: 'Aplikasi Member', path: '/member', icon: <LayoutDashboard size={20} />, mobileIcon: <LayoutDashboard size={24} /> },
     { name: 'Reservasi', path: '/member/booking/step-1', icon: <CalendarCheck size={20} />, mobileIcon: <CalendarCheck size={24} /> },
     { name: 'Janji Temu', path: '/member/appointment', icon: <ClipboardList size={20} />, mobileIcon: <ClipboardList size={24} /> },
     { name: 'Riwayat', path: '/member/history', icon: <History size={20} />, mobileIcon: <History size={24} /> },

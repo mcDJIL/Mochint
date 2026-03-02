@@ -429,10 +429,10 @@ const BookingStep3 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 font-sans text-[#3E2723]">
+    <div className="min-h-screen bg-[#FDFBF7] p-4 sm:p-6 md:p-8 font-sans text-[#3E2723]">
       
-      {/* NAVBAR */}
-      <nav className="flex items-center gap-3 text-[10px] md:text-xs mb-8 font-bold uppercase tracking-[0.2em] text-gray-400 font-sans">
+      {/* NAVBAR - HIDDEN ON MOBILE */}
+      <nav className="hidden md:flex items-center gap-3 text-xs mb-8 font-bold uppercase tracking-[0.2em] text-gray-400 font-sans">
         <button 
           onClick={() => navigate('/member')} 
           className="p-2 bg-white rounded-lg shadow-sm text-[#8D6E63] hover:bg-[#8D6E63] hover:text-white transition-all border border-gray-100"
@@ -445,23 +445,23 @@ const BookingStep3 = () => {
         </span>
       </nav>
 
-      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
-        <div className="flex-1 space-y-6">
-          <div className="bg-white p-8 md:p-10 rounded-[40px] shadow-sm border border-gray-100 text-left">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 sm:gap-8">
+        <div className="flex-1 space-y-4 sm:space-y-6">
+          <div className="bg-white p-5 sm:p-6 md:p-8 lg:p-10 rounded-2xl sm:rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 text-left">
             
             {/* HEADER SECTION */}
-            <div className="mb-10 text-left">
-              <h1 className="text-3xl md:text-5xl font-display font-bold text-[#5D4037] mb-3 tracking-tighter">Tentukan Jadwal</h1>
-              <p className="text-gray-500 text-sm md:text-base max-w-2xl leading-relaxed font-sans font-medium">
+            <div className="mb-6 sm:mb-8 md:mb-10 text-left">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-[#5D4037] mb-2 sm:mb-3 tracking-tighter">Tentukan Jadwal</h1>
+              <p className="text-gray-500 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed font-sans font-medium">
                 Pilih tanggal dan waktu kunjungan Anda. Sistem akan menyesuaikan dengan ketersediaan bed dan jam operasional klinik!
               </p>
             </div>
 
-            <div className="space-y-10 mt-8">
+            <div className="space-y-6 sm:space-y-8 md:space-y-10 mt-6 sm:mt-8">
               {/* 1. INPUT TANGGAL */}
               <div>
-                <label className="text-[10px] font-black text-[#5D4037] mb-4 uppercase flex items-center gap-2 tracking-widest font-sans ml-1">
-                  <CalendarIcon size={14} className="text-[#8D6E63]" /> 1. Pilih Tanggal Perawatan
+                <label className="text-[9px] sm:text-[10px] font-black text-[#5D4037] mb-3 sm:mb-4 uppercase flex items-center gap-2 tracking-wider sm:tracking-widest font-sans ml-1">
+                  <CalendarIcon size={14} className="text-[#8D6E63] shrink-0" /> 1. Pilih Tanggal Perawatan
                 </label>
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col lg:flex-row gap-4 items-start">
@@ -777,13 +777,6 @@ const BookingStep3 = () => {
                 'Pilih Tanggal & Waktu'
               )}
             </button>
-            
-            {/* Informasi tambahan */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <p className="text-[10px] text-gray-500 text-center">
-                ⚠️ Pastikan Anda datang 15 menit sebelum waktu booking
-              </p>
-            </div>
           </div>
         </div>
       </div>

@@ -440,11 +440,89 @@ const Treatment = () => {
               </div>
             )}
 
-            <div className="space-y-4 sm:space-y-6">
+            {/* MOBILE GRID VIEW (2 kolom) */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:hidden">
               {filteredTreatments.length > 0 ? (
                 filteredTreatments.map((item) => (
                   <div 
-                    key={item._id || item.id} 
+                    key={`mobile-${item._id || item.id}`} 
+                    className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg transition-all duration-500"
+                  >
+                    {/* Image */}
+                    <div className="aspect-[4/5] bg-[#F9F6F2] flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
+                      <img 
+                        src={item.image || 'https://via.placeholder.com/400x300?text=Treatment'} 
+                        alt={item.name} 
+                        className="max-h-full w-auto object-contain group-hover:scale-110 transition-transform duration-700" 
+                      />
+                      <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
+                        <p className="text-[7px] sm:text-[8px] font-black uppercase tracking-tighter text-[#8D6E63] font-sans">
+                          {item.category}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-3 sm:p-4">
+                      <h3 className="text-[#3E2723] font-display font-bold text-xs sm:text-sm mb-2 sm:mb-3 h-8 sm:h-10 leading-tight overflow-hidden line-clamp-2">
+                        {item.name}
+                      </h3>
+                      
+                      {item.duration && (
+                        <div className="px-2 py-1 mb-2 sm:mb-3 bg-gray-50 text-[7px] sm:text-[8px] font-bold text-[#8D6E63] rounded-lg flex items-center gap-1 w-fit">
+                          ⏱️ {item.duration}
+                        </div>
+                      )}
+                      
+                      <button 
+                        onClick={() => handleShowDetail(item)}
+                        className="w-full flex items-center justify-between bg-white border-2 border-[#8D6E63] text-[#8D6E63] rounded-xl px-2.5 sm:px-3 py-2 hover:bg-[#8D6E63] hover:text-white transition-all duration-300 group/btn shadow-sm active:scale-95"
+                      >
+                        <div className="flex flex-col items-start text-left">
+                          <span className="text-[7px] sm:text-[8px] font-black uppercase opacity-60 font-sans tracking-widest leading-none mb-0.5">
+                            Harga
+                          </span>
+                          <span className="text-[10px] sm:text-xs font-display font-bold">
+                            {item.price ? formatRupiah(item.price) : 'Call'}
+                          </span>
+                        </div>
+                        <div className="bg-[#8D6E63] group-hover/btn:bg-white p-1 sm:p-1.5 rounded-lg transition-colors">
+                          <ArrowRight size={12} className="sm:w-[14px] sm:h-[14px] text-white group-hover/btn:text-[#8D6E63]" />
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                  <div className="mb-3">
+                    <Search size={32} className="mx-auto text-gray-300" />
+                  </div>
+                  <p className="font-display text-base font-bold text-gray-400 mb-2 px-4">
+                    Tidak Ada Treatment
+                  </p>
+                  <p className="font-sans text-xs text-gray-400 mb-4 px-4">
+                    {searchQuery.trim() !== '' 
+                      ? `"${searchQuery}" tidak ditemukan`
+                      : `Tidak ada di ${selectedCategory}`
+                    }
+                  </p>
+                  <button
+                    onClick={handleResetFilter}
+                    className="px-4 py-2 bg-[#8D6E63] text-white rounded-full font-bold text-xs uppercase hover:bg-[#5D4037] transition-all active:scale-95"
+                  >
+                    Lihat Semua
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP LIST VIEW (horizontal) */}
+            <div className="hidden md:block space-y-4 sm:space-y-6">
+              {filteredTreatments.length > 0 ? (
+                filteredTreatments.map((item) => (
+                  <div 
+                    key={`desktop-${item._id || item.id}`} 
                     className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[30px] shadow-sm border border-gray-50 flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-8 group hover:shadow-lg transition-all duration-300"
                   >
                     {/* Image */}

@@ -255,7 +255,7 @@ const BookingStep2 = () => {
                       onClick={() => handleBookNow(item)}
                       className="px-6 py-2 bg-[#8D6E63] text-white text-[10px] font-display font-bold rounded-xl hover:bg-[#5D4037] transition-all uppercase tracking-[0.2em] shadow-sm"
                     >
-                      Book Now
+                      Pesan
                     </button>
                   </div>
                 </div>

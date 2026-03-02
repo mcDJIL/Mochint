@@ -38,10 +38,10 @@ const BookingSuccess = () => {
   if (!booking || !user) return null;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-[#FDFBF7] p-4 sm:p-6 md:p-8 font-sans">
       
-      {/* NAVBAR SEDERHANA */}
-      <nav className="flex items-center gap-3 text-[10px] md:text-xs mb-10 font-bold uppercase tracking-[0.2em] text-gray-400 font-sans">
+      {/* NAVBAR SEDERHANA - HIDDEN ON MOBILE */}
+      <nav className="hidden md:flex items-center gap-3 text-xs mb-10 font-bold uppercase tracking-[0.2em] text-gray-400 font-sans">
         <button 
           onClick={() => navigate('/member')} 
           className="p-2 bg-white rounded-lg shadow-sm text-[#8D6E63] hover:bg-[#8D6E63] hover:text-white transition-all"
@@ -55,15 +55,15 @@ const BookingSuccess = () => {
       </nav>
 
       <div className="max-w-6xl mx-auto text-left">
-        <h1 className="text-4xl md:text-6xl font-display font-bold text-[#8D6E63] mb-2 tracking-tighter leading-tight">Detail</h1>
-        <p className="text-gray-500 mb-12 text-sm md:text-base leading-relaxed font-sans font-medium">
+        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-display font-bold text-[#8D6E63] mb-2 tracking-tighter leading-tight">Detail</h1>
+        <p className="text-gray-500 mb-8 sm:mb-10 md:mb-12 text-xs sm:text-sm md:text-base leading-relaxed font-sans font-medium">
           Tampil memukau setiap hari dengan solusi kecantikan modern yang disesuaikan hanya untuk Anda!
         </p>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           
           {/* KIRI: RINCIAN APPOINTMENT */}
-          <div className="flex-1 bg-white rounded-[40px] shadow-sm border border-gray-100 p-8 md:p-12 relative overflow-hidden">
+          <div className="flex-1 bg-white rounded-2xl sm:rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 p-6 sm:p-8 md:p-12 relative overflow-hidden">
             <div className="flex justify-between items-center mb-8">
               <div>
                 <h2 className="text-3xl font-display font-bold text-[#5D4037] tracking-tight">Rincian</h2>

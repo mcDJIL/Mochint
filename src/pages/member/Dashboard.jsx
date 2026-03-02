@@ -423,64 +423,64 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] pb-20 font-sans text-[#5D4037]">
-      <div className="container mx-auto px-4 sm:px-6 pt-8 md:pt-10">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 pt-6 sm:pt-8 md:pt-10">
         
         {/* HEADER DASHBOARD */}
-        <div className="mb-8 text-left">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl font-display font-bold text-[#5D4037] tracking-tighter leading-tight">
+        <div className="mb-6 sm:mb-8 text-left">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-display font-bold text-[#5D4037] tracking-tighter leading-tight">
             Mochint Beauty Care
           </h1>
-          <p className="text-[#8D6E63] font-bold font-sans uppercase text-xs tracking-widest mt-1">
+          <p className="text-[#8D6E63] font-bold font-sans uppercase text-[10px] sm:text-xs tracking-widest mt-1">
             Layanan Member 
           </p>
-          <p className="text-sm text-gray-400 mt-1 italic font-sans opacity-70">
+          <p className="text-xs sm:text-sm text-gray-400 mt-1 italic font-sans opacity-70">
             Layanan Istimewa untuk Anda
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           
           {/* KOLOM KIRI: KARTU PROFIL & PENGINGAT */}
-          <div className="lg:col-span-1 space-y-6 text-left">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6 text-left">
             
             {/* KARTU PROFIL */}
-            <div className="bg-[#8D6E63] rounded-3xl md:rounded-[30px] p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="bg-[#8D6E63] rounded-2xl sm:rounded-3xl md:rounded-[30px] p-5 sm:p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
               <div className="absolute -right-4 -top-4 opacity-10"></div>
               <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
-                    <User size={28} />
+                <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-md shrink-0">
+                    <User size={22} className="sm:w-[26px] sm:h-[26px] md:w-[28px] md:h-[28px]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] opacity-80 uppercase tracking-widest font-black font-sans">
+                    <p className="text-[9px] sm:text-[10px] opacity-80 uppercase tracking-widest font-black font-sans">
                       {user.role === 'admin' ? 'Admin' : 'Member'} {user.role === 'premium_member' ? 'Premium' : ''}
                     </p>
-                    <h2 className="text-lg md:text-xl font-display font-bold truncate tracking-tight">
+                    <h2 className="text-base sm:text-lg md:text-xl font-display font-bold truncate tracking-tight">
                       {user.name}
                     </h2>
                   </div>
                 </div>
                 
-                <div className="space-y-3 text-sm border-t border-white/20 pt-6 font-sans">
-                  <div className="flex justify-between">
-                    <span className="opacity-70">ID Member</span>
-                    <span className="font-mono font-bold tracking-wider">
+                <div className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm border-t border-white/20 pt-4 sm:pt-5 md:pt-6 font-sans">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="opacity-70 text-[11px] sm:text-xs">ID Member</span>
+                    <span className="font-mono font-bold tracking-wider text-[11px] sm:text-xs">
                       {user.id || 'T/A'}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-70">No. HP</span>
-                    <span>{user.phone || 'Belum diatur'}</span>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="opacity-70 text-[11px] sm:text-xs">No. HP</span>
+                    <span className="text-[11px] sm:text-xs">{user.phone || 'Belum diatur'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-70">Email</span>
-                    <span className="truncate max-w-[140px] md:max-w-[160px] text-right">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="opacity-70 text-[11px] sm:text-xs">Email</span>
+                    <span className="truncate max-w-[120px] sm:max-w-[140px] md:max-w-[160px] text-right text-[11px] sm:text-xs">
                       {user.email}
                     </span>
                   </div>
                   <div className="flex justify-between items-start gap-2">
-                    <span className="opacity-70 shrink-0">Alamat</span>
-                    <span className="text-right text-[11px] leading-relaxed italic opacity-90 flex-1">
+                    <span className="opacity-70 shrink-0 text-[11px] sm:text-xs">Alamat</span>
+                    <span className="text-right text-[10px] sm:text-[11px] leading-relaxed italic opacity-90 flex-1">
                       {user.address || 'Alamat belum diatur'}
                     </span>
                   </div>
@@ -488,7 +488,7 @@ const Dashboard = () => {
 
                 <button 
                   onClick={() => setIsEditModalOpen(true)}
-                  className="w-full mt-6 py-3 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-xs font-display font-bold uppercase tracking-widest transition-all"
+                  className="w-full mt-4 sm:mt-5 md:mt-6 py-2.5 sm:py-3 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-[10px] sm:text-xs font-display font-bold uppercase tracking-widest transition-all active:scale-95"
                 >
                   Edit Profil
                 </button>
@@ -496,9 +496,9 @@ const Dashboard = () => {
             </div>
 
             {/* BAGIAN PENGINGAT */}
-            <div className="bg-white rounded-3xl md:rounded-[30px] p-6 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-display font-bold text-[#5D4037]">Pengingat Appointment</h3>
+            <div className="bg-white rounded-2xl sm:rounded-3xl md:rounded-[30px] p-4 sm:p-5 md:p-6 shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h3 className="font-display font-bold text-sm sm:text-base text-[#5D4037]">Pengingat Appointment</h3>
                 {upcomingAppointments.length > 0 && (
                   <span className="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-black uppercase tracking-widest font-sans">
                     {upcomingAppointments.length} Aktif
@@ -524,18 +524,18 @@ const Dashboard = () => {
                     return (
                       <div 
                         key={appointment.id}
-                        className="flex items-start gap-4 p-4 bg-[#FDFBF7] rounded-2xl border border-[#F5F1EE] hover:border-[#8D6E63]/30 transition-all cursor-pointer"
+                        className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-[#FDFBF7] rounded-xl sm:rounded-2xl border border-[#F5F1EE] hover:border-[#8D6E63]/30 transition-all cursor-pointer active:scale-95"
                         onClick={() => navigate(`/member/appointment/${appointment.id}`)}
                       >
-                        <div className="bg-[#8D6E63]/10 p-3 rounded-xl text-[#8D6E63] shrink-0">
-                          <Clock size={20} />
+                        <div className="bg-[#8D6E63]/10 p-2 sm:p-3 rounded-lg sm:rounded-xl text-[#8D6E63] shrink-0">
+                          <Clock size={18} className="sm:w-5 sm:h-5" />
                         </div>
-                        <div className="font-sans flex-1">
-                          <p className="text-sm font-bold text-[#5D4037]">
+                        <div className="font-sans flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-[#5D4037] truncate">
                             {appointment.treatment_name || 'Treatment'}
                           </p>
-                          <p className="text-xs text-gray-500">{formattedDate}</p>
-                          <p className="text-xs text-[#8D6E63] font-black mt-1">
+                          <p className="text-[10px] sm:text-xs text-gray-500 truncate">{formattedDate}</p>
+                          <p className="text-[10px] sm:text-xs text-[#8D6E63] font-black mt-0.5 sm:mt-1">
                             {appointment.time}
                           </p>
                         </div>
@@ -545,22 +545,22 @@ const Dashboard = () => {
                   
                   <button
                     onClick={() => navigate('/member/appointment')}
-                    className="w-full mt-2 py-2 text-xs font-bold text-[#8D6E63] hover:bg-[#8D6E63]/5 rounded-xl transition-all"
+                    className="w-full mt-2 py-2 text-[10px] sm:text-xs font-bold text-[#8D6E63] hover:bg-[#8D6E63]/5 rounded-xl transition-all active:scale-95"
                   >
                     Lihat Semua Appointment →
                   </button>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Calendar size={28} className="text-gray-400" />
+                <div className="text-center py-6 sm:py-8">
+                  <div className="bg-gray-100 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Calendar size={22} className="sm:w-6 sm:h-6 md:w-7 md:h-7 text-gray-400" />
                   </div>
-                  <p className="text-sm text-gray-500 font-sans mb-3">
+                  <p className="text-xs sm:text-sm text-gray-500 font-sans mb-3 px-2">
                     Belum ada appointment terjadwal
                   </p>
                   <button
                     onClick={() => navigate('/member/booking/step-1')}
-                    className="px-4 py-2 bg-[#8D6E63] text-white text-xs font-bold rounded-xl hover:bg-[#5D4037] transition-all"
+                    className="px-3 sm:px-4 py-2 bg-[#8D6E63] text-white text-[10px] sm:text-xs font-bold rounded-xl hover:bg-[#5D4037] transition-all active:scale-95"
                   >
                     Buat Appointment Baru
                   </button>
@@ -570,35 +570,35 @@ const Dashboard = () => {
           </div>
 
           {/* KOLOM KANAN */}
-          <div className="lg:col-span-2 space-y-6 text-left">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div 
                 onClick={() => navigate('/member/booking/step-1')} 
-                className="group bg-white p-6 md:p-8 rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer"
+                className="group bg-white p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer active:scale-95"
               >
-                <div className="bg-[#8D6E63] w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
-                  <Calendar size={24} />
+                <div className="bg-[#8D6E63] w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center text-white mb-4 sm:mb-5 md:mb-6 group-hover:scale-110 transition-transform">
+                  <Calendar size={20} className="sm:w-[22px] sm:h-[22px] md:w-6 md:h-6" />
                 </div>
-                <h3 className="text-lg md:text-xl font-display font-bold text-[#5D4037]">
+                <h3 className="text-base sm:text-lg md:text-xl font-display font-bold text-[#5D4037]">
                   Pemesanan Online
                 </h3>
-                <div className="mt-4 flex items-center text-[#8D6E63] font-display font-bold text-xs uppercase tracking-widest">
-                  Mulai Pemesanan <ChevronRight size={18} className="ml-1" />
+                <div className="mt-3 sm:mt-4 flex items-center text-[#8D6E63] font-display font-bold text-[10px] sm:text-xs uppercase tracking-widest">
+                  Mulai Pemesanan <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px] ml-1" />
                 </div>
               </div>
 
               <div 
                 onClick={() => navigate('/member/appointment')} 
-                className="group bg-white p-6 md:p-8 rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer"
+                className="group bg-white p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer active:scale-95"
               >
-                <div className="bg-[#8D6E63] w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
-                  <Clock size={24} />
+                <div className="bg-[#8D6E63] w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center text-white mb-4 sm:mb-5 md:mb-6 group-hover:scale-110 transition-transform">
+                  <Clock size={20} className="sm:w-[22px] sm:h-[22px] md:w-6 md:h-6" />
                 </div>
-                <h3 className="text-lg md:text-xl font-display font-bold text-[#5D4037]">
+                <h3 className="text-base sm:text-lg md:text-xl font-display font-bold text-[#5D4037]">
                   Janji Temu
                 </h3>
-                <div className="mt-4 flex items-center text-[#5D4037] font-display font-bold text-xs uppercase tracking-widest">
-                  Lihat Jadwal <ChevronRight size={18} className="ml-1" />
+                <div className="mt-3 sm:mt-4 flex items-center text-[#5D4037] font-display font-bold text-[10px] sm:text-xs uppercase tracking-widest">
+                  Lihat Jadwal <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px] ml-1" />
                 </div>
               </div>
             </div>
@@ -606,53 +606,53 @@ const Dashboard = () => {
             {/* KONSULTASI WHATSAPP */}
             <div 
               onClick={() => window.open('https://wa.me/+6281994204009', '_blank')} 
-              className="group bg-white p-6 md:p-8 rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer"
+              className="group bg-white p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer active:scale-95"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 md:gap-6">
-                  <div className="bg-green-500 w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-white group-hover:rotate-12 transition-transform shadow-lg">
-                    <MessageCircle size={24} />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 sm:gap-4 md:gap-6 flex-1 min-w-0">
+                  <div className="bg-green-500 w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center text-white group-hover:rotate-12 transition-transform shadow-lg shrink-0">
+                    <MessageCircle size={20} className="sm:w-[22px] sm:h-[22px] md:w-6 md:h-6" />
                   </div>
-                  <div>
-                    <h3 className="text-lg md:text-xl font-display font-bold text-[#5D4037]">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg md:text-xl font-display font-bold text-[#5D4037] truncate">
                       Konsultasi WhatsApp
                     </h3>
-                    <p className="text-sm text-[#A1887F] font-sans font-medium mt-1">
+                    <p className="text-xs sm:text-sm text-[#A1887F] font-sans font-medium mt-0.5 sm:mt-1 line-clamp-1">
                       Layanan bantuan langsung dari admin kami.
                     </p>
                   </div>
                 </div>
-                <ChevronRight size={24} className="text-gray-300 group-hover:text-[#8D6E63] transition-colors hidden md:block" />
+                <ChevronRight size={20} className="sm:w-[22px] sm:h-[22px] md:w-6 md:h-6 text-gray-300 group-hover:text-[#8D6E63] transition-colors shrink-0" />
               </div>
             </div>
 
             {/* FITUR ULASAN */}
-            <div className="bg-white rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-              <div className="bg-[#F9F6F2] p-6 md:p-10 md:w-1/3 flex flex-col justify-center">
-                <div className="bg-[#8D6E63]/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 text-[#8D6E63] mx-auto md:mx-0">
-                  <Star size={24} fill="currentColor" />
+            <div className="bg-white rounded-2xl sm:rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
+              <div className="bg-[#F9F6F2] p-5 sm:p-6 md:p-10 md:w-1/3 flex flex-col justify-center">
+                <div className="bg-[#8D6E63]/10 w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 text-[#8D6E63] mx-auto md:mx-0">
+                  <Star size={20} className="sm:w-[22px] sm:h-[22px] md:w-6 md:h-6" fill="currentColor" />
                 </div>
-                <h3 className="text-lg md:text-xl font-display font-bold mb-2 tracking-tight text-center md:text-left">
+                <h3 className="text-base sm:text-lg md:text-xl font-display font-bold mb-1 sm:mb-2 tracking-tight text-center md:text-left">
                   Ulasan Saya
                 </h3>
-                <p className="text-xs text-[#A1887F] font-sans leading-relaxed text-center md:text-left">
+                <p className="text-[10px] sm:text-xs text-[#A1887F] font-sans leading-relaxed text-center md:text-left">
                   Berikan rating dan ulasan Anda untuk kami.
                 </p>
               </div>
-              <div className="p-6 md:p-10 flex-1 bg-white">
-                <form onSubmit={handleSubmitReview} className="space-y-4">
-                  <div className="flex gap-2 justify-center md:justify-start">
+              <div className="p-5 sm:p-6 md:p-10 flex-1 bg-white">
+                <form onSubmit={handleSubmitReview} className="space-y-3 sm:space-y-4">
+                  <div className="flex gap-1.5 sm:gap-2 justify-center md:justify-start">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button 
                         key={star} 
                         type="button" 
                         onClick={() => setReviewData({...reviewData, rating: star})}
-                        className="focus:outline-none"
+                        className="focus:outline-none active:scale-95 transition-transform"
                       >
                         <Star 
-                          size={24} 
+                          size={20} 
+                          className={`sm:w-[22px] sm:h-[22px] md:w-6 md:h-6 ${star <= reviewData.rating ? "text-yellow-400" : "text-gray-300"}`}
                           fill={star <= reviewData.rating ? "#FACC15" : "none"} 
-                          className={star <= reviewData.rating ? "text-yellow-400" : "text-gray-300"} 
                         />
                       </button>
                     ))}
@@ -662,19 +662,19 @@ const Dashboard = () => {
                     value={reviewData.comment} 
                     onChange={(e) => setReviewData({...reviewData, comment: e.target.value})}
                     placeholder="Ceritakan pengalaman Anda di sini..." 
-                    className="w-full bg-[#FDFBF7] p-4 rounded-2xl border border-transparent focus:border-[#8D6E63] outline-none text-sm font-sans transition-all font-medium"
+                    className="w-full bg-[#FDFBF7] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-transparent focus:border-[#8D6E63] outline-none text-xs sm:text-sm font-sans transition-all font-medium"
                     required
                   />
                   <button 
                     type="submit"
                     disabled={isSubmittingReview}
-                    className="w-full py-4 bg-[#8D6E63] text-white font-display font-bold rounded-2xl text-[11px] uppercase tracking-widest hover:bg-[#5D4037] transition-all flex items-center justify-center gap-3 shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-3 sm:py-4 bg-[#8D6E63] text-white font-display font-bold rounded-xl sm:rounded-2xl text-[10px] sm:text-[11px] uppercase tracking-widest hover:bg-[#5D4037] transition-all flex items-center justify-center gap-2 sm:gap-3 shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmittingReview ? (
                       "Memproses..."
                     ) : (
                       <>
-                        <Send size={16} /> Publikasikan Ulasan
+                        <Send size={14} className="sm:w-4 sm:h-4" /> Publikasikan Ulasan
                       </>
                     )}
                   </button>
