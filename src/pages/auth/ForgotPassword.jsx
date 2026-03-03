@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
-const ForgotPassword = ({ onBack }) => {
+const SetPassword = ({ onBack }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -145,7 +145,7 @@ const ForgotPassword = ({ onBack }) => {
         </p>
       </div>
 
-      {/* Notification Toast - Style Admin */}
+      {/* Notification - Responsive Style */}
       {notification.show && (
         <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 animate-slide-in-right">
           <div className={`rounded-lg shadow-lg p-3 sm:p-4 w-full sm:min-w-[320px] sm:max-w-md ${
@@ -188,4 +188,4 @@ const ForgotPassword = ({ onBack }) => {
   );
 };
 
-export default ForgotPassword;
+export default SetPassword;

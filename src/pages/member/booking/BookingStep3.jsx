@@ -558,12 +558,6 @@ const BookingStep3 = () => {
                     {displayDate.length === 10 && !selectedDate && dateError && (
                       <p className="text-red-600">❌ {dateError}</p>
                     )}
-                    {selectedDate && (
-                      <p className="text-green-600 font-medium flex items-center gap-1">
-                        <span>✅</span>
-                        <span>Tanggal valid - Silakan pilih waktu di bawah</span>
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>

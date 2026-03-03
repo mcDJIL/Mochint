@@ -301,32 +301,40 @@ const SetPassword = () => {
         </div>
       </div>
 
-      {/* Notification */}
+      {/* Notification - Responsive Style */}
       {notification.show && (
         <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 animate-slide-in-right">
-          <div className={`rounded-lg shadow-lg p-4 w-full sm:min-w-[320px] sm:max-w-md ${
+          <div className={`rounded-lg shadow-lg p-3 sm:p-4 w-full sm:min-w-[320px] sm:max-w-md ${
             notification.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
           }`}>
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 {notification.type === 'success' ? (
-                  <CheckCircle className="h-6 w-6 text-green-600" />
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                 ) : (
-                  <AlertCircle className="h-6 w-6 text-red-600" />
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
                 )}
               </div>
               <div className="ml-3 flex-1">
-                <p className={`text-sm font-medium ${
+                <h3 className={`text-xs sm:text-sm font-medium ${
                   notification.type === 'success' ? 'text-green-800' : 'text-red-800'
+                }`}>
+                  {notification.type === 'success' ? 'Berhasil!' : 'Gagal!'}
+                </h3>
+                <p className={`mt-1 text-xs sm:text-sm ${
+                  notification.type === 'success' ? 'text-green-700' : 'text-red-700'
                 }`}>
                   {notification.message}
                 </p>
               </div>
               <button
-                onClick={() => setNotification({ ...notification, show: false })}
-                className="ml-4 flex-shrink-0 text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-xl">&times;</span>
+                onClick={() => setNotification({ show: false, type: '', message: '' })}
+                className={`ml-4 flex-shrink-0 rounded-md inline-flex ${
+                  notification.type === 'success' ? 'text-green-500 hover:text-green-700' : 'text-red-500 hover:text-red-700'
+                }`}>
+                <svg className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
           </div>
