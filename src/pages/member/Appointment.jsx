@@ -68,7 +68,6 @@ const Appointment = () => {
           }) : '-',
           time: item.time || '-',
           price: item.amount || 0,
-          therapistName: item.therapist_name || 'Therapist tidak tersedia',
           status: item.status,
           customerName: item.customer_name || userData.name || 'Pasien'
         }));
@@ -96,7 +95,6 @@ const Appointment = () => {
             date: item.date,
             time: '10:00 WIB',
             price: parseInt(item.price.replace(/[^0-9]/g, '')),
-            therapistName: 'Dr. Sarah',
             status: 'confirmed',
             customerName: 'Siti Maulana'
           }));
@@ -186,9 +184,6 @@ const Appointment = () => {
                         Treatment
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider font-sans">
-                        Therapist
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider font-sans">
                         Tanggal & Waktu
                       </th>
                       <th className="px-6 py-4 text-right text-sm font-bold uppercase tracking-wider font-sans">
@@ -221,11 +216,6 @@ const Appointment = () => {
                                 {item.treatmentName}
                               </span>
                             </div>
-                          </td>
-                          <td className="px-6 py-5">
-                            <span className="text-sm text-gray-700 font-medium font-sans">
-                              {item.therapistName}
-                            </span>
                           </td>
                           <td className="px-6 py-5">
                             <div className="flex flex-col">
@@ -315,19 +305,6 @@ const Appointment = () => {
                       </div>
 
                       <div className="h-px bg-gray-100"></div>
-
-                      {/* Therapist */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <User size={14} className="text-gray-400" />
-                          <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide font-sans">
-                            Therapist
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-700 font-medium font-sans">
-                          {item.therapistName}
-                        </span>
-                      </div>
 
                       {/* Date & Time */}
                       <div className="flex items-center justify-between">

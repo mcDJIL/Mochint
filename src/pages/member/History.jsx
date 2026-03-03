@@ -67,7 +67,6 @@ const History = () => {
           }) : '-',
           time: item.time || '-',
           price: item.amount || 0,
-          therapistName: item.therapist_name || 'Therapist tidak tersedia',
           status: item.status
         }));
 
@@ -163,9 +162,6 @@ const History = () => {
                         Treatment
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider font-sans">
-                        Therapist
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider font-sans">
                         Tanggal
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider font-sans">
@@ -196,11 +192,6 @@ const History = () => {
                             </div>
                           </td>
                           <td className="px-6 py-5">
-                            <span className="text-sm text-gray-700 font-medium font-sans">
-                              {item.therapistName}
-                            </span>
-                          </td>
-                          <td className="px-6 py-5">
                             <span className="text-sm text-gray-600 font-sans">
                               {item.date}
                             </span>
@@ -219,7 +210,7 @@ const History = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" className="px-6 py-16 text-center">
+                        <td colSpan="4" className="px-6 py-16 text-center">
                           <div className="flex flex-col items-center gap-3">
                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                               <span className="text-3xl">📋</span>
@@ -267,14 +258,6 @@ const History = () => {
                       </div>
 
                       <div className="h-px bg-gray-100"></div>
-
-                      {/* Therapist */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide font-sans">Therapist</span>
-                        <span className="text-sm text-gray-700 font-medium font-sans">
-                          {item.therapistName}
-                        </span>
-                      </div>
 
                       {/* Date */}
                       <div className="flex items-center justify-between">

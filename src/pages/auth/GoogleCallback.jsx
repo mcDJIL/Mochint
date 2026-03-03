@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
 const GoogleCallback = () => {
   const navigate = useNavigate();
@@ -18,26 +19,21 @@ const GoogleCallback = () => {
         console.log('User:', user);
         console.log('Needs password:', user.needsPassword);
         
-        // Check if user needs to set password (first time login)
         if (user.needsPassword) {
-          // User belum punya password, redirect ke email verification & set password
           console.log('🔐 User needs to set password, redirecting to email verification');
           navigate('/auth/verify-email', {
             state: { user, token },
             replace: true
           });
         } else {
-          // User sudah punya password, langsung login
           console.log('✅ User already has password, logging in directly');
           
-          // Store authentication data
           localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('active_user', JSON.stringify(user));
           localStorage.setItem('user_type', 'member');
           localStorage.setItem('login_time', new Date().toISOString());
           
-          // Redirect to member dashboard
           navigate('/member', { replace: true });
         }
       } catch (error) {
@@ -50,10 +46,10 @@ const GoogleCallback = () => {
   }, [navigate, searchParams]);
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-[#3E2723] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-[#3E2723] font-medium">Memproses login dengan Google...</p>
+        <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 border-4 text-[#8D6E63] animate-spin mx-auto mb-4" />
+        <p className="text-[#3E2723] font-medium text-sm sm:text-base">Memproses login dengan Google...</p>
       </div>
     </div>
   );

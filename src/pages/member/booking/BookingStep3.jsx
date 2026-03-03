@@ -2,19 +2,18 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Calendar as CalendarIcon, Clock, Info, Bed, Loader2 } from 'lucide-react';
 import { appointmentAPI } from '../../../services/api';
-import axios from 'axios';
 
 const BookingStep3 = () => {
   const navigate = useNavigate();
   
-  const [selectedDate, setSelectedDate] = useState(''); // Format YYYY-MM-DD untuk backend
-  const [displayDate, setDisplayDate] = useState(''); // Format DD/MM/YYYY untuk display
+  const [selectedDate, setSelectedDate] = useState('');
+  const [displayDate, setDisplayDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [treatment, setTreatment] = useState(null);
-  const [bookings, setBookings] = useState([]); // Data booking dari API/backend
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null); // Error untuk fetching data
-  const [dateError, setDateError] = useState(null); // Error untuk validasi tanggal
+  const [error, setError] = useState(null);
+  const [dateError, setDateError] = useState(null);
 
   useEffect(() => {
     const savedTreatment = sessionStorage.getItem('selectedTreatment');
@@ -25,7 +24,6 @@ const BookingStep3 = () => {
     }
   }, [navigate]);
 
-  // Fetch appointments when date changes
   useEffect(() => {
     if (selectedDate) {
       fetchBookingsForDate(selectedDate);
@@ -33,35 +31,33 @@ const BookingStep3 = () => {
   }, [selectedDate]);
 
   const CLINIC_HOURS = {
-    open: 8,    // 08:00
-    close: 20   // 20:00
+    open: 8,
+    close: 20
   };
   
   const BEDS_CAPACITY = 3;
-  
-  // PENTING: Semua treatment menggunakan durasi DEFAULT 90 menit (1 jam 30 menit)
-  // Ini standar sistem booking klinik dan konsisten dengan BedManagement
-  const TREATMENT_DURATION = 90; // Fixed 90 menit untuk semua treatment
+  const TREATMENT_DURATION = 90;
 
-  // Fetch appointments from backend
   const fetchBookingsForDate = async (date) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Fetch all appointments
       const response = await appointmentAPI.getAll();
       
       if (response.data && response.data.success) {
         const allAppointments = response.data.data;
         
+        // Get current user ID
+        const activeUser = JSON.parse(localStorage.getItem('active_user'));
+        const currentUserId = activeUser?.id;
+        
         console.log('📅 Fetching appointments for date:', date);
+        console.log('👤 Current user ID:', currentUserId);
         console.log('📊 Total appointments from API:', allAppointments.length);
         
-        // Filter appointments for selected date and ONLY confirmed status
-        // Appointment yang sudah completed tidak mengurangi ketersediaan bed masa depan
+        // Filter appointments for selected date and confirmed status
         const filteredAppointments = allAppointments.filter(appointment => {
-          // Parse date dari backend - bisa dalam format YYYY-MM-DD atau timestamp
           const appointmentDate = appointment.date?.split('T')[0] || appointment.date;
           const dateMatch = appointmentDate === date;
           const statusMatch = appointment.status === 'confirmed';
@@ -73,20 +69,19 @@ const BookingStep3 = () => {
         console.log('📋 Appointments:', filteredAppointments.map(a => ({ 
           time: a.time, 
           treatment: a.treatment_name,
+          member_id: a.member_id,
           status: a.status 
         })));
         
-        // Convert to format needed for bed calculation
         const convertedBookings = filteredAppointments.map(appointment => {
-          // PENTING: Gunakan durasi 90 menit DEFAULT untuk semua treatment
-          // Ini konsisten dengan BedManagement.jsx dan sistem booking
-          const duration = 90; // 1 jam 30 menit untuk semua treatment
+          const duration = 90;
           
           return {
             date: date,
-            startTime: appointment.time, // Format: "HH:MM" dari database
+            startTime: appointment.time,
             duration: duration,
-            bedsUsed: 1 // Setiap appointment menggunakan 1 bed
+            bedsUsed: 1,
+            member_id: appointment.member_id // Tambahkan member_id untuk cek user
           };
         });
         
@@ -99,20 +94,18 @@ const BookingStep3 = () => {
     } catch (err) {
       console.error('❌ Error fetching appointments:', err);
       setError('Gagal memuat data jadwal. Menggunakan data offline.');
-      setBookings([]); // Set empty if error
+      setBookings([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Generate semua slot waktu dari jam buka hingga tutup
   const generateAllTimeSlots = () => {
     const slots = [];
-    const interval = 30; // interval 30 menit
+    const interval = 30;
     
     for (let hour = CLINIC_HOURS.open; hour < CLINIC_HOURS.close; hour++) {
       for (let minute = 0; minute < 60; minute += interval) {
-        // Skip jika melewati jam tutup
         if (hour === CLINIC_HOURS.close && minute > 0) break;
         
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
@@ -122,7 +115,6 @@ const BookingStep3 = () => {
     return slots;
   };
 
-  // Hitung jam selesai
   const calculateEndTime = (startTime, duration = TREATMENT_DURATION) => {
     if (!startTime) return "";
     const [hours, minutes] = startTime.split(':').map(Number);
@@ -132,14 +124,12 @@ const BookingStep3 = () => {
     return date.toTimeString().substring(0, 5);
   };
 
-  // Hitung ketersediaan bed untuk setiap slot waktu
   const calculateBedAvailability = useMemo(() => {
     if (!selectedDate) return {};
     
     const allSlots = generateAllTimeSlots();
     const availability = {};
     
-    // Inisialisasi semua slot dengan kapasitas penuh
     allSlots.forEach(slot => {
       availability[slot] = BEDS_CAPACITY;
     });
@@ -147,33 +137,29 @@ const BookingStep3 = () => {
     console.log('🛏️ Calculating bed availability...');
     console.log('📋 Bookings to process:', bookings.length);
     
-    // Kurangi bed untuk setiap booking yang ada
     bookings.forEach((booking, index) => {
       if (booking.date === selectedDate) {
         const startTime = booking.startTime;
         const endTime = calculateEndTime(startTime, booking.duration);
         
-        console.log(`📌 Booking ${index + 1}: ${startTime} - ${endTime} (${booking.duration} menit)`);
+        console.log(`Booking ${index + 1}: ${startTime} - ${endTime} (${booking.duration} menit)`);
         
-        // Kurangi bed untuk setiap slot yang overlap dengan booking
         allSlots.forEach(slot => {
           const slotTime = new Date(`2000-01-01T${slot}:00`);
           const bookingStart = new Date(`2000-01-01T${startTime}:00`);
           const bookingEnd = new Date(`2000-01-01T${endTime}:00`);
           
-          // Jika slot berada dalam rentang waktu booking, kurangi bed
           if (slotTime >= bookingStart && slotTime < bookingEnd) {
             const before = availability[slot];
             availability[slot] = Math.max(0, availability[slot] - booking.bedsUsed);
             if (before !== availability[slot]) {
-              console.log(`  ⏰ ${slot}: ${before} → ${availability[slot]} bed`);
+              console.log(`  ${slot}: ${before} → ${availability[slot]} bed`);
             }
           }
         });
       }
     });
     
-    // Log summary
     const fullSlots = Object.values(availability).filter(v => v === 0).length;
     const availableSlots = Object.values(availability).filter(v => v > 0).length;
     console.log(`📊 Summary: ${availableSlots} slots available, ${fullSlots} slots full`);
@@ -181,24 +167,55 @@ const BookingStep3 = () => {
     return availability;
   }, [selectedDate, bookings]);
 
-  // Cek apakah slot waktu valid untuk booking baru
+  // Cek apakah user sudah punya booking di tanggal yang sama
+  const hasUserBookingAtTime = (startTime) => {
+    const activeUser = JSON.parse(localStorage.getItem('active_user'));
+    const currentUserId = activeUser?.id;
+    
+    if (!currentUserId || !selectedDate) return false;
+    
+    const endTime = calculateEndTime(startTime);
+    
+    // Cek apakah ada booking user di slot yang overlap
+    return bookings.some(booking => {
+      // Skip jika bukan booking user ini
+      if (booking.member_id !== currentUserId) return false;
+      
+      const bookingStart = new Date(`2000-01-01T${booking.startTime}:00`);
+      const bookingEnd = new Date(`2000-01-01T${calculateEndTime(booking.startTime)}:00`);
+      const newStart = new Date(`2000-01-01T${startTime}:00`);
+      const newEnd = new Date(`2000-01-01T${endTime}:00`);
+      
+      // Cek overlap: booking baru overlap dengan booking yang sudah ada
+      const hasOverlap = (newStart < bookingEnd && newEnd > bookingStart);
+      
+      if (hasOverlap) {
+        console.log(`⚠️ User already has booking: ${booking.startTime} - ${calculateEndTime(booking.startTime)}`);
+      }
+      
+      return hasOverlap;
+    });
+  };
+
   const isTimeSlotValid = (startTime) => {
     if (!startTime || !selectedDate) return false;
+    
+    // Cek apakah user sudah punya booking yang overlap
+    if (hasUserBookingAtTime(startTime)) {
+      return false;
+    }
     
     const endTime = calculateEndTime(startTime);
     const slotEndTime = new Date(`2000-01-01T${endTime}:00`);
     const clinicCloseTime = new Date(`2000-01-01T${CLINIC_HOURS.close.toString().padStart(2, '0')}:00:00`);
     
-    // Cek apakah treatment selesai sebelum klinik tutup
     if (slotEndTime > clinicCloseTime) {
       return false;
     }
     
-    // Cek ketersediaan bed untuk setiap slot selama treatment
     const allSlots = generateAllTimeSlots();
     const treatmentSlots = [];
     
-    // Kumpulkan semua slot selama durasi treatment
     let currentTime = new Date(`2000-01-01T${startTime}:00`);
     const endTimeObj = new Date(`2000-01-01T${endTime}:00`);
     
@@ -210,43 +227,40 @@ const BookingStep3 = () => {
       currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
     
-    // Cek apakah ada cukup bed di semua slot
     return treatmentSlots.every(slot => 
       calculateBedAvailability[slot] !== undefined && calculateBedAvailability[slot] > 0
     );
   };
 
-  // Dapatkan jumlah bed tersedia untuk slot tertentu
   const getAvailableBedsForSlot = (time) => {
     return calculateBedAvailability[time] || 0;
   };
 
-  // Generate semua slot waktu dengan info ketersediaan
   const getAllTimeSlotsWithAvailability = () => {
     if (!selectedDate) return [];
     
-    return generateAllTimeSlots().map(slot => {
-      const endTime = calculateEndTime(slot);
-      const slotEndTime = new Date(`2000-01-01T${endTime}:00`);
-      const clinicCloseTime = new Date(`2000-01-01T${CLINIC_HOURS.close.toString().padStart(2, '0')}:00:00`);
-      
-      // Cek apakah treatment selesai sebelum klinik tutup
-      const exceedsClosingTime = slotEndTime > clinicCloseTime;
-      
-      // Cek ketersediaan bed
-      const availableBeds = getAvailableBedsForSlot(slot);
-      const hasAvailableBeds = availableBeds > 0;
-      
-      return {
-        time: slot,
-        availableBeds: availableBeds,
-        isAvailable: hasAvailableBeds && !exceedsClosingTime,
-        exceedsClosingTime: exceedsClosingTime
-      };
-    });
+    return generateAllTimeSlots()
+      .map(slot => {
+        const endTime = calculateEndTime(slot);
+        const slotEndTime = new Date(`2000-01-01T${endTime}:00`);
+        const clinicCloseTime = new Date(`2000-01-01T${CLINIC_HOURS.close.toString().padStart(2, '0')}:00:00`);
+        
+        const exceedsClosingTime = slotEndTime > clinicCloseTime;
+        const availableBeds = getAvailableBedsForSlot(slot);
+        const hasAvailableBeds = availableBeds > 0;
+        const userHasBooking = hasUserBookingAtTime(slot);
+        
+        return {
+          time: slot,
+          availableBeds: availableBeds,
+          isAvailable: hasAvailableBeds && !exceedsClosingTime && !userHasBooking,
+          exceedsClosingTime: exceedsClosingTime,
+          userHasBooking: userHasBooking
+        };
+      })
+      .filter(slot => !slot.exceedsClosingTime); // Filter out slots yang melewati jam tutup
   };
 
-  // Format date from DD/MM/YYYY to YYYY-MM-DD for storage
   const formatDateForStorage = (dateStr) => {
     if (!dateStr || dateStr.length !== 10) return '';
     const [day, month, year] = dateStr.split('/');
@@ -254,7 +268,6 @@ const BookingStep3 = () => {
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   };
 
-  // Format date from YYYY-MM-DD to DD/MM/YYYY for display
   const formatDateForDisplay = (dateStr) => {
     if (!dateStr) return '';
     const [year, month, day] = dateStr.split('-');
@@ -262,7 +275,6 @@ const BookingStep3 = () => {
     return `${day}/${month}/${year}`;
   };
 
-  // Validate DD/MM/YYYY format
   const isValidDateFormat = (dateStr) => {
     if (!dateStr || dateStr.length !== 10) return false;
     const [day, month, year] = dateStr.split('/');
@@ -276,7 +288,6 @@ const BookingStep3 = () => {
     if (monthNum < 1 || monthNum > 12) return false;
     if (yearNum < 2000 || yearNum > 2100) return false;
     
-    // Validate actual date
     const date = new Date(yearNum, monthNum - 1, dayNum);
     return date.getFullYear() === yearNum && 
            date.getMonth() === monthNum - 1 && 
@@ -284,35 +295,30 @@ const BookingStep3 = () => {
   };
 
   const handleDateChange = (value) => {
-    // Remove non-numeric characters except /
     let cleaned = value.replace(/[^0-9/]/g, '');
     
-    // Auto-format: add / after day and month
     if (cleaned.length === 2 && !cleaned.includes('/')) {
       cleaned = cleaned + '/';
     } else if (cleaned.length === 5 && cleaned.split('/').length === 2) {
       cleaned = cleaned + '/';
     }
     
-    // Limit to 10 characters (DD/MM/YYYY)
     if (cleaned.length > 10) {
       cleaned = cleaned.substring(0, 10);
     }
     
     setDisplayDate(cleaned);
     
-    // If complete date format, validate and convert
     if (cleaned.length === 10 && isValidDateFormat(cleaned)) {
       const storageDate = formatDateForStorage(cleaned);
       
-      // Check if date is not in the past
       const selectedDateObj = new Date(storageDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
       if (selectedDateObj >= today) {
         setSelectedDate(storageDate);
-        setSelectedTime(''); // Reset waktu ketika tanggal berubah
+        setSelectedTime('');
         setDateError(null);
       } else {
         setSelectedDate('');
@@ -329,9 +335,8 @@ const BookingStep3 = () => {
     }
   };
 
-  // Handle date picker change (from calendar)
   const handleDatePickerChange = (e) => {
-    const dateValue = e.target.value; // Format: YYYY-MM-DD
+    const dateValue = e.target.value;
     if (dateValue) {
       setSelectedDate(dateValue);
       setDisplayDate(formatDateForDisplay(dateValue));
@@ -347,14 +352,17 @@ const BookingStep3 = () => {
     }
     
     if (!isTimeSlotValid(selectedTime)) {
-      alert("Slot waktu tidak tersedia. Silakan pilih waktu lain.");
+      if (hasUserBookingAtTime(selectedTime)) {
+        alert("Anda sudah memiliki booking di waktu yang bersamaan. Silakan pilih waktu lain.");
+      } else {
+        alert("Slot waktu tidak tersedia. Silakan pilih waktu lain.");
+      }
       return;
     }
     
     try {
       setLoading(true);
       
-      // Get user data from localStorage
       const activeUser = JSON.parse(localStorage.getItem('active_user'));
       
       if (!activeUser || !activeUser.id) {
@@ -363,16 +371,14 @@ const BookingStep3 = () => {
         return;
       }
       
-      // Convert price from "685.000" format to number
       const priceString = treatment.price?.toString().replace(/\./g, '') || '0';
       const priceNumber = parseInt(priceString);
       
-      // Prepare appointment data
       const appointmentData = {
         member_id: activeUser.id,
         customer_name: activeUser.name,
         treatment_id: treatment.id,
-        therapist_id: null, // Will be assigned by admin or system
+        therapist_id: null,
         date: selectedDate,
         time: selectedTime,
         amount: priceNumber,
@@ -381,7 +387,6 @@ const BookingStep3 = () => {
       
       console.log('📝 Creating appointment:', appointmentData);
       
-      // Create appointment in database
       const response = await appointmentAPI.create(appointmentData);
       
       if (response.data && response.data.success) {
@@ -389,7 +394,6 @@ const BookingStep3 = () => {
         
         console.log('✅ Appointment created:', createdAppointment);
         
-        // Prepare data for success page
         const finalData = {
           ...treatment,
           appointmentId: createdAppointment.id,
@@ -416,7 +420,6 @@ const BookingStep3 = () => {
     }
   };
 
-  // Format tanggal untuk display
   const formatSelectedDate = () => {
     if (!selectedDate) return "-";
     const date = new Date(selectedDate);
@@ -431,7 +434,6 @@ const BookingStep3 = () => {
   return (
     <div className="min-h-screen bg-[#FDFBF7] p-4 sm:p-6 md:p-8 font-sans text-[#3E2723]">
       
-      {/* NAVBAR - HIDDEN ON MOBILE */}
       <nav className="hidden md:flex items-center gap-3 text-xs mb-8 font-bold uppercase tracking-[0.2em] text-gray-400 font-sans">
         <button 
           onClick={() => navigate('/member')} 
@@ -449,7 +451,6 @@ const BookingStep3 = () => {
         <div className="flex-1 space-y-4 sm:space-y-6">
           <div className="bg-white p-5 sm:p-6 md:p-8 lg:p-10 rounded-2xl sm:rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100 text-left">
             
-            {/* HEADER SECTION */}
             <div className="mb-6 sm:mb-8 md:mb-10 text-left">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-[#5D4037] mb-2 sm:mb-3 tracking-tighter">Tentukan Jadwal</h1>
               <p className="text-gray-500 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed font-sans font-medium">
@@ -458,16 +459,13 @@ const BookingStep3 = () => {
             </div>
 
             <div className="space-y-6 sm:space-y-8 md:space-y-10 mt-6 sm:mt-8">
-              {/* 1. INPUT TANGGAL */}
               <div>
                 <label className="text-[9px] sm:text-[10px] font-black text-[#5D4037] mb-3 sm:mb-4 uppercase flex items-center gap-2 tracking-wider sm:tracking-widest font-sans ml-1">
                   <CalendarIcon size={14} className="text-[#8D6E63] shrink-0" /> 1. Pilih Tanggal Perawatan
                 </label>
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col lg:flex-row gap-4 items-start">
-                    {/* Input tanggal dengan icon kalender di dalam */}
                     <div className="w-full lg:w-2/3 relative group">
-                      {/* Text input for manual entry with DD/MM/YYYY format */}
                       <input 
                         type="text" 
                         value={displayDate}
@@ -483,7 +481,6 @@ const BookingStep3 = () => {
                         onChange={(e) => handleDateChange(e.target.value)}
                       />
                       
-                      {/* Calendar picker overlay - icon di dalam input */}
                       <div className="absolute right-2 top-1/2 -translate-y-1/2">
                         <div className="relative">
                           <input 
@@ -500,7 +497,6 @@ const BookingStep3 = () => {
                         </div>
                       </div>
                       
-                      {/* Tooltip on hover - desktop only */}
                       <div className="hidden md:block absolute -top-10 right-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <div className="bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap">
                           Klik untuk buka kalender
@@ -508,7 +504,6 @@ const BookingStep3 = () => {
                       </div>
                     </div>
                     
-                    {/* Display selected date */}
                     {selectedDate && (
                       <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-[20px] text-sm text-green-700 font-medium w-full lg:w-auto animate-fadeIn">
                         <CalendarIcon size={16} />
@@ -517,7 +512,6 @@ const BookingStep3 = () => {
                     )}
                   </div>
                   
-                  {/* Helper text */}
                   <div className="text-xs text-gray-500 ml-2 space-y-1">
                     {!displayDate && (
                       <>
@@ -543,7 +537,6 @@ const BookingStep3 = () => {
                 </div>
               </div>
 
-              {/* 2. PILIH JAM */}
               <div>
                 <label className="text-[10px] font-black text-[#5D4037] mb-4 uppercase flex items-center gap-2 tracking-widest font-sans ml-1">
                   <Clock size={14} className="text-[#8D6E63]" /> 2. Pilih Jam Mulai
@@ -568,30 +561,14 @@ const BookingStep3 = () => {
                     )}
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                       {getAllTimeSlotsWithAvailability().map((slot) => {
-                        const { time, availableBeds, isAvailable, exceedsClosingTime } = slot;
+                        const { time, availableBeds, isAvailable, userHasBooking } = slot;
                         const isSelected = selectedTime === time;
                         
-                        // Tentukan warna indikator berdasarkan ketersediaan
-                        let indicatorColor = '';
-                        let statusText = '';
-                        
-                        if (!isAvailable) {
-                          if (exceedsClosingTime) {
-                            indicatorColor = 'bg-gray-400';
-                            statusText = 'TUTUP';
-                          } else if (availableBeds === 0) {
-                            indicatorColor = 'bg-red-500';
-                            statusText = 'PENUH';
-                          }
-                        } else if (availableBeds === 1) {
-                          indicatorColor = 'bg-amber-500';
-                          statusText = '1 BED';
-                        } else if (availableBeds === 2) {
-                          indicatorColor = 'bg-blue-500';
-                          statusText = '2 BED';
-                        } else {
-                          indicatorColor = 'bg-green-500';
-                          statusText = '3 BED';
+                        let statusText = 'TERSEDIA';
+                        if (userHasBooking) {
+                          statusText = 'SUDAH BOOKING';
+                        } else if (!isAvailable) {
+                          statusText = 'PENUH';
                         }
                         
                         return (
@@ -603,57 +580,37 @@ const BookingStep3 = () => {
                               isSelected 
                                 ? 'bg-[#3E2723] border-[#3E2723] text-white shadow-lg scale-105 z-10' 
                                 : !isAvailable 
-                                  ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed' 
+                                  ? userHasBooking
+                                    ? 'bg-orange-50 border-orange-200 opacity-70 cursor-not-allowed'
+                                    : 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
                                   : 'bg-white border-gray-100 text-[#3E2723] hover:border-[#8D6E63]/50 hover:shadow-md'
                             }`}
                           >
-                            <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${indicatorColor}`}></div>
                             <span className={`text-sm font-bold font-display`}>
                               {time}
                             </span>
                             <span className={`text-[8px] font-black uppercase tracking-widest ${
-                              isSelected ? 'text-white/70' : !isAvailable ? 'text-gray-400' : 'text-gray-500'
+                              isSelected ? 'text-white/70' : 
+                              userHasBooking ? 'text-orange-600' :
+                              !isAvailable ? 'text-gray-400' : 'text-gray-500'
                             }`}>
                               {statusText}
                             </span>
-                            {!isAvailable && !exceedsClosingTime && (
-                              <div className="absolute bottom-1 left-2">
-                                <Bed size={10} className="text-red-400" />
-                              </div>
-                            )}
-                            {isAvailable && (
-                              <div className="absolute bottom-1 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Bed size={10} className="text-gray-400" />
-                              </div>
-                            )}
                           </button>
                         );
                       })}
                     </div>
                     
-                    {/* Informasi jam operasional dan legenda */}
                     <div className="mt-6 p-4 bg-[#FDFBF7] rounded-2xl border border-gray-100">
                       <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex flex-wrap items-center gap-3">
-                          <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                            <span className="text-xs font-medium text-gray-600">3 bed</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                            <span className="text-xs font-medium text-gray-600">2 bed</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                            <span className="text-xs font-medium text-gray-600">1 bed</span>
-                          </div>
                           <div className="flex items-center gap-1">
                             <div className="w-3 h-3 rounded-full bg-red-500"></div>
                             <span className="text-xs font-medium text-gray-600">Penuh</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                            <span className="text-xs font-medium text-gray-600">Tutup</span>
+                            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                            <span className="text-xs font-medium text-gray-600">Sudah Booking</span>
                           </div>
                         </div>
                         
@@ -669,7 +626,6 @@ const BookingStep3 = () => {
           </div>
         </div>
 
-        {/* RINGKASAN SIDEBAR */}
         <div className="w-full lg:w-96">
           <div className="bg-white border border-gray-200 text-[#3E2723] p-8 rounded-[40px] shadow-lg sticky top-8 text-left">
             <h3 className="text-xl font-display font-bold mb-8 flex items-center gap-3 text-[#8D6E63] tracking-tight">
@@ -677,7 +633,6 @@ const BookingStep3 = () => {
             </h3>
             
             <div className="space-y-6 font-sans">
-              {/* Treatment Info */}
               <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-gray-100">
                 <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Treatment</p>
                 <p className="text-sm font-bold leading-snug mb-2">{treatment?.name || "-"}</p>
@@ -690,7 +645,6 @@ const BookingStep3 = () => {
                 </p>
               </div>
               
-              {/* Date Info */}
               {selectedDate && (
                 <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-gray-100">
                   <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Tanggal Kunjungan</p>
@@ -699,10 +653,6 @@ const BookingStep3 = () => {
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-600">Total Slots:</span>
                       <span className="font-bold text-[#3E2723]">{getAllTimeSlotsWithAvailability().length} slot</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600">Terjadwal:</span>
-                      <span className="font-bold text-amber-600">{bookings.length} appointment</span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-600">Tersedia:</span>
@@ -714,7 +664,6 @@ const BookingStep3 = () => {
                 </div>
               )}
               
-              {/* Time Info */}
               <div className="bg-[#FDFBF7] p-5 rounded-2xl border border-gray-100">
                 <p className="text-[9px] text-[#3E2723] uppercase font-black mb-1.5 tracking-widest">Waktu Perawatan</p>
                 <div className="grid grid-cols-2 gap-4 mt-2">
@@ -732,31 +681,8 @@ const BookingStep3 = () => {
                   </div>
                 </div>
               </div>
-              
-              {/* Bed Availability Info */}
-              {selectedTime && (
-                <div className="bg-blue-50 border border-blue-100 p-5 rounded-2xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[9px] text-blue-800 uppercase font-black mb-1 tracking-widest">Ketersediaan Bed</p>
-                      <div className="flex items-center gap-2">
-                        <Bed size={16} className="text-blue-600" />
-                        <p className="text-sm font-bold text-blue-700">
-                          {getAvailableBedsForSlot(selectedTime)} dari {BEDS_CAPACITY} bed tersedia
-                        </p>
-                      </div>
-                    </div>
-                    <div className={`w-3 h-3 rounded-full ${
-                      getAvailableBedsForSlot(selectedTime) === 3 ? 'bg-green-500' :
-                      getAvailableBedsForSlot(selectedTime) === 2 ? 'bg-blue-500' :
-                      getAvailableBedsForSlot(selectedTime) === 1 ? 'bg-amber-500' : 'bg-red-500'
-                    }`}></div>
-                  </div>
-                </div>
-              )}
             </div>
             
-            {/* Konfirmasi Button */}
             <button 
               onClick={handleNextStep}
               disabled={!selectedDate || !selectedTime || loading}
@@ -785,32 +711,3 @@ const BookingStep3 = () => {
 };
 
 export default BookingStep3;
-
-// Saat submit booking
-const handleSubmitBooking = async () => {
-  try {
-    const selectedTreatment = JSON.parse(sessionStorage.getItem('selectedTreatment'));
-    
-    const appointmentData = {
-      customer_name: formData.customerName,
-      member_id: formData.memberId || null,
-      treatment_id: selectedTreatment.id,
-      treatment: selectedTreatment.name,
-      therapist_id: formData.therapistId,
-      therapist: formData.therapistName,
-      date: formData.date,
-      time: formData.time,
-      amount: parseInt(selectedTreatment.price) || 0, // Ambil price dari treatment
-      status: 'confirmed'
-    };
-    
-    const response = await axios.post('http://localhost:5000/api/appointments', appointmentData, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    
-    // Success handling
-    // ...
-  } catch (error) {
-    console.error('Error creating appointment:', error);
-  }
-};
