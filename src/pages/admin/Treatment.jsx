@@ -39,6 +39,36 @@ const Treatment = () => {
     'Paket Spesial', 
     'Perawatan Promo'
   ];
+  const [availableFacilities, setAvailableFacilities] = useState([
+    'Facial Wash',
+    'Deep Cleansing',
+    'Facial Massage',
+    'Head Massage',
+    'Shoulder Massage',
+    'Masker Wajah',
+    'Scrub',
+    'Serum Treatment',
+    'Totok Wajah',
+    'Face Toning',
+    'Aromaterapi',
+    'Hand Treatment',
+    'Foot Spa'
+  ]);
+  const defaultFacilities = [
+    'Facial Wash',
+    'Deep Cleansing',
+    'Facial Massage',
+    'Head Massage',
+    'Shoulder Massage',
+    'Masker Wajah',
+    'Scrub',
+    'Serum Treatment',
+    'Totok Wajah',
+    'Face Toning',
+    'Aromaterapi',
+    'Hand Treatment',
+    'Foot Spa'
+  ];
 
   // API base URL
   const API_URL = 'http://localhost:5000/api/treatments';
@@ -76,6 +106,27 @@ const Treatment = () => {
       });
       
       setAvailableCategories(Array.from(allCategories));
+    }
+  }, [treatments]);
+
+  // Update availableFacilities dari treatments yang ada
+  useEffect(() => {
+    if (treatments.length > 0) {
+      const allFacilities = new Set(availableFacilities);
+      
+      treatments.forEach(treatment => {
+        const facilities = Array.isArray(treatment.facilities) 
+          ? treatment.facilities 
+          : [];
+        
+        facilities.forEach(facility => {
+          if (facility && facility.trim()) {
+            allFacilities.add(facility);
+          }
+        });
+      });
+      
+      setAvailableFacilities(Array.from(allFacilities));
     }
   }, [treatments]);
 
@@ -238,7 +289,7 @@ const Treatment = () => {
     });
   };
 
-  // Handle Tambah Fasilitas
+  // Handle Tambah Fasilitas Baru ke Daftar
   const handleAddFacility = () => {
     if (!newFacility.trim()) {
       setNotification({
@@ -250,31 +301,74 @@ const Treatment = () => {
       return;
     }
 
+    // Cek apakah fasilitas sudah ada di availableFacilities
+    if (availableFacilities.includes(newFacility.trim())) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Fasilitas Sudah Ada',
+        message: 'Fasilitas ini sudah ada di daftar'
+      });
+      return;
+    }
+
+    // Tambahkan ke daftar fasilitas yang tersedia
+    setAvailableFacilities([...availableFacilities, newFacility.trim()]);
+
+    // Tambahkan ke fasilitas yang dipilih
+    const currentFacilities = formData.facilities || [];
     setFormData({
       ...formData,
-      facilities: [...formData.facilities, newFacility.trim()]
+      facilities: [...currentFacilities, newFacility.trim()]
     });
 
     setNewFacility('');
-  };
-
-  // Handle Hapus Fasilitas
-  const handleRemoveFacility = (index) => {
-    const updatedFacilities = formData.facilities.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      facilities: updatedFacilities
+    setNotification({
+      show: true,
+      type: 'success',
+      title: 'Fasilitas Ditambahkan',
+      message: `Fasilitas "${newFacility.trim()}" berhasil ditambahkan dan dipilih`
     });
   };
 
-  // Handle Perubahan Fasilitas
-  const handleFacilityChange = (index, value) => {
-    const updatedFacilities = [...formData.facilities];
-    updatedFacilities[index] = value;
-    setFormData({
-      ...formData,
-      facilities: updatedFacilities
+  // Handle Hapus Fasilitas dari Daftar
+  const handleRemoveFacilityFromList = (facility) => {
+    // Hapus dari availableFacilities
+    setAvailableFacilities(availableFacilities.filter(f => f !== facility));
+    
+    // Hapus dari fasilitas yang dipilih jika ada
+    const currentFacilities = formData.facilities || [];
+    if (currentFacilities.includes(facility)) {
+      setFormData({
+        ...formData,
+        facilities: currentFacilities.filter(f => f !== facility)
+      });
+    }
+    
+    setNotification({
+      show: true,
+      type: 'success',
+      title: 'Fasilitas Dihapus',
+      message: `Fasilitas "${facility}" berhasil dihapus dari daftar`
     });
+  };
+
+  // Handle Toggle Fasilitas
+  const handleFacilityToggle = (facility) => {
+    const currentFacilities = formData.facilities || [];
+    if (currentFacilities.includes(facility)) {
+      // Remove facility
+      setFormData({
+        ...formData,
+        facilities: currentFacilities.filter(f => f !== facility)
+      });
+    } else {
+      // Add facility
+      setFormData({
+        ...formData,
+        facilities: [...currentFacilities, facility]
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -824,7 +918,7 @@ const Treatment = () => {
                         {availableCategories.map((cat) => (
                           <label
                             key={cat}
-                            className={`flex items-center gap-2 p-2 sm:p-3 rounded-lg border-2 cursor-pointer transition-all relative ${
+                            className={`group flex items-center gap-2 p-2 sm:p-3 rounded-lg border-2 cursor-pointer transition-all relative ${
                               (formData.category || []).includes(cat)
                                 ? 'border-brown-500 bg-brown-50'
                                 : 'border-gray-200 hover:border-gray-300'
@@ -841,24 +935,22 @@ const Treatment = () => {
                             }`}>
                               {cat}
                             </span>
-                            {!defaultCategories.includes(cat) && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  if (window.confirm(`Hapus kategori "${cat}" dari daftar?`)) {
-                                    handleRemoveCategory(cat);
-                                  }
-                                }}
-                                className="text-red-500 hover:text-red-700 p-1"
-                                title="Hapus kategori"
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (window.confirm(`Hapus kategori "${cat}" dari daftar?`)) {
+                                  handleRemoveCategory(cat);
+                                }
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Hapus kategori dari daftar"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
                           </label>
                         ))}
                       </div>
@@ -1038,75 +1130,112 @@ const Treatment = () => {
             ) : (
               /* Facilities Tab */
               <div className="space-y-3 sm:space-y-4">
-                {/* Add New Facility Form */}
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-                  <h4 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">Tambah Fasilitas</h4>
+                {/* Pilih Fasilitas dari Daftar */}
+                <div>
+                  <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
+                    Pilih Fasilitas yang Termasuk
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {availableFacilities.map((facility) => (
+                      <label
+                        key={facility}
+                        className={`group flex items-center gap-2 p-2 sm:p-3 rounded-lg border-2 cursor-pointer transition-all relative ${
+                          (formData.facilities || []).includes(facility)
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={(formData.facilities || []).includes(facility)}
+                          onChange={() => handleFacilityToggle(facility)}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className={`text-xs sm:text-sm font-medium flex-1 ${
+                          (formData.facilities || []).includes(facility) ? 'text-green-700' : 'text-gray-700'
+                        }`}>
+                          {facility}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (window.confirm(`Hapus fasilitas "${facility}" dari daftar?`)) {
+                              handleRemoveFacilityFromList(facility);
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Hapus fasilitas dari daftar"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Fasilitas Terpilih */}
+                  {(formData.facilities || []).length > 0 && (
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-xs sm:text-sm font-medium text-green-800 mb-2">
+                        {(formData.facilities || []).length} fasilitas terpilih:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {(formData.facilities || []).map((facility, idx) => (
+                          <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                            {facility}
+                            <button
+                              type="button"
+                              onClick={() => handleFacilityToggle(facility)}
+                              className="text-green-500 hover:text-green-700"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tambah Fasilitas Baru */}
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                  <h4 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">Atau Tambah Fasilitas Baru</h4>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={newFacility}
                       onChange={(e) => setNewFacility(e.target.value)}
                       className="flex-1 border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
-                      placeholder="cth: Facial Wash, Deep Masker, Head Massage"
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddFacility()}
+                      placeholder="cth: Hot Stone Therapy, LED Light Therapy"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddFacility())}
                     />
                     <button
                       onClick={handleAddFacility}
-                      className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium whitespace-nowrap"
                     >
-                      Tambah
+                      + Tambah
                     </button>
                   </div>
                   <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
-                    Tekan Enter atau klik Tambah untuk menambahkan fasilitas
+                    Fasilitas baru akan muncul sebagai pilihan checkbox di atas dan otomatis dipilih
                   </p>
                 </div>
 
-                {/* Facilities List */}
-                <div>
-                  <h4 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
-                    Fasilitas yang Termasuk ({formData.facilities.length})
-                  </h4>
-
-                  {formData.facilities.length === 0 ? (
-                    <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg">
-                      <svg className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-2 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <p className="text-sm sm:text-base text-gray-500">Belum ada fasilitas ditambahkan.</p>
-                      <p className="text-xs sm:text-sm text-gray-400 mt-1">Tambahkan fasilitas yang akan didapatkan pelanggan selama perawatan ini.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 sm:space-y-3">
-                      {formData.facilities.map((facility, index) => (
-                        <div key={index} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-                          <div className="flex justify-between items-center gap-2">
-                            <div className="flex items-center flex-1">
-                              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                              <input
-                                type="text"
-                                value={facility}
-                                onChange={(e) => handleFacilityChange(index, e.target.value)}
-                                className="text-sm sm:text-base font-medium text-gray-800 bg-transparent border-none focus:outline-none focus:ring-0 w-full"
-                                placeholder="Nama fasilitas"
-                              />
-                            </div>
-                            <button
-                              onClick={() => handleRemoveFacility(index)}
-                              className="text-red-500 hover:text-red-700 flex-shrink-0"
-                            >
-                              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                {/* Info */}
+                {formData.facilities.length === 0 && (
+                  <div className="text-center py-6 sm:py-8 bg-blue-50 rounded-lg border border-blue-200">
+                    <svg className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-blue-400 mb-2 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm sm:text-base text-blue-700 font-medium">Belum ada fasilitas dipilih</p>
+                    <p className="text-xs sm:text-sm text-blue-600 mt-1">Pilih fasilitas dari checkbox di atas atau tambahkan fasilitas baru</p>
+                  </div>
+                )}
               </div>
             )}
 

@@ -821,10 +821,10 @@ const Appointment = () => {
                       </div>
                     </td>
                     <td className="p-2 sm:p-4 text-center">
-                      <div className="flex flex-col sm:flex-row justify-center gap-1 sm:gap-2">
+                      <div className="flex justify-center gap-1 sm:gap-2">
                         <button 
                           onClick={() => handleEdit(app)} 
-                          className="bg-blue-600 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-bold hover:bg-blue-700 transition-colors duration-200"
+                          className="bg-blue-600 text-white px-2 sm:px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors duration-200"
                         >
                           Edit
                         </button>
@@ -863,9 +863,11 @@ const Appointment = () => {
                               }
                             }
                           }} 
-                          className="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-red-600 transition-colors duration-200"
+                          className="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded-lg text-xs hover:bg-red-200 transition-colors duration-200"
                         >
-                          Hapus
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                         </button>
                       </div>
                     </td>

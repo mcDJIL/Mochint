@@ -3,6 +3,7 @@ import { Bed, Calendar, Clock, RefreshCw, Users, CheckCircle, AlertCircle } from
 
 const BedManagement = () => {
   const APPOINTMENTS_API_URL = 'http://localhost:5000/api/appointments';
+  const TIMESLOTS_API_URL = 'http://localhost:5000/api/timeslots';
   const Token = localStorage.getItem('token');
 
   const BEDS_CAPACITY = 3;
@@ -15,9 +16,11 @@ const BedManagement = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [disabledTimeslots, setDisabledTimeslots] = useState([]);
 
   useEffect(() => {
     fetchAppointments();
+    fetchDisabledTimeslots();
   }, [refreshKey, selectedDate]);
 
   const fetchAppointments = async () => {
@@ -47,6 +50,59 @@ const BedManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchDisabledTimeslots = async () => {
+    try {
+      const response = await fetch(`${TIMESLOTS_API_URL}?date=${selectedDate}`, {
+        headers: {
+          'Authorization': `Bearer ${Token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Gagal mengambil disabled timeslots');
+      
+      const data = await response.json();
+      setDisabledTimeslots(data.data || []);
+    } catch (err) {
+      console.error('Error fetching disabled timeslots:', err);
+      setDisabledTimeslots([]);
+    }
+  };
+
+  const toggleTimeslot = async (timeSlot) => {
+    try {
+      const response = await fetch(`${TIMESLOTS_API_URL}/toggle`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          date: selectedDate,
+          time_slot: timeSlot,
+          reason: 'Disabled by admin'
+        })
+      });
+      
+      if (!response.ok) throw new Error('Gagal toggle timeslot');
+      
+      const data = await response.json();
+      
+      // Refresh disabled timeslots
+      fetchDisabledTimeslots();
+      
+      // Show notification
+      alert(data.message);
+    } catch (err) {
+      console.error('Error toggling timeslot:', err);
+      alert('Gagal mengubah status timeslot');
+    }
+  };
+
+  const isTimeslotDisabled = (timeSlot) => {
+    return disabledTimeslots.some(dt => dt.time_slot === timeSlot);
   };
 
   // Generate all time slots
@@ -338,6 +394,10 @@ const BedManagement = () => {
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
             <span className="text-xs text-gray-600">Penuh (0 Bed)</span>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+            <span className="text-xs text-gray-600">Dinonaktifkan</span>
+          </div>
         </div>
       </div>
 
@@ -352,37 +412,58 @@ const BedManagement = () => {
           {generateTimeSlots().map((time) => {
             const slot = bedAvailability[time];
             const available = slot.available;
+            const isDisabled = isTimeslotDisabled(time);
             
             return (
               <div 
                 key={time}
-                className={`relative p-4 rounded-xl border-2 transition-all ${getStatusBg(available)} group hover:shadow-md`}
+                className={`relative p-4 rounded-xl border-2 transition-all ${isDisabled ? 'bg-gray-100 border-gray-300 opacity-60' : getStatusBg(available)} group hover:shadow-md`}
               >
-                <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${getStatusColor(available)}`}></div>
+                {/* Status Indicator Dot */}
+                <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${isDisabled ? 'bg-gray-400' : getStatusColor(available)}`}></div>
                 
-                <div className="text-center">
+                {/* Toggle Disable Button */}
+                <button
+                  onClick={() => toggleTimeslot(time)}
+                  className={`absolute top-2 left-2 p-1 rounded-md text-xs font-bold transition-all ${
+                    isDisabled 
+                      ? 'bg-green-500 text-white hover:bg-green-600' 
+                      : 'bg-red-500 text-white hover:bg-red-600'
+                  }`}
+                  title={isDisabled ? 'Aktifkan slot ini' : 'Nonaktifkan slot ini'}
+                >
+                  {isDisabled ? '✓' : '✕'}
+                </button>
+                
+                <div className="text-center mt-2">
                   <div className="text-lg font-bold text-gray-800">{time}</div>
-                  <div className={`text-[9px] font-black uppercase tracking-widest mt-1 ${
-                    available === 0 ? 'text-red-600' :
-                    available === 1 ? 'text-amber-600' :
-                    available === 2 ? 'text-blue-600' : 'text-green-600'
-                  }`}>
-                    {getStatusText(available)}
-                  </div>
+                  {isDisabled ? (
+                    <div className="text-[9px] font-black uppercase tracking-widest mt-1 text-gray-500">
+                      DISABLED
+                    </div>
+                  ) : (
+                    <div className={`text-[9px] font-black uppercase tracking-widest mt-1 ${
+                      available === 0 ? 'text-red-600' :
+                      available === 1 ? 'text-amber-600' :
+                      available === 2 ? 'text-blue-600' : 'text-green-600'
+                    }`}>
+                      {getStatusText(available)}
+                    </div>
+                  )}
                   
                   <div className="flex items-center justify-center gap-1 mt-2">
                     {[...Array(BEDS_CAPACITY)].map((_, i) => (
                       <Bed 
                         key={i}
                         size={12}
-                        className={i < slot.occupied ? 'text-red-500' : 'text-green-400'}
+                        className={isDisabled ? 'text-gray-300' : (i < slot.occupied ? 'text-red-500' : 'text-green-400')}
                       />
                     ))}
                   </div>
                 </div>
 
                 {/* Tooltip on hover */}
-                {slot.appointments.length > 0 && (
+                {!isDisabled && slot.appointments.length > 0 && (
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
                     <div className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl min-w-[200px]">
                       <div className="font-bold mb-2">Appointment Aktif:</div>
@@ -393,6 +474,16 @@ const BedManagement = () => {
                           <div className="text-[10px] text-gray-400">{apt.time}</div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Disabled Tooltip */}
+                {isDisabled && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                    <div className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl min-w-[150px] text-center">
+                      <div className="font-bold">Slot Dinonaktifkan</div>
+                      <div className="text-[10px] text-gray-400 mt-1">User tidak dapat memilih slot ini</div>
                     </div>
                   </div>
                 )}

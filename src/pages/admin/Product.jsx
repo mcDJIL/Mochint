@@ -489,14 +489,16 @@ const Product = () => {
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                     <div className="text-[10px] sm:text-xs text-gray-500">ID: {product.id || product._id}</div>
                     <div className="flex gap-1.5 sm:gap-2">
-                      <button onClick={() => handleView(product)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-100 text-gray-700 text-[10px] sm:text-xs rounded hover:bg-gray-200 transition-colors duration-200">
+                      <button onClick={() => handleView(product)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-100 text-gray-700 text-[10px] sm:text-xs rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium">
                         Lihat
                       </button>
-                      <button onClick={() => handleEdit(product)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-[10px] sm:text-xs rounded hover:bg-blue-700 transition-colors duration-200">
+                      <button onClick={() => handleEdit(product)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-[10px] sm:text-xs rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(product._id || product.id)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-red-500 text-white text-[10px] sm:text-xs rounded hover:bg-red-600 transition-colors duration-200">
-                        Hapus
+                      <button onClick={() => handleDelete(product._id || product.id)} className="bg-red-100 text-red-600 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg hover:bg-red-200 transition-colors duration-200">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </button>
                     </div>
                   </div>

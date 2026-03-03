@@ -11,6 +11,7 @@ const BookingStep3 = () => {
   const [selectedTime, setSelectedTime] = useState('');
   const [treatment, setTreatment] = useState(null);
   const [bookings, setBookings] = useState([]);
+  const [disabledTimeslots, setDisabledTimeslots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dateError, setDateError] = useState(null);
@@ -27,6 +28,7 @@ const BookingStep3 = () => {
   useEffect(() => {
     if (selectedDate) {
       fetchBookingsForDate(selectedDate);
+      fetchDisabledTimeslots(selectedDate);
     }
   }, [selectedDate]);
 
@@ -98,6 +100,33 @@ const BookingStep3 = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchDisabledTimeslots = async (date) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/timeslots?date=${date}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setDisabledTimeslots(data.data || []);
+        console.log('🚫 Disabled timeslots:', data.data);
+      } else {
+        setDisabledTimeslots([]);
+      }
+    } catch (err) {
+      console.error('Error fetching disabled timeslots:', err);
+      setDisabledTimeslots([]);
+    }
+  };
+
+  const isTimeslotDisabledByAdmin = (timeSlot) => {
+    return disabledTimeslots.some(dt => dt.time_slot === timeSlot);
   };
 
   const generateAllTimeSlots = () => {
@@ -249,13 +278,15 @@ const BookingStep3 = () => {
         const availableBeds = getAvailableBedsForSlot(slot);
         const hasAvailableBeds = availableBeds > 0;
         const userHasBooking = hasUserBookingAtTime(slot);
+        const isDisabledByAdmin = isTimeslotDisabledByAdmin(slot);
         
         return {
           time: slot,
           availableBeds: availableBeds,
-          isAvailable: hasAvailableBeds && !exceedsClosingTime && !userHasBooking,
+          isAvailable: hasAvailableBeds && !exceedsClosingTime && !userHasBooking && !isDisabledByAdmin,
           exceedsClosingTime: exceedsClosingTime,
-          userHasBooking: userHasBooking
+          userHasBooking: userHasBooking,
+          isDisabledByAdmin: isDisabledByAdmin
         };
       })
       .filter(slot => !slot.exceedsClosingTime); // Filter out slots yang melewati jam tutup
@@ -561,11 +592,13 @@ const BookingStep3 = () => {
                     )}
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                       {getAllTimeSlotsWithAvailability().map((slot) => {
-                        const { time, availableBeds, isAvailable, userHasBooking } = slot;
+                        const { time, availableBeds, isAvailable, userHasBooking, isDisabledByAdmin } = slot;
                         const isSelected = selectedTime === time;
                         
                         let statusText = 'TERSEDIA';
-                        if (userHasBooking) {
+                        if (isDisabledByAdmin) {
+                          statusText = 'DITUTUP';
+                        } else if (userHasBooking) {
                           statusText = 'SUDAH BOOKING';
                         } else if (!isAvailable) {
                           statusText = 'PENUH';
@@ -580,9 +613,11 @@ const BookingStep3 = () => {
                               isSelected 
                                 ? 'bg-[#3E2723] border-[#3E2723] text-white shadow-lg scale-105 z-10' 
                                 : !isAvailable 
-                                  ? userHasBooking
-                                    ? 'bg-orange-50 border-orange-200 opacity-70 cursor-not-allowed'
-                                    : 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                                  ? isDisabledByAdmin
+                                    ? 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed'
+                                    : userHasBooking
+                                      ? 'bg-orange-50 border-orange-200 opacity-70 cursor-not-allowed'
+                                      : 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
                                   : 'bg-white border-gray-100 text-[#3E2723] hover:border-[#8D6E63]/50 hover:shadow-md'
                             }`}
                           >
@@ -591,6 +626,7 @@ const BookingStep3 = () => {
                             </span>
                             <span className={`text-[8px] font-black uppercase tracking-widest ${
                               isSelected ? 'text-white/70' : 
+                              isDisabledByAdmin ? 'text-gray-500' :
                               userHasBooking ? 'text-orange-600' :
                               !isAvailable ? 'text-gray-400' : 'text-gray-500'
                             }`}>
@@ -611,6 +647,10 @@ const BookingStep3 = () => {
                           <div className="flex items-center gap-1">
                             <div className="w-3 h-3 rounded-full bg-orange-500"></div>
                             <span className="text-xs font-medium text-gray-600">Sudah Booking</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <span className="text-xs font-medium text-gray-600">Ditutup</span>
                           </div>
                         </div>
                         

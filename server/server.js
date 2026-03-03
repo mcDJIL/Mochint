@@ -18,6 +18,7 @@ const memberRoutes = require('./routes/memberRoutes');
 const productRoutes = require('./routes/productsRoute');
 const reviewsRoutes = require('./routes/reviewsRoutes');
 const articlesRoutes = require('./routes/articlesRoutes');
+const timeslotRoutes = require('./routes/timeslotRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -85,6 +86,7 @@ app.use('/api/articles', articlesRoutes);
 // Protected routes (require token)
 app.use('/api/appointments', authenticateToken, appointmentRoutes);
 app.use('/api/members', authenticateToken, memberRoutes);
+app.use('/api/timeslots', authenticateToken, timeslotRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Mochint Beauty Clinic API', version: '1.0' });
