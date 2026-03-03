@@ -107,12 +107,36 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
         });
       }
     } catch (err) {
+      console.error('Login error:', err);
+      
+      // Handle different error types
+      let errorMessage = "Login gagal. Silakan coba lagi.";
+      
+      if (err.response) {
+        // Server responded with error
+        const statusCode = err.response.status;
+        
+        if (statusCode === 401) {
+          errorMessage = "Email atau password yang Anda masukkan salah. Periksa kembali dan coba lagi.";
+        } else if (statusCode === 404) {
+          errorMessage = "Akun tidak ditemukan. Silakan daftar terlebih dahulu.";
+        } else if (statusCode === 500) {
+          errorMessage = "Terjadi kesalahan pada server. Mohon coba lagi dalam beberapa saat.";
+        } else {
+          errorMessage = err.response.data?.message || errorMessage;
+        }
+      } else if (err.request) {
+        // No response from server
+        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      } else {
+        // Other errors
+        errorMessage = err.message || errorMessage;
+      }
+      
       setNotification({
         show: true,
         type: 'error',
-        message: err.message.includes('Failed to fetch') 
-          ? 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.' 
-          : err.message || "Login gagal. Silakan coba lagi."
+        message: errorMessage
       });
     } finally {
       setIsLoading(false);
@@ -124,8 +148,8 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
     window.location.href = 'http://localhost:5000/api/auth/google';
   };
 
-  // Check if Google OAuth is configured (set to false for now until credentials are setup)
-  const isGoogleOAuthEnabled = true; // Change to true after setting up Google OAuth credentials
+  // Check if Google OAuth is configured
+  const isGoogleOAuthEnabled = true;
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-6 font-sans">
@@ -194,24 +218,6 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
               <h3 className="text-2xl font-bold text-[#3E2723]">Selamat Datang</h3>
               <p className="text-[#A1887F] text-sm mt-1">Silakan masuk ke akun Anda</p>
             </div>
-
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r-xl text-sm animate-pulse">
-                <div className="flex items-center">
-                  <span className="mr-2">⚠️</span>
-                  <span>{error}</span>
-                </div>
-              </div>
-            )}
-
-            {successMessage && (
-              <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-r-xl text-sm animate-pulse">
-                <div className="flex items-center">
-                  <span className="mr-2">✅</span>
-                  <span>{successMessage}</span>
-                </div>
-              </div>
-            )}
 
             <form onSubmit={handleLogin} className="space-y-5">
               {/* Input Email */}
