@@ -6,14 +6,18 @@ const Treatment = () => {
   const [editingTreatment, setEditingTreatment] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
+    category: [], // Array untuk multiple kategori
     duration: '',
     price: '0',
     description: '',
     image: '',
-    facilities: [] // Array untuk fasilitas
+    facilities: [], // Array untuk fasilitas
+    discountPercentage: 0,
+    promoStartDate: '',
+    promoEndDate: ''
   });
   const [newFacility, setNewFacility] = useState('');
+  const [newCategory, setNewCategory] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +25,20 @@ const Treatment = () => {
   const [activeTab, setActiveTab] = useState('details');
   const [notification, setNotification] = useState({ show: false, type: '', title: '', message: '' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [availableCategories, setAvailableCategories] = useState([
+    'Perawatan Wajah', 
+    'Perawatan Tubuh', 
+    'Perawatan Khusus', 
+    'Paket Spesial', 
+    'Perawatan Promo'
+  ]);
+  const defaultCategories = [
+    'Perawatan Wajah', 
+    'Perawatan Tubuh', 
+    'Perawatan Khusus', 
+    'Paket Spesial', 
+    'Perawatan Promo'
+  ];
 
   // API base URL
   const API_URL = 'http://localhost:5000/api/treatments';
@@ -39,6 +57,27 @@ const Treatment = () => {
   useEffect(() => {
     fetchTreatments();
   }, []);
+
+  // Update availableCategories dari treatments yang ada
+  useEffect(() => {
+    if (treatments.length > 0) {
+      const allCategories = new Set(availableCategories);
+      
+      treatments.forEach(treatment => {
+        const categories = Array.isArray(treatment.category) 
+          ? treatment.category 
+          : (treatment.category ? [treatment.category] : []);
+        
+        categories.forEach(cat => {
+          if (cat && cat.trim()) {
+            allCategories.add(cat);
+          }
+        });
+      });
+      
+      setAvailableCategories(Array.from(allCategories));
+    }
+  }, [treatments]);
 
   const fetchTreatments = async () => {
     try {
@@ -68,18 +107,40 @@ const Treatment = () => {
     return parseInt(rupiah.toString().replace(/\D/g, '')) || 0;
   };
 
+  // Fungsi untuk cek apakah promo aktif
+  const isPromoActive = (treatment) => {
+    if (!treatment.discount_percentage || treatment.discount_percentage <= 0) return false;
+    if (!treatment.promo_start_date || !treatment.promo_end_date) return false;
+    
+    const now = new Date();
+    const startDate = new Date(treatment.promo_start_date);
+    const endDate = new Date(treatment.promo_end_date);
+    
+    return now >= startDate && now <= endDate;
+  };
+
+  // Fungsi untuk hitung harga setelah diskon
+  const calculateDiscountedPrice = (price, discountPercentage) => {
+    const discount = (price * discountPercentage) / 100;
+    return price - discount;
+  };
+
   const handleAdd = () => {
     setIsAdding(true);
     setFormData({
       name: '',
-      category: '',
+      category: [], // Array untuk multiple kategori
       duration: '',
       price: '0',
       description: '',
       image: '',
-      facilities: []
+      facilities: [],
+      discountPercentage: 0,
+      promoStartDate: '',
+      promoEndDate: ''
     });
     setNewFacility('');
+    setNewCategory('');
     setPreviewImage(null);
     setActiveTab('details');
   };
@@ -87,14 +148,94 @@ const Treatment = () => {
   const handleEdit = (treatment) => {
     setEditingTreatment(treatment._id || treatment.id);
     setIsAdding(false);
+    
+    // Format tanggal untuk input type="date" (YYYY-MM-DD)
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
     setFormData({
       ...treatment,
       price: String(parseInt(treatment.price) || 0),
-      facilities: treatment.facilities || []
+      category: Array.isArray(treatment.category) ? treatment.category : (treatment.category ? [treatment.category] : []),
+      facilities: treatment.facilities || [],
+      discountPercentage: treatment.discount_percentage || 0,
+      promoStartDate: formatDateForInput(treatment.promo_start_date),
+      promoEndDate: formatDateForInput(treatment.promo_end_date)
     });
     setNewFacility('');
+    setNewCategory('');
     setPreviewImage(treatment.image);
     setActiveTab('details');
+  };
+
+  // Handle Tambah Kategori Baru
+  const handleAddCategory = () => {
+    if (!newCategory.trim()) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Validasi Gagal',
+        message: 'Nama kategori wajib diisi'
+      });
+      return;
+    }
+
+    // Cek apakah kategori sudah ada di availableCategories
+    if (availableCategories.includes(newCategory.trim())) {
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Kategori Sudah Ada',
+        message: 'Kategori ini sudah ada di daftar'
+      });
+      return;
+    }
+
+    // Tambahkan ke daftar kategori yang tersedia
+    setAvailableCategories([...availableCategories, newCategory.trim()]);
+
+    // Tambahkan ke kategori yang dipilih
+    const currentCategories = formData.category || [];
+    setFormData({
+      ...formData,
+      category: [...currentCategories, newCategory.trim()]
+    });
+
+    setNewCategory('');
+    setNotification({
+      show: true,
+      type: 'success',
+      title: 'Kategori Ditambahkan',
+      message: `Kategori "${newCategory.trim()}" berhasil ditambahkan dan dipilih`
+    });
+  };
+
+  // Handle Hapus Kategori Custom
+  const handleRemoveCategory = (category) => {
+    // Hapus dari availableCategories
+    setAvailableCategories(availableCategories.filter(cat => cat !== category));
+    
+    // Hapus dari kategori yang dipilih jika ada
+    const currentCategories = formData.category || [];
+    if (currentCategories.includes(category)) {
+      setFormData({
+        ...formData,
+        category: currentCategories.filter(cat => cat !== category)
+      });
+    }
+    
+    setNotification({
+      show: true,
+      type: 'success',
+      title: 'Kategori Dihapus',
+      message: `Kategori "${category}" berhasil dihapus dari daftar`
+    });
   };
 
   // Handle Tambah Fasilitas
@@ -138,12 +279,12 @@ const Treatment = () => {
 
   const handleSave = async () => {
     try {
-      if (!formData.name || !formData.category || !formData.duration) {
+      if (!formData.name || !formData.category || formData.category.length === 0 || !formData.duration) {
         setNotification({
           show: true,
           type: 'error',
           title: 'Validasi Gagal',
-          message: 'Harap isi semua bidang yang wajib diisi'
+          message: 'Harap isi semua bidang yang wajib diisi (termasuk minimal 1 kategori)'
         });
         return;
       }
@@ -156,7 +297,10 @@ const Treatment = () => {
         price: priceValue,
         description: formData.description || '',
         image: previewImage || formData.image || '',
-        facilities: formData.facilities.filter(facility => facility.trim() !== '')
+        facilities: formData.facilities.filter(facility => facility.trim() !== ''),
+        discountPercentage: parseInt(formData.discountPercentage) || 0,
+        promoStartDate: formData.promoStartDate || null,
+        promoEndDate: formData.promoEndDate || null
       };
 
       const Token = localStorage.getItem('token');
@@ -207,14 +351,18 @@ const Treatment = () => {
     setIsAdding(false);
     setFormData({
       name: '',
-      category: '',
+      category: [], // Array untuk multiple kategori
       duration: '',
       price: '0',
       description: '',
       image: '',
-      facilities: []
+      facilities: [],
+      discountPercentage: 0,
+      promoStartDate: '',
+      promoEndDate: ''
     });
     setNewFacility('');
+    setNewCategory('');
     setPreviewImage(null);
     setActiveTab('details');
   };
@@ -253,6 +401,24 @@ const Treatment = () => {
       setFormData({ ...formData, [name]: digitsOnly });
     } else {
       setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  // Handle Category Toggle
+  const handleCategoryToggle = (category) => {
+    const currentCategories = formData.category || [];
+    if (currentCategories.includes(category)) {
+      // Remove category
+      setFormData({
+        ...formData,
+        category: currentCategories.filter(cat => cat !== category)
+      });
+    } else {
+      // Add category
+      setFormData({
+        ...formData,
+        category: [...currentCategories, category]
+      });
     }
   };
 
@@ -395,12 +561,13 @@ const Treatment = () => {
         </div>
         {searchTerm && (
           <p className="mt-2 text-sm text-gray-600">
-            Menampilkan {Array.isArray(treatments) && treatments.filter(treatment => 
-              (treatment.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-              (treatment.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-              (treatment.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-              (treatment.duration || '').toLowerCase().includes(searchTerm.toLowerCase())
-            ).length} dari {treatments.length} perawatan
+            Menampilkan {Array.isArray(treatments) && treatments.filter(treatment => {
+              const categories = Array.isArray(treatment.category) ? treatment.category : [treatment.category];
+              return (treatment.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                categories.some(cat => (cat || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (treatment.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (treatment.duration || '').toLowerCase().includes(searchTerm.toLowerCase());
+            }).length} dari {treatments.length} perawatan
           </p>
         )}
       </div>
@@ -408,12 +575,13 @@ const Treatment = () => {
       {/* Treatments Grid View */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {Array.isArray(treatments) && treatments
-          .filter(treatment => 
-            (treatment.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (treatment.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (treatment.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (treatment.duration || '').toLowerCase().includes(searchTerm.toLowerCase())
-          )
+          .filter(treatment => {
+            const categories = Array.isArray(treatment.category) ? treatment.category : [treatment.category];
+            return (treatment.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              categories.some(cat => (cat || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
+              (treatment.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (treatment.duration || '').toLowerCase().includes(searchTerm.toLowerCase());
+          })
           .map((treatment) => (
           <div key={treatment._id || treatment.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             {/* Treatment Image */}
@@ -435,20 +603,36 @@ const Treatment = () => {
                   </svg>
                 </div>
               )}
-              <div className="absolute top-2 right-2">
-                <span className="px-2 py-1 bg-brown-100 text-brown-800 rounded-full text-xs font-medium">
-                  {treatment.category}
-                </span>
+              <div className="absolute top-2 right-2 flex flex-wrap gap-1 max-w-[50%]">
+                {(Array.isArray(treatment.category) ? treatment.category : [treatment.category]).filter(Boolean).map((cat, idx) => (
+                  <span key={idx} className="px-2 py-1 bg-brown-100 text-brown-800 rounded-full text-xs font-medium">
+                    {cat}
+                  </span>
+                ))}
               </div>
+              {isPromoActive(treatment) && (
+                <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg">
+                  PROMO {treatment.discount_percentage}%
+                </div>
+              )}
             </div>
 
             {/* Treatment Details */}
             <div className="p-6">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold text-gray-800">{treatment.name}</h3>
-                <span className="text-lg font-bold text-brown-600">
-                  {formatRupiah(treatment.price)}
-                </span>
+                <div className="text-right">
+                  {isPromoActive(treatment) ? (
+                    <>
+                      <div className="text-xs text-gray-400 line-through">{formatRupiah(treatment.price)}</div>
+                      <div className="text-lg font-bold text-red-600">{formatRupiah(calculateDiscountedPrice(treatment.price, treatment.discount_percentage))}</div>
+                    </>
+                  ) : (
+                    <span className="text-lg font-bold text-brown-600">
+                      {formatRupiah(treatment.price)}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <p className="text-sm text-gray-600 mb-4 line-clamp-2">{treatment.description}</p>
@@ -632,21 +816,104 @@ const Treatment = () => {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700">Kategori</label>
-                      <select
-                        name="category"
-                        value={formData.category || ''}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
-                      >
-                        <option value="">Pilih Kategori</option>
-                        <option value="Perawatan Wajah">Perawatan Wajah</option>
-                        <option value="Perawatan Tubuh">Perawatan Tubuh</option>
-                        <option value="Perawatan Khusus">Perawatan Khusus</option>
-                        <option value="Paket Spesial">Paket Spesial</option>
-                        <option value="Perawatan Promo">Perawatan Promo</option>
-                      </select>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        Kategori (Pilih minimal 1)
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {availableCategories.map((cat) => (
+                          <label
+                            key={cat}
+                            className={`flex items-center gap-2 p-2 sm:p-3 rounded-lg border-2 cursor-pointer transition-all relative ${
+                              (formData.category || []).includes(cat)
+                                ? 'border-brown-500 bg-brown-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={(formData.category || []).includes(cat)}
+                              onChange={() => handleCategoryToggle(cat)}
+                              className="w-4 h-4 text-brown-600 border-gray-300 rounded focus:ring-brown-500"
+                            />
+                            <span className={`text-xs sm:text-sm font-medium flex-1 ${
+                              (formData.category || []).includes(cat) ? 'text-brown-700' : 'text-gray-700'
+                            }`}>
+                              {cat}
+                            </span>
+                            {!defaultCategories.includes(cat) && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (window.confirm(`Hapus kategori "${cat}" dari daftar?`)) {
+                                    handleRemoveCategory(cat);
+                                  }
+                                }}
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Hapus kategori"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            )}
+                          </label>
+                        ))}
+                      </div>
+
+                      {/* Tambah Kategori Baru */}
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                          Atau Tambah Kategori Baru
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newCategory}
+                            onChange={(e) => setNewCategory(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+                            className="flex-1 border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm"
+                            placeholder="Masukkan nama kategori baru..."
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddCategory}
+                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-brown-600 text-white rounded-md hover:bg-brown-700 text-xs sm:text-sm font-medium whitespace-nowrap"
+                          >
+                            + Tambah
+                          </button>
+                        </div>
+                        <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                          Kategori baru akan muncul sebagai pilihan checkbox di atas dan otomatis dipilih
+                        </p>
+                      </div>
+
+                      {/* Kategori Terpilih */}
+                      {(formData.category || []).length > 0 && (
+                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-xs sm:text-sm font-medium text-blue-800 mb-2">
+                            {(formData.category || []).length} kategori terpilih:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {(formData.category || []).map((cat, idx) => (
+                              <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                {cat}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCategoryToggle(cat)}
+                                  className="text-blue-500 hover:text-blue-700"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-gray-700">Durasi</label>
@@ -698,6 +965,73 @@ const Treatment = () => {
                       className="mt-1 block w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
                       placeholder="Jelaskan detail perawatan, manfaat, dll."
                     />
+                  </div>
+                </div>
+
+                {/* Promo Section */}
+                <div className="border-t pt-3 sm:pt-4 mt-4">
+                  <h4 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3">Pengaturan Promo</h4>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Diskon (%)
+                      </label>
+                      <input 
+                        type="number" 
+                        name="discountPercentage"
+                        min="0"
+                        max="100"
+                        value={formData.discountPercentage || 0} 
+                        onChange={handleChange} 
+                        placeholder="0" 
+                        className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base" 
+                      />
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                        Masukkan persentase diskon (0-100). Contoh: 20 untuk diskon 20%
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                          Tanggal Mulai Promo
+                        </label>
+                        <input 
+                          type="date" 
+                          name="promoStartDate"
+                          value={formData.promoStartDate || ''} 
+                          onChange={handleChange} 
+                          className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                          Tanggal Berakhir Promo
+                        </label>
+                        <input 
+                          type="date" 
+                          name="promoEndDate"
+                          value={formData.promoEndDate || ''} 
+                          onChange={handleChange} 
+                          className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base" 
+                        />
+                      </div>
+                    </div>
+
+                    {formData.discountPercentage > 0 && formData.price && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p className="text-xs sm:text-sm font-medium text-green-800 mb-1">Preview Harga Promo:</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs sm:text-sm text-gray-500 line-through">{formatRupiah(formData.price)}</span>
+                          <span className="text-base sm:text-lg font-bold text-green-600">
+                            {formatRupiah(calculateDiscountedPrice(parseInt(formData.price), formData.discountPercentage))}
+                          </span>
+                          <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">
+                            Hemat {formData.discountPercentage}%
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

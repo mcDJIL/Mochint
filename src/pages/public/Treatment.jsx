@@ -48,8 +48,16 @@ const Treatment = () => {
 
   // ✨ Ambil kategori unik
   const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(treatments.map(t => t.category))];
-    return ['All', ...uniqueCategories.sort()];
+    const uniqueCategories = new Set();
+    treatments.forEach(t => {
+      // Handle both array and string categories
+      if (Array.isArray(t.category)) {
+        t.category.forEach(cat => uniqueCategories.add(cat));
+      } else if (t.category) {
+        uniqueCategories.add(t.category);
+      }
+    });
+    return ['All', ...Array.from(uniqueCategories).sort()];
   }, [treatments]);
 
   // ✨ Filter data
@@ -57,15 +65,22 @@ const Treatment = () => {
     let filtered = treatments;
     
     if (selectedCategory !== 'All') {
-      filtered = filtered.filter(t => t.category === selectedCategory);
+      filtered = filtered.filter(t => {
+        // Handle both array and string categories
+        if (Array.isArray(t.category)) {
+          return t.category.includes(selectedCategory);
+        }
+        return t.category === selectedCategory;
+      });
     }
     
     if (searchQuery.trim() !== '') {
-      filtered = filtered.filter(t => 
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        t.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filtered.filter(t => {
+        const categories = Array.isArray(t.category) ? t.category : [t.category];
+        return t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          categories.some(cat => cat && cat.toLowerCase().includes(searchQuery.toLowerCase()));
+      });
     }
     
     return filtered;
@@ -85,6 +100,24 @@ const Treatment = () => {
       minimumFractionDigits: 0, 
       maximumFractionDigits: 0 
     });
+  };
+
+  // ✨ Fungsi untuk cek apakah promo aktif
+  const isPromoActive = (treatment) => {
+    if (!treatment.discount_percentage || treatment.discount_percentage <= 0) return false;
+    if (!treatment.promo_start_date || !treatment.promo_end_date) return false;
+    
+    const now = new Date();
+    const startDate = new Date(treatment.promo_start_date);
+    const endDate = new Date(treatment.promo_end_date);
+    
+    return now >= startDate && now <= endDate;
+  };
+
+  // ✨ Fungsi untuk hitung harga setelah diskon
+  const calculateDiscountedPrice = (price, discountPercentage) => {
+    const discount = (price * discountPercentage) / 100;
+    return price - discount;
   };
 
   if (loading) {
@@ -198,7 +231,12 @@ const Treatment = () => {
                 {categories.map((cat) => {
                   const count = cat === 'All' 
                     ? treatments.length 
-                    : treatments.filter(t => t.category === cat).length;
+                    : treatments.filter(t => {
+                        if (Array.isArray(t.category)) {
+                          return t.category.includes(cat);
+                        }
+                        return t.category === cat;
+                      }).length;
 
                   return (
                     <label 
@@ -309,7 +347,7 @@ const Treatment = () => {
 
                   {/* Category Mobile */}
                   <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block flex items-center gap-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <Filter size={14} />
                       Kategori
                     </label>
@@ -317,7 +355,12 @@ const Treatment = () => {
                       {categories.map((cat) => {
                         const count = cat === 'All' 
                           ? treatments.length 
-                          : treatments.filter(t => t.category === cat).length;
+                          : treatments.filter(t => {
+                              if (Array.isArray(t.category)) {
+                                return t.category.includes(cat);
+                              }
+                              return t.category === cat;
+                            }).length;
 
                         return (
                           <label 
@@ -455,11 +498,22 @@ const Treatment = () => {
                         alt={item.name} 
                         className="max-h-full w-auto object-contain group-hover:scale-110 transition-transform duration-700" 
                       />
-                      <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
-                        <p className="text-[7px] sm:text-[8px] font-black uppercase tracking-tighter text-[#8D6E63] font-sans">
-                          {item.category}
-                        </p>
+                      <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-wrap gap-1 max-w-[60%]">
+                        {(Array.isArray(item.category) ? item.category.slice(0, 2) : [item.category]).filter(Boolean).map((cat, idx) => (
+                          <div key={idx} className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
+                            <p className="text-[7px] sm:text-[8px] font-black uppercase tracking-tighter text-[#8D6E63] font-sans">
+                              {cat}
+                            </p>
+                          </div>
+                        ))}
                       </div>
+                      {isPromoActive(item) && (
+                        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-red-500 text-white px-2 py-1 rounded-lg shadow-lg">
+                          <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-tight">
+                            PROMO {item.discount_percentage}%
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Content */}
@@ -482,9 +536,20 @@ const Treatment = () => {
                           <span className="text-[7px] sm:text-[8px] font-black uppercase opacity-60 font-sans tracking-widest leading-none mb-0.5">
                             Harga
                           </span>
-                          <span className="text-[10px] sm:text-xs font-display font-bold">
-                            {item.price ? formatRupiah(item.price) : 'Call'}
-                          </span>
+                          {isPromoActive(item) ? (
+                            <div className="flex flex-col">
+                              <span className="text-[8px] sm:text-[9px] text-gray-400 line-through leading-none mb-0.5">
+                                {formatRupiah(item.price)}
+                              </span>
+                              <span className="text-[10px] sm:text-xs font-display font-bold text-red-600">
+                                {formatRupiah(calculateDiscountedPrice(item.price, item.discount_percentage))}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] sm:text-xs font-display font-bold">
+                              {item.price ? formatRupiah(item.price) : 'Call'}
+                            </span>
+                          )}
                         </div>
                         <div className="bg-[#8D6E63] group-hover/btn:bg-white p-1 sm:p-1.5 rounded-lg transition-colors">
                           <ArrowRight size={12} className="sm:w-[14px] sm:h-[14px] text-white group-hover/btn:text-[#8D6E63]" />
@@ -526,12 +591,19 @@ const Treatment = () => {
                     className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[30px] shadow-sm border border-gray-50 flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-8 group hover:shadow-lg transition-all duration-300"
                   >
                     {/* Image */}
-                    <div className="w-full md:w-40 lg:w-48 h-40 sm:h-48 md:h-40 bg-[#F9F6F2] rounded-xl sm:rounded-2xl overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="w-full md:w-40 lg:w-48 h-40 sm:h-48 md:h-40 bg-[#F9F6F2] rounded-xl sm:rounded-2xl overflow-hidden flex items-center justify-center shrink-0 relative">
                       <img 
                         src={item.image || 'https://via.placeholder.com/400x300?text=Treatment'} 
                         alt={item.name} 
                         className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" 
                       />
+                      {isPromoActive(item) && (
+                        <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-lg shadow-lg z-10">
+                          <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight">
+                            PROMO {item.discount_percentage}%
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Content */}
@@ -540,9 +612,13 @@ const Treatment = () => {
                         <h3 className="text-lg sm:text-xl font-display font-bold text-[#3E2723] leading-tight">
                           {item.name}
                         </h3>
-                        <span className="inline-block w-fit px-2 sm:px-3 py-1 bg-[#F5F0E8] text-[#8D6E63] text-[9px] sm:text-[10px] font-bold uppercase tracking-wider rounded-full">
-                          {item.category}
-                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(Array.isArray(item.category) ? item.category : [item.category]).filter(Boolean).map((cat, idx) => (
+                            <span key={idx} className="inline-block px-2 sm:px-3 py-1 bg-[#F5F0E8] text-[#8D6E63] text-[9px] sm:text-[10px] font-bold uppercase tracking-wider rounded-full">
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                       
                       <p className="text-xs sm:text-sm font-sans text-gray-500 line-clamp-2 italic leading-relaxed">
@@ -557,8 +633,24 @@ const Treatment = () => {
                         )}
                         
                         {item.price && (
-                          <div className="px-2 sm:px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-lg">
-                            {formatRupiah(item.price)}
+                          <div>
+                            {isPromoActive(item) ? (
+                              <div className="flex items-center gap-2">
+                                <div className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-400 text-xs font-bold rounded-lg line-through">
+                                  {formatRupiah(item.price)}
+                                </div>
+                                <div className="px-2 sm:px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-lg">
+                                  {formatRupiah(calculateDiscountedPrice(item.price, item.discount_percentage))}
+                                </div>
+                                <div className="px-2 py-1 bg-red-500 text-white text-[8px] font-bold rounded-full">
+                                  Hemat {item.discount_percentage}%
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="px-2 sm:px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-lg">
+                                {formatRupiah(item.price)}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

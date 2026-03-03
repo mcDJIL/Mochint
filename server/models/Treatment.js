@@ -7,7 +7,11 @@ class Treatment {
       SELECT * FROM treatments 
       ORDER BY category, name ASC
     `);
-    return rows;
+    // Parse category JSON string to array
+    return rows.map(row => ({
+      ...row,
+      category: this.parseCategory(row.category)
+    }));
   }
 
   // Get treatment by ID
@@ -16,6 +20,12 @@ class Treatment {
       'SELECT * FROM treatments WHERE id = ?',
       [id]
     );
+    if (rows[0]) {
+      return {
+        ...rows[0],
+        category: this.parseCategory(rows[0].category)
+      };
+    }
     return rows[0];
   }
 
@@ -36,23 +46,51 @@ class Treatment {
     return rows[0];
   }
 
+  // Helper: Convert category array to JSON string
+  static stringifyCategory(category) {
+    if (Array.isArray(category)) {
+      return JSON.stringify(category);
+    }
+    if (typeof category === 'string') {
+      return JSON.stringify([category]);
+    }
+    return JSON.stringify([]);
+  }
+
+  // Helper: Parse category JSON string to array
+  static parseCategory(category) {
+    if (!category) return [];
+    if (Array.isArray(category)) return category;
+    try {
+      const parsed = JSON.parse(category);
+      return Array.isArray(parsed) ? parsed : [category];
+    } catch (e) {
+      return [category];
+    }
+  }
+
   // Create new treatment
   static async create(treatmentData) {
     const {
       id,
       name,
-      category = 'General',
+      category = [],
       duration = '60 min',
       price,
       description = '',
-      image = ''
+      image = '',
+      discountPercentage = 0,
+      promoStartDate = null,
+      promoEndDate = null
     } = treatmentData;
+
+    const categoryString = this.stringifyCategory(category);
 
     const [result] = await promisePool.query(
       `INSERT INTO treatments 
-       (id, name, category, duration, price, description, image)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, category, duration, price, description, image]
+       (id, name, category, duration, price, description, image, discount_percentage, promo_start_date, promo_end_date)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, name, categoryString, duration, price, description, image, discountPercentage, promoStartDate, promoEndDate]
     );
     
     return { id, insertId: result.insertId };
@@ -66,15 +104,20 @@ class Treatment {
       duration,
       price,
       description,
-      image
+      image,
+      discountPercentage = 0,
+      promoStartDate = null,
+      promoEndDate = null
     } = treatmentData;
+
+    const categoryString = this.stringifyCategory(category);
 
     const [result] = await promisePool.query(
       `UPDATE treatments SET
         name = ?, category = ?, duration = ?, price = ?, 
-        description = ?, image = ?
+        description = ?, image = ?, discount_percentage = ?, promo_start_date = ?, promo_end_date = ?
        WHERE id = ?`,
-      [name, category, duration, price, description, image, id]
+      [name, categoryString, duration, price, description, image, discountPercentage, promoStartDate, promoEndDate, id]
     );
     
     return result.affectedRows;
@@ -93,11 +136,14 @@ class Treatment {
   static async getByCategory(category) {
     const [rows] = await promisePool.query(
       `SELECT * FROM treatments 
-       WHERE category = ?
+       WHERE JSON_CONTAINS(category, ?) OR category LIKE ?
        ORDER BY name ASC`,
-      [category]
+      [JSON.stringify(category), `%${category}%`]
     );
-    return rows;
+    return rows.map(row => ({
+      ...row,
+      category: this.parseCategory(row.category)
+    }));
   }
 
   // Get all categories
@@ -108,7 +154,15 @@ class Treatment {
       WHERE category IS NOT NULL AND category != ''
       ORDER BY category
     `);
-    return rows.map(row => row.category);
+    
+    // Parse all categories and create a unique set
+    const allCategories = new Set();
+    rows.forEach(row => {
+      const categories = this.parseCategory(row.category);
+      categories.forEach(cat => allCategories.add(cat));
+    });
+    
+    return Array.from(allCategories).sort();
   }
 
   // Get treatment statistics
