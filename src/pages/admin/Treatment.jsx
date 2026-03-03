@@ -25,13 +25,7 @@ const Treatment = () => {
   const [activeTab, setActiveTab] = useState('details');
   const [notification, setNotification] = useState({ show: false, type: '', title: '', message: '' });
   const [searchTerm, setSearchTerm] = useState('');
-  const [availableCategories, setAvailableCategories] = useState([
-    'Perawatan Wajah', 
-    'Perawatan Tubuh', 
-    'Perawatan Khusus', 
-    'Paket Spesial', 
-    'Perawatan Promo'
-  ]);
+  
   const defaultCategories = [
     'Perawatan Wajah', 
     'Perawatan Tubuh', 
@@ -39,21 +33,7 @@ const Treatment = () => {
     'Paket Spesial', 
     'Perawatan Promo'
   ];
-  const [availableFacilities, setAvailableFacilities] = useState([
-    'Facial Wash',
-    'Deep Cleansing',
-    'Facial Massage',
-    'Head Massage',
-    'Shoulder Massage',
-    'Masker Wajah',
-    'Scrub',
-    'Serum Treatment',
-    'Totok Wajah',
-    'Face Toning',
-    'Aromaterapi',
-    'Hand Treatment',
-    'Foot Spa'
-  ]);
+  
   const defaultFacilities = [
     'Facial Wash',
     'Deep Cleansing',
@@ -69,6 +49,28 @@ const Treatment = () => {
     'Hand Treatment',
     'Foot Spa'
   ];
+  
+  // Load dari localStorage atau gunakan default
+  const [availableCategories, setAvailableCategories] = useState(() => {
+    const saved = localStorage.getItem('availableCategories');
+    return saved ? JSON.parse(saved) : defaultCategories;
+  });
+  
+  const [availableFacilities, setAvailableFacilities] = useState(() => {
+    const saved = localStorage.getItem('availableFacilities');
+    return saved ? JSON.parse(saved) : defaultFacilities;
+  });
+  
+  // Track deleted items agar tidak muncul lagi setelah refresh
+  const [deletedCategories, setDeletedCategories] = useState(() => {
+    const saved = localStorage.getItem('deletedCategories');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [deletedFacilities, setDeletedFacilities] = useState(() => {
+    const saved = localStorage.getItem('deletedFacilities');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // API base URL
   const API_URL = 'http://localhost:5000/api/treatments';
@@ -88,45 +90,66 @@ const Treatment = () => {
     fetchTreatments();
   }, []);
 
-  // Update availableCategories dari treatments yang ada
+  // Sinkronisasi availableCategories dengan localStorage setiap kali berubah
+  useEffect(() => {
+    localStorage.setItem('availableCategories', JSON.stringify(availableCategories));
+  }, [availableCategories]);
+
+  // Sinkronisasi availableFacilities dengan localStorage setiap kali berubah
+  useEffect(() => {
+    localStorage.setItem('availableFacilities', JSON.stringify(availableFacilities));
+  }, [availableFacilities]);
+  
+  // Sinkronisasi deletedCategories dengan localStorage
+  useEffect(() => {
+    localStorage.setItem('deletedCategories', JSON.stringify(deletedCategories));
+  }, [deletedCategories]);
+  
+  // Sinkronisasi deletedFacilities dengan localStorage
+  useEffect(() => {
+    localStorage.setItem('deletedFacilities', JSON.stringify(deletedFacilities));
+  }, [deletedFacilities]);
+
+  // Sync categories dan facilities dari treatments yang ada (hanya sekali saat load pertama)
   useEffect(() => {
     if (treatments.length > 0) {
       const allCategories = new Set(availableCategories);
+      const allFacilities = new Set(availableFacilities);
       
       treatments.forEach(treatment => {
+        // Tambahkan kategori dari treatment (kecuali yang sudah dihapus)
         const categories = Array.isArray(treatment.category) 
           ? treatment.category 
           : (treatment.category ? [treatment.category] : []);
         
         categories.forEach(cat => {
-          if (cat && cat.trim()) {
+          if (cat && cat.trim() && !deletedCategories.includes(cat)) {
             allCategories.add(cat);
           }
         });
-      });
-      
-      setAvailableCategories(Array.from(allCategories));
-    }
-  }, [treatments]);
-
-  // Update availableFacilities dari treatments yang ada
-  useEffect(() => {
-    if (treatments.length > 0) {
-      const allFacilities = new Set(availableFacilities);
-      
-      treatments.forEach(treatment => {
+        
+        // Tambahkan fasilitas dari treatment (kecuali yang sudah dihapus)
         const facilities = Array.isArray(treatment.facilities) 
           ? treatment.facilities 
           : [];
         
         facilities.forEach(facility => {
-          if (facility && facility.trim()) {
+          if (facility && facility.trim() && !deletedFacilities.includes(facility)) {
             allFacilities.add(facility);
           }
         });
       });
       
-      setAvailableFacilities(Array.from(allFacilities));
+      const newCategories = Array.from(allCategories);
+      const newFacilities = Array.from(allFacilities);
+      
+      // Update hanya jika ada perubahan
+      if (JSON.stringify(newCategories) !== JSON.stringify(availableCategories)) {
+        setAvailableCategories(newCategories);
+      }
+      if (JSON.stringify(newFacilities) !== JSON.stringify(availableFacilities)) {
+        setAvailableFacilities(newFacilities);
+      }
     }
   }, [treatments]);
 
@@ -248,14 +271,17 @@ const Treatment = () => {
       return;
     }
 
+    const newCategoryValue = newCategory.trim();
+    
     // Tambahkan ke daftar kategori yang tersedia
-    setAvailableCategories([...availableCategories, newCategory.trim()]);
+    const updatedCategories = [...availableCategories, newCategoryValue];
+    setAvailableCategories(updatedCategories);
 
     // Tambahkan ke kategori yang dipilih
     const currentCategories = formData.category || [];
     setFormData({
       ...formData,
-      category: [...currentCategories, newCategory.trim()]
+      category: [...currentCategories, newCategoryValue]
     });
 
     setNewCategory('');
@@ -263,14 +289,20 @@ const Treatment = () => {
       show: true,
       type: 'success',
       title: 'Kategori Ditambahkan',
-      message: `Kategori "${newCategory.trim()}" berhasil ditambahkan dan dipilih`
+      message: `Kategori "${newCategoryValue}" berhasil ditambahkan dan akan tersimpan`
     });
   };
 
   // Handle Hapus Kategori Custom
   const handleRemoveCategory = (category) => {
     // Hapus dari availableCategories
-    setAvailableCategories(availableCategories.filter(cat => cat !== category));
+    const updatedCategories = availableCategories.filter(cat => cat !== category);
+    setAvailableCategories(updatedCategories);
+    
+    // Tambahkan ke daftar deleted agar tidak muncul lagi
+    if (!deletedCategories.includes(category)) {
+      setDeletedCategories([...deletedCategories, category]);
+    }
     
     // Hapus dari kategori yang dipilih jika ada
     const currentCategories = formData.category || [];
@@ -285,7 +317,7 @@ const Treatment = () => {
       show: true,
       type: 'success',
       title: 'Kategori Dihapus',
-      message: `Kategori "${category}" berhasil dihapus dari daftar`
+      message: `Kategori "${category}" berhasil dihapus permanen dari daftar`
     });
   };
 
@@ -301,8 +333,10 @@ const Treatment = () => {
       return;
     }
 
+    const newFacilityValue = newFacility.trim();
+    
     // Cek apakah fasilitas sudah ada di availableFacilities
-    if (availableFacilities.includes(newFacility.trim())) {
+    if (availableFacilities.includes(newFacilityValue)) {
       setNotification({
         show: true,
         type: 'error',
@@ -313,13 +347,14 @@ const Treatment = () => {
     }
 
     // Tambahkan ke daftar fasilitas yang tersedia
-    setAvailableFacilities([...availableFacilities, newFacility.trim()]);
+    const updatedFacilities = [...availableFacilities, newFacilityValue];
+    setAvailableFacilities(updatedFacilities);
 
     // Tambahkan ke fasilitas yang dipilih
     const currentFacilities = formData.facilities || [];
     setFormData({
       ...formData,
-      facilities: [...currentFacilities, newFacility.trim()]
+      facilities: [...currentFacilities, newFacilityValue]
     });
 
     setNewFacility('');
@@ -327,14 +362,20 @@ const Treatment = () => {
       show: true,
       type: 'success',
       title: 'Fasilitas Ditambahkan',
-      message: `Fasilitas "${newFacility.trim()}" berhasil ditambahkan dan dipilih`
+      message: `Fasilitas "${newFacilityValue}" berhasil ditambahkan dan akan tersimpan`
     });
   };
 
   // Handle Hapus Fasilitas dari Daftar
   const handleRemoveFacilityFromList = (facility) => {
     // Hapus dari availableFacilities
-    setAvailableFacilities(availableFacilities.filter(f => f !== facility));
+    const updatedFacilities = availableFacilities.filter(f => f !== facility);
+    setAvailableFacilities(updatedFacilities);
+    
+    // Tambahkan ke daftar deleted agar tidak muncul lagi
+    if (!deletedFacilities.includes(facility)) {
+      setDeletedFacilities([...deletedFacilities, facility]);
+    }
     
     // Hapus dari fasilitas yang dipilih jika ada
     const currentFacilities = formData.facilities || [];
@@ -349,7 +390,7 @@ const Treatment = () => {
       show: true,
       type: 'success',
       title: 'Fasilitas Dihapus',
-      message: `Fasilitas "${facility}" berhasil dihapus dari daftar`
+      message: `Fasilitas "${facility}" berhasil dihapus permanen dari daftar`
     });
   };
 
