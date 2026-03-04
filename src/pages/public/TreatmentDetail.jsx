@@ -12,6 +12,24 @@ const TreatmentDetail = ({ isOpen, onClose, treatment }) => {
     }).format(price);
   };
 
+  // Fungsi untuk cek apakah promo aktif
+  const isPromoActive = () => {
+    if (!treatment.discount_percentage || treatment.discount_percentage <= 0) return false;
+    if (!treatment.promo_start_date || !treatment.promo_end_date) return false;
+    
+    const now = new Date();
+    const startDate = new Date(treatment.promo_start_date);
+    const endDate = new Date(treatment.promo_end_date);
+    
+    return now >= startDate && now <= endDate;
+  };
+
+  // Fungsi untuk hitung harga setelah diskon
+  const calculateDiscountedPrice = (price, discountPercentage) => {
+    const discount = (price * discountPercentage) / 100;
+    return price - discount;
+  };
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
@@ -49,6 +67,14 @@ const TreatmentDetail = ({ isOpen, onClose, treatment }) => {
             className="absolute inset-0 w-full h-full object-cover" 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+          {/* Promo Badge - Mobile */}
+          {isPromoActive() && (
+            <div className="absolute top-20 right-4 bg-red-500 text-white px-3 py-2 rounded-xl shadow-lg z-20">
+              <p className="text-xs font-black uppercase tracking-tight">
+                HEMAT {treatment.discount_percentage}%
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ✨ KOLOM KIRI: Informasi Detail */}
@@ -95,9 +121,23 @@ const TreatmentDetail = ({ isOpen, onClose, treatment }) => {
               <div className="md:hidden grid grid-cols-2 gap-3 pb-6 border-b border-gray-100">
                 <div className="bg-[#FDFBF7] p-4 rounded-2xl">
                   <p className="text-[10px] font-black text-[#A1887F] uppercase tracking-wider mb-1">Harga</p>
-                  <p className="text-xl sm:text-2xl font-display font-bold text-[#8D6E63]">
-                    Rp {formatPrice(treatment.price)}
-                  </p>
+                  {isPromoActive() ? (
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-400 line-through font-medium">
+                        Rp {formatPrice(treatment.price)}
+                      </p>
+                      <p className="text-xl sm:text-2xl font-display font-bold text-red-600">
+                        Rp {formatPrice(calculateDiscountedPrice(treatment.price, treatment.discount_percentage))}
+                      </p>
+                      <div className="inline-block px-2 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full">
+                        HEMAT {treatment.discount_percentage}%
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xl sm:text-2xl font-display font-bold text-[#8D6E63]">
+                      Rp {formatPrice(treatment.price)}
+                    </p>
+                  )}
                 </div>
                 <div className="bg-[#5D4037] p-4 rounded-2xl flex flex-col justify-center items-center text-white">
                   <Clock size={20} className="text-[#D7CCC8] mb-1" />
@@ -142,10 +182,26 @@ const TreatmentDetail = ({ isOpen, onClose, treatment }) => {
               {/* ✨ DESKTOP Harga & Durasi */}
               <div className="hidden md:flex pt-8 lg:pt-10 border-t border-gray-100 items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-black text-[#A1887F] uppercase tracking-widest mb-1 font-sans">Harga</p>
-                  <p className="text-2xl lg:text-3xl font-display font-bold text-[#8D6E63]">
-                    Rp {formatPrice(treatment.price)}
-                  </p>
+                  <p className="text-[11px] font-black text-[#A1887F] uppercase tracking-widest mb-2 font-sans">Harga</p>
+                  {isPromoActive() ? (
+                    <div className="space-y-1">
+                      <p className="text-lg text-gray-400 line-through font-medium">
+                        Rp {formatPrice(treatment.price)}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-2xl lg:text-3xl font-display font-bold text-red-600">
+                          Rp {formatPrice(calculateDiscountedPrice(treatment.price, treatment.discount_percentage))}
+                        </p>
+                        <div className="px-3 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                          HEMAT {treatment.discount_percentage}%
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-2xl lg:text-3xl font-display font-bold text-[#8D6E63]">
+                      Rp {formatPrice(treatment.price)}
+                    </p>
+                  )}
                 </div>
                 <div className="px-4 lg:px-6 py-2 lg:py-3 bg-[#5D4037] text-white rounded-xl lg:rounded-2xl flex items-center gap-3 shadow-lg">
                   <Clock size={18} className="text-[#D7CCC8]" />
@@ -181,6 +237,17 @@ const TreatmentDetail = ({ isOpen, onClose, treatment }) => {
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#3E2723]/40 to-transparent"></div>
           <div className="absolute inset-0 border-l-[1px] border-white/10"></div>
+          {/* Promo Badge - Desktop */}
+          {isPromoActive() && (
+            <div className="absolute top-8 right-8 bg-red-500 text-white px-4 py-3 rounded-2xl shadow-2xl z-20">
+              <p className="text-sm font-black uppercase tracking-tight mb-1">
+                PROMO SPESIAL
+              </p>
+              <p className="text-2xl font-black">
+                {treatment.discount_percentage}% OFF
+              </p>
+            </div>
+          )}
         </div>
 
       </div>

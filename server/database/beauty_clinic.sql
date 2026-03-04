@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 02, 2026 at 03:46 PM
+-- Generation Time: Mar 04, 2026 at 03:29 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.3.29
 
@@ -75,22 +75,7 @@ CREATE TABLE `appointments` (
 --
 
 INSERT INTO `appointments` (`id`, `appointment_id`, `customer_name`, `member_id`, `treatment_id`, `therapist_id`, `date`, `time`, `amount`, `status`, `created_at`, `updated_at`) VALUES
-(2, 'APT00002', 'Lanaaa Siti', 260001, 2, 'TH001', '2026-01-28', '22:05', 200000, 'completed', '2026-01-22 15:06:00', '2026-02-10 19:05:09'),
-(3, 'APT00003', 'Ikram', 260004, 3, 'TH001', '2026-01-28', '17:56', 400000, 'completed', '2026-01-23 08:56:39', '2026-02-11 08:49:27'),
-(4, 'APT00004', 'Lukman Hakim', 260002, 4, 'TH002', '2026-01-28', '14:04', 30000, 'completed', '2026-01-26 07:04:26', '2026-02-11 10:37:53'),
-(6, 'APT00005', 'Fuad', 260003, 2, 'TH001', '2026-02-10', '02:13', 200000, 'completed', '2026-02-10 19:23:40', '2026-02-10 19:32:19'),
-(7, 'APT00006', 'Eka', 260006, 2, 'TH003', '2026-02-13', '15:06', 150000, 'completed', '2026-02-13 08:06:39', '2026-02-18 16:20:09'),
-(8, 'APT00007', 'Eka', 260006, 2, 'TH003', '2026-02-12', '15:06', 150000, 'completed', '2026-02-13 08:06:57', '2026-02-13 08:06:57'),
-(10, 'APT00008', 'Eka', 260006, 4, 'TH003', '2026-02-18', '18:30', 30000, 'completed', '2026-02-18 16:26:20', '2026-02-19 05:03:10'),
-(12, 'APT00010', 'Eka', 260006, 1, 'TH001', '2026-02-19', '08:00', 120000, 'completed', '2026-02-18 16:35:58', '2026-02-19 05:04:07'),
-(13, 'APT00011', 'Eka', 260006, 2, 'TH003', '2026-02-20', '18:30', 150000, 'completed', '2026-02-18 16:46:30', '2026-02-19 05:03:22'),
-(17, 'APT00015', 'awi', 260010, 2, 'TH001', '2026-02-19', '08:00', 150000, 'completed', '2026-02-19 05:01:47', '2026-02-19 05:04:19'),
-(18, 'APT00016', 'awi', 260010, 5, 'TH001', '2026-02-20', '10:00', 450000, 'confirmed', '2026-02-19 05:02:17', '2026-02-19 05:03:42'),
-(19, 'APT00017', 'awi', 260010, 4, NULL, '2026-02-19', '08:00', 30000, 'confirmed', '2026-02-19 05:05:58', '2026-02-19 05:05:58'),
-(20, 'APT00018', 'awi', 260010, 1, NULL, '2026-02-19', '08:00', 120000, 'confirmed', '2026-02-19 05:06:17', '2026-02-19 05:06:17'),
-(21, 'APT00019', 'awi', 260010, 5, NULL, '2026-02-19', '08:00', 450000, 'confirmed', '2026-02-19 05:06:38', '2026-02-19 05:06:38'),
-(22, 'APT00020', 'awi', 260010, 2, NULL, '2026-02-20', '17:00', 150000, 'confirmed', '2026-02-19 07:16:39', '2026-02-19 07:16:39'),
-(23, 'APT00021', 'awi', 260010, 3, NULL, '2026-02-20', '15:00', 400000, 'confirmed', '2026-02-20 08:26:07', '2026-02-20 08:26:07');
+(29, 'APT00001', 'TRM43_Siti Maulana Shofiyah', 260021, 3, NULL, '2026-04-04', '14:00', 400000, 'confirmed', '2026-03-04 07:34:11', '2026-03-04 07:34:11');
 
 -- --------------------------------------------------------
 
@@ -126,6 +111,29 @@ INSERT INTO `articles` (`id`, `title`, `content`, `category`, `status`, `image`,
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `disabled_timeslots`
+--
+
+CREATE TABLE `disabled_timeslots` (
+  `id` int NOT NULL,
+  `date` date NOT NULL,
+  `time_slot` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Format: HH:MM',
+  `reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `disabled_by` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'admin',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `disabled_timeslots`
+--
+
+INSERT INTO `disabled_timeslots` (`id`, `date`, `time_slot`, `reason`, `disabled_by`, `created_at`, `updated_at`) VALUES
+(5, '2026-03-05', '08:00', 'Disabled by admin', 'admin', '2026-03-03 18:23:49', '2026-03-03 18:23:49');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `members`
 --
 
@@ -135,7 +143,7 @@ CREATE TABLE `members` (
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `password` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `join_date` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `total_visits` int DEFAULT '0',
   `status` enum('active','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'active',
@@ -143,8 +151,8 @@ CREATE TABLE `members` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `role` enum('member','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'member',
-  `google_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `profile_picture` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `google_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `profile_picture` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -152,21 +160,11 @@ CREATE TABLE `members` (
 --
 
 INSERT INTO `members` (`id`, `name`, `email`, `phone`, `address`, `password`, `join_date`, `total_visits`, `status`, `last_visit`, `created_at`, `updated_at`, `role`, `google_id`, `profile_picture`) VALUES
-(260001, 'Lanaaa Siti', 'sitilana@gmail.com', '081234567891', 'labubu', '', '21 Jan 2023', 9, 'active', '2026-01-30', '2026-01-21 15:12:12', '2026-02-10 20:18:41', 'member', NULL, NULL),
-(260002, 'Lukman Hakim', 'lukmanhakim@email.com', '08122222223', 'lala', '', '22 Jan 2026', 10, 'active', '23 Jan 2026', '2026-01-22 15:05:17', '2026-02-10 20:15:42', 'member', NULL, NULL),
-(260003, 'Fuad', 'fuad@email.com', '08144444444', 'klagen', '', '26 Jan 2026', 9, 'active', '2026-02-11', '2026-01-26 13:47:39', '2026-02-10 19:32:19', 'member', NULL, NULL),
-(260004, 'Ikram', 'ikram@email.com', '081234567891', 'sby', '', '27 Jan 2026', 1, 'active', '2026-01-28', '2026-01-27 10:28:17', '2026-01-28 16:23:18', 'member', NULL, NULL),
-(260005, 'Farchan', 'farchan@gmail.com', '081234567891', 'Kenjeran', '', '29 Jan 2026', 1, 'active', '2026-01-29', '2026-01-29 07:05:13', '2026-01-30 06:48:33', 'member', NULL, NULL),
-(260006, 'Eka', 'eka@gmail.com', '085732422898', 'Lamongan', '$2b$10$YX9bgvpmTrAvG4sxV.t3fO8LcdfFdi0mL4e75F6h1MYKpXJxsPcl2', '2/2/2026', 5, 'active', '2026-02-19', '2026-02-02 08:47:05', '2026-02-19 05:04:07', 'member', NULL, NULL),
-(260007, 'Kevin', 'epin@gmail.com', '081234567891', 'Surabaya', '', '2 Feb 2026', 0, 'active', 'Never', '2026-02-02 08:59:04', '2026-02-02 08:59:04', 'member', NULL, NULL),
-(260008, 'Herwin', 'herwin@gmail.com', '08123456789', 'Surabaya', '$2b$10$.wSVH8WzI4vL6Nu69Fok6edyLCsw4RGgwvLoxjt/xLHd78UJWya6a', '2/2/2026', 7, 'active', '2026-02-04 17:01:11.607', '2026-02-02 09:09:10', '2026-02-04 10:01:11', 'member', NULL, NULL),
-(260010, 'awi', 'awi@gmail.com', '08512345678', 'Sidoarjo', '$2b$10$ZhebCsD5AzfSuaOUyopUK.DVdO2b5PpQ8QSnxV10duXe4RETS74.W', '2026-02-19', 1, 'active', '2026-02-19', '2026-02-19 05:00:44', '2026-02-19 05:04:19', 'member', NULL, NULL),
-(260011, 'nana', 'nana@gmail.com', '1234567890', 'PENS', '$2b$10$snZbFM2rFc913I/s0JaoNOn5O2NJMJywqqNhqcM2EX0JR5pSRhuH6', '2026-02-19', 0, 'active', 'Never', '2026-02-19 06:09:22', '2026-02-19 06:09:22', 'member', NULL, NULL),
-(260012, 'nama', 'nama@gmail.com', '1234567890', 'pens', '$2b$10$mkO1phieWjCmGHndj1S2CuSwMWI9TLFEezuqv1eKqGdo34NG12Ydu', '2026-02-19', 0, 'active', 'Never', '2026-02-19 06:14:47', '2026-02-19 06:14:47', 'member', NULL, NULL),
-(260013, 'copi', 'sm.shofi12@gmail.com', '0813555555', 'yoo', '$2b$10$c/5upvRk7P1rduAdlzK0du8uer9pElzdIhGntH8WObhnVvNpBJVHe', '2026-02-26', 0, 'active', 'Never', '2026-02-26 07:08:43', '2026-02-26 09:02:57', 'member', '100590523777914093975', 'https://lh3.googleusercontent.com/a/ACg8ocLK5MPDS1HsE_GZ3tQMfhJO73ZR6S_ch9TCbHLAKatRxWxRo4k=s96-c'),
-(260014, 'Shofi', 'sitimaulana2005@gmail.com', '085732422898', 'Jl Tegal Mulyorejo Baru', '$2b$10$f2FBd8aV81LJ0xUkf2aFhuJNOSeaQbS0kuA2ROPH0Y2rCoFvfkdsa', '2026-02-26', 0, 'active', 'Never', '2026-02-26 07:10:50', '2026-02-27 07:00:30', 'member', '104477398256312234785', 'https://lh3.googleusercontent.com/a/ACg8ocII9qB6YGCqc0MLEL-dtdT2ARJr2ARkKVdXtRyH3EAP5fGrq8a4=s96-c'),
-(260015, 'jean', 'jjeanleey@gmail.com', '1111111111111111', 'sby', '$2b$10$q3/RBPRUkIHv5/.Z.dmmqOKn27Xg.KvQ6eBxnGUc2CZreBP37iZTu', '2026-02-26', 0, 'active', 'Never', '2026-02-26 09:12:15', '2026-02-26 09:34:31', 'member', '112905614737275249691', 'https://lh3.googleusercontent.com/a/ACg8ocKQmNRcN9lyiKcVQjW9E5RbyLppEiopEit1LvWCiQvKZcN7Mo4=s96-c'),
-(260016, 'Lana', 'orphiixdream@gmail.com', '085732222898', 'Tegal Mulyorejo Baru', '$2b$10$HNH83f9S1HoCXffT3jJeEewNSXhc37hYThLYwwEHeQS1gKjFuv5a2', '2026-02-27', 0, 'active', 'Never', '2026-02-27 06:43:24', '2026-02-27 06:44:47', 'member', '104550834917102940458', 'https://lh3.googleusercontent.com/a/ACg8ocKcOwBmsreR_EVISMa2oBPMTeg46Pe4ZNPz5Kk1Lh0QqN6GYTRE=s96-c');
+(260020, 'awii', 'awii@gmail.com', '12345678', 'qwertyuiop', '$2b$10$mm.0h685/7/FmSDzoOwVmOxfkQ/M3iH6ItljvdMuevo22B1V7URDq', '2026-03-03', 0, 'active', 'Never', '2026-03-03 16:41:05', '2026-03-03 16:41:05', 'member', NULL, NULL),
+(260021, 'Shofi', 'sitimaulana2005@gmail.com', '011111111', 'oke', '$2b$10$MkNTkVnXmQRnDQjd.2K66uAoYY.mMxs.etDADhvfFVbJ5yy8uBZsG', '2026-03-03', 0, 'active', 'Never', '2026-03-03 18:22:18', '2026-03-04 14:00:02', 'member', '104477398256312234785', 'https://lh3.googleusercontent.com/a/ACg8ocII9qB6YGCqc0MLEL-dtdT2ARJr2ARkKVdXtRyH3EAP5fGrq8a4=s96-c'),
+(260022, 'name', 'orphiixdream@gmail.com', '081234567891', 'Surabaya, TMB', '$2b$10$ltq7PJlTmaBr/HFslPxvvecjTeTbwceQ7xXQ4FHJiBsAKjJ1FYUhW', '2026-03-04', 0, 'active', 'Never', '2026-03-04 06:54:37', '2026-03-04 06:54:37', 'member', NULL, NULL),
+(260023, 'halimoke', 'satria0602@pens.met.ac.id', '081327639655', 'jl manyar sabrangan VIII / 4', '$2b$10$IRtyQTXq448tzhrQNzia0ucWbw0NyKlZ5w2jBN3jp4bE2m3pEF0da', '2026-03-04', 0, 'active', 'Never', '2026-03-04 07:43:28', '2026-03-04 07:43:28', 'member', NULL, NULL),
+(260024, 'jean', 'jjeanleey@gmail.com', '08512345678', 'JL TMB 72', '$2b$10$CQvWwsL.e8J.beXXk7JU0.ZI6hm20fwwWZ0P3xYs8oMPlMQpvA4Vu', '2026-03-04', 0, 'active', 'Never', '2026-03-04 14:01:36', '2026-03-04 14:04:24', 'member', '112905614737275249691', 'https://lh3.googleusercontent.com/a/ACg8ocKQmNRcN9lyiKcVQjW9E5RbyLppEiopEit1LvWCiQvKZcN7Mo4=s96-c');
 
 -- --------------------------------------------------------
 
@@ -189,6 +187,39 @@ CREATE TABLE `member_history` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `page_information`
+--
+
+CREATE TABLE `page_information` (
+  `id` int NOT NULL,
+  `page_type` enum('home','about','promo') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `section_key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subtitle` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `content` text COLLATE utf8mb4_unicode_ci,
+  `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `additional_data` json DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `display_order` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `page_information`
+--
+
+INSERT INTO `page_information` (`id`, `page_type`, `section_key`, `title`, `subtitle`, `content`, `image_url`, `additional_data`, `is_active`, `display_order`, `created_at`, `updated_at`) VALUES
+(1, 'home', 'hero', 'Selamat Datang di Mochint Beauty Care', 'Klinik Kecantikan Terpercaya di Pandaan Pasuruan', 'Dapatkan perawatan kecantikan terbaik dengan teknologi modern dan terapis profesional. Wujudkan kulit impian Anda bersama kami.', 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80', '{}', 1, 1, '2026-03-04 07:56:50', '2026-03-04 14:08:32'),
+(2, 'home', 'services', 'Layanan Kami', 'Perawatan Profesional untuk Kecantikan Anda', 'Kami menyediakan berbagai layanan perawatan kecantikan dengan teknologi terkini dan produk berkualitas tinggi.', NULL, NULL, 1, 2, '2026-03-04 07:56:50', '2026-03-04 07:56:50'),
+(3, 'home', 'why_choose', 'Kenapa Memilih Kami?', 'Alasan Menjadi Bagian dari Mochint Beauty Care', 'Kami berkomitmen memberikan pelayanan terbaik dengan tenaga profesional, produk berkualitas, dan hasil yang memuaskan.', '', '{}', 1, 3, '2026-03-04 07:56:50', '2026-03-04 14:10:24'),
+(4, 'about', 'story', 'Cerita Mochint Beauty Care', 'Perjalanan Kami Memberikan Layanan Terbaik', 'Selamat datang di Mochint Beauty Care, salon kecantikan yang berlokasi di Pandaan Pasuruan Jawa Timur. Kami hadir sebagai solusi bagi Anda yang ingin merawat kulit dengan teknologi terkini dan bahan premium.', 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80', NULL, 1, 1, '2026-03-04 07:56:50', '2026-03-04 07:56:50'),
+(5, 'about', 'vision', 'Visi & Misi', 'Komitmen Kami untuk Anda', 'Menjadi pusat kecantikan terpercaya yang menghadirkan solusi perawatan kulit berkualitas tinggi dengan teknologi modern dan pelayanan profesional.', NULL, '{\"misi\": [\"Memberikan pelayanan terbaik dengan teknologi modern\", \"Menggunakan produk berkualitas tinggi dan aman\", \"Memberdayakan tim profesional dan bersertifikat\", \"Memberikan hasil yang memuaskan bagi setiap pelanggan\"], \"visi\": \"Menjadi klinik kecantikan terdepan di Indonesia\"}', 1, 2, '2026-03-04 07:56:50', '2026-03-04 07:56:50'),
+(6, 'promo', 'main_promo', 'Diskon Reseller', '30% discount for selected products', 'Pelembab Moisturizer BPOM paling ampuh dan Halal MUI. Moisturizer Cream Pronafa Skincare merupakan perawatan hydrating intensif untuk menjaga kelembapan alami kulit. Mengandung Amino Ceramide, Aloe Vera, dan Sodium Hyaluronate, dikombinasikan dengan Copper Tripeptide yang dapat mempercepat pemulihan jaringan kulit Anda secara maksimal dan bercahaya.', 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80', '{\"benefits\": [\"Facial Signature\", \"Premium Masker\", \"Skin Analysis\", \"Hydrating Treatment\", \"Aftercare Consultation\"], \"promo_label\": \"Limited Offer\", \"whatsapp_number\": \"6281234567890\", \"discount_percentage\": \"30\"}', 1, 1, '2026-03-04 07:56:50', '2026-03-04 07:56:50');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `products`
 --
 
@@ -202,18 +233,21 @@ CREATE TABLE `products` (
   `image` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `marketplace_links` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `discount_percentage` int DEFAULT '0' COMMENT 'Persentase diskon (0-100)',
+  `promo_start_date` date DEFAULT NULL COMMENT 'Tanggal mulai promo',
+  `promo_end_date` date DEFAULT NULL COMMENT 'Tanggal akhir promo'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `category`, `price`, `weight`, `description`, `image`, `marketplace_links`, `created_at`, `updated_at`) VALUES
-(1, 'Sunscreen', 'Best Seller', 100000.00, 50, 'Hydrating moisturizer for all skin types', 'https://down-id.img.susercontent.com/file/id-11134207-7ra0s-mcsqsnxi4dko51@resize_w900_nl.webp', '{\"shopee\":\"https://shopee.co.id/product123\",\"tokopedia\":\"https://tokopedia.com/product123\",\"lazada\":\"https://lazada.co.id/product123\"}', '2026-01-21 15:38:10', '2026-02-19 06:50:54'),
-(2, 'Serum Red Booster', 'Brightening', 50000.00, 50, 'Nourishing shampoo for healthy hair', 'https://down-id.img.susercontent.com/file/id-11134207-82251-mjguvuxun18i11@resize_w900_nl.webp', '{\"shopee\":\"https://shopee.co.id/product456\",\"tokopedia\":\"https://tokopedia.com/product456\"}', '2026-01-21 15:38:10', '2026-02-19 06:52:17'),
-(3, 'Collagen Serum', 'Acne', 7000.00, 0, 'Moisturizing body lotion with natural ingredients', 'https://down-id.img.susercontent.com/file/id-11134207-8224t-mimiwjvbtjpd66@resize_w900_nl.webp', '{\"shopee\":\"https://shopee.co.id/product789\",\"lazada\":\"https://lazada.co.id/product789\"}', '2026-01-21 15:38:10', '2026-02-19 06:51:04'),
-(4, 'Derma Mist', 'Brightening', 90000.00, 50, 'Brightening serum with Vitamin C', 'https://down-id.img.susercontent.com/file/id-11134207-8224s-mjguvuxphm9t89@resize_w900_nl.webp', '{}', '2026-01-21 15:38:10', '2026-02-19 06:50:35');
+INSERT INTO `products` (`id`, `name`, `category`, `price`, `weight`, `description`, `image`, `marketplace_links`, `created_at`, `updated_at`, `discount_percentage`, `promo_start_date`, `promo_end_date`) VALUES
+(1, 'Sunscreen', 'Best Seller', 100000.00, 50, 'Hydrating moisturizer for all skin types', 'https://down-id.img.susercontent.com/file/id-11134207-7ra0s-mcsqsnxi4dko51@resize_w900_nl.webp', '{\"shopee\":\"https://shopee.co.id/product123\",\"tokopedia\":\"https://tokopedia.com/product123\",\"lazada\":\"https://lazada.co.id/product123\"}', '2026-01-21 15:38:10', '2026-02-19 06:50:54', 0, NULL, NULL),
+(2, 'Serum Red Booster', 'Brightening', 50000.00, 50, 'Nourishing shampoo for healthy hair', 'https://down-id.img.susercontent.com/file/id-11134207-82251-mjguvuxun18i11@resize_w900_nl.webp', '{\"shopee\":\"https://shopee.co.id/product456\",\"tokopedia\":\"https://tokopedia.com/product456\"}', '2026-01-21 15:38:10', '2026-03-02 16:48:06', 20, '2026-03-02', '2026-03-07'),
+(3, 'Collagen Serum', 'Acne', 70000.00, 50, 'Moisturizing body lotion with natural ingredients', 'https://down-id.img.susercontent.com/file/id-11134207-8224t-mimiwjvbtjpd66@resize_w900_nl.webp', '{\"shopee\":\"https://shopee.co.id/product789\",\"lazada\":\"https://lazada.co.id/product789\"}', '2026-01-21 15:38:10', '2026-03-03 16:10:20', 0, NULL, NULL),
+(4, 'Derma Mist', 'Brightening', 90000.00, 50, 'Brightening serum with Vitamin C', 'https://down-id.img.susercontent.com/file/id-11134207-8224s-mjguvuxphm9t89@resize_w900_nl.webp', '{}', '2026-01-21 15:38:10', '2026-02-19 06:50:35', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -225,7 +259,7 @@ CREATE TABLE `reviews` (
   `id` int NOT NULL,
   `userId` int NOT NULL,
   `rating` int NOT NULL DEFAULT '5',
-  `comment` text COLLATE utf8mb4_general_ci NOT NULL,
+  `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -235,12 +269,10 @@ CREATE TABLE `reviews` (
 --
 
 INSERT INTO `reviews` (`id`, `userId`, `rating`, `comment`, `createdAt`, `updatedAt`) VALUES
-(1, 260010, 5, 'mantap', '2026-02-19 06:00:47', '2026-02-19 06:00:47'),
-(2, 260006, 4, 'Bagus', '2026-02-19 06:01:57', '2026-02-19 06:01:57'),
-(3, 260006, 5, 'pelayanan memuaskan', '2026-02-20 07:40:19', '2026-02-20 07:40:19'),
-(4, 260006, 5, 'pegawainya sangat ramah', '2026-02-20 07:40:39', '2026-02-20 07:40:39'),
-(5, 260010, 5, 'mantap', '2026-02-20 07:52:55', '2026-02-20 07:52:55'),
-(6, 260015, 5, 'Tempatnya bersih', '2026-02-26 09:37:05', '2026-02-26 09:37:05');
+(7, 260023, 5, 'BAGUS BANGETT', '2026-03-04 07:44:23', '2026-03-04 07:44:23'),
+(8, 260023, 5, 'KERENNN', '2026-03-04 07:45:01', '2026-03-04 07:45:01'),
+(9, 260021, 5, 'bagus', '2026-03-04 14:00:06', '2026-03-04 14:00:06'),
+(10, 260021, 5, 'mantap kali', '2026-03-04 14:00:32', '2026-03-04 14:00:32');
 
 -- --------------------------------------------------------
 
@@ -267,7 +299,7 @@ CREATE TABLE `therapists` (
 INSERT INTO `therapists` (`id`, `name`, `email`, `phone`, `status`, `total_treatments`, `join_date`, `created_at`, `updated_at`) VALUES
 ('TH001', 'Fufu', 'fufu@email.com', '081234567894', 'active', 4, '2 Jan 2024', '2026-01-26 13:50:53', '2026-02-19 05:04:19'),
 ('TH002', 'Siti Maulana', 'siti@email.com', '081234567890', 'active', 0, '22 Jan 2026', '2026-01-22 13:52:13', '2026-02-05 09:27:29'),
-('TH003', 'awi', 'awi@gmail.com', '081234567894', 'active', 3, '11 Feb 2026', '2026-02-11 10:38:14', '2026-02-19 05:03:22');
+('TH003', 'awi', 'awi@gmail.com', '081234567894', 'active', 4, '11 Feb 2026', '2026-02-11 10:38:14', '2026-03-03 16:19:19');
 
 -- --------------------------------------------------------
 
@@ -284,33 +316,61 @@ CREATE TABLE `treatments` (
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `image` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `discount_percentage` int DEFAULT '0' COMMENT 'Discount percentage (0-100)',
+  `promo_start_date` date DEFAULT NULL COMMENT 'Promo start date',
+  `promo_end_date` date DEFAULT NULL COMMENT 'Promo end date'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `treatments`
 --
 
-INSERT INTO `treatments` (`id`, `name`, `category`, `duration`, `price`, `description`, `image`, `created_at`, `updated_at`) VALUES
-(1, 'Hydrating Facial', 'Special Treatment', '120 min', 120000.00, 'Deep hydration facial treatment for dry skin ', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=600&fit=crop', '2026-01-21 15:21:46', '2026-02-11 08:48:58'),
-(2, 'Acne Clear Treatment', 'Facial', '60 menit', 150000.00, 'Specialized treatment for acne-prone skin with extraction, calming mask, and post-treatment care.', 'data:image/jpeg;base64,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', '2026-01-21 15:21:46', '2026-02-11 06:46:30'),
-(3, 'Hair Spa Treatment', 'Hair Care', '45 menit', 400000.00, 'Complete hair spa with deep conditioning, scalp massage, and hair mask for damaged hair.', 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&h=600&fit=crop', '2026-01-21 15:21:46', '2026-02-10 20:29:57'),
-(4, 'Facial Treatment', 'Facial', '90 menit', 30000.00, 'Deep cleansing facial treatment', '', '2026-02-05 18:10:47', '2026-02-10 20:41:43'),
-(5, 'Body Massage', 'Massage', '90 minutes', 450000.00, 'Relaxing full body massage', NULL, '2026-02-05 18:10:47', '2026-02-05 18:10:47');
+INSERT INTO `treatments` (`id`, `name`, `category`, `duration`, `price`, `description`, `image`, `created_at`, `updated_at`, `discount_percentage`, `promo_start_date`, `promo_end_date`) VALUES
+(1, 'Hydrating Facial', '[\"Special Treatment\"]', '120 min', 120000.00, 'Deep hydration facial treatment for dry skin ', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=600&fit=crop', '2026-01-21 15:21:46', '2026-03-03 16:08:17', 0, NULL, NULL),
+(2, 'Acne Clear Treatment', '[\"Perawatan Khusus\"]', '60 menit', 150000.00, 'Specialized treatment for acne-prone skin with extraction, calming mask, and post-treatment care.', 'data:image/jpeg;base64,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', '2026-01-21 15:21:46', '2026-03-03 10:39:41', 20, '2026-03-03', '2026-03-04'),
+(3, 'Hair Spa Treatment', '[\"Paket Spesial\"]', '45 menit', 400000.00, 'Complete hair spa with deep conditioning, scalp massage, and hair mask for damaged hair.', 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&h=600&fit=crop', '2026-01-21 15:21:46', '2026-03-03 10:40:10', 10, '2026-03-03', '2026-03-04'),
+(4, 'Facial Treatment', '[\"Facial\",\"Perawatan Wajah\",\"Perawatan Promo\"]', '90 menit', 30000.00, 'Deep cleansing facial treatment', '', '2026-02-05 18:10:47', '2026-03-03 05:51:39', 20, '2026-03-03', '2026-03-04'),
+(5, 'Body Massage', '[\"Massage\"]', '90 minutes', 450000.00, 'Relaxing full body massage', '', '2026-02-05 18:10:47', '2026-03-04 15:14:20', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `treatment_facilities`
+-- Table structure for table `treatment_options`
 --
 
-CREATE TABLE `treatment_facilities` (
+CREATE TABLE `treatment_options` (
   `id` int NOT NULL,
-  `treatment_id` int NOT NULL,
-  `facility_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `display_order` int DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `option_type` enum('category','facility') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `option_value` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `treatment_options`
+--
+
+INSERT INTO `treatment_options` (`id`, `option_type`, `option_value`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'category', 'Perawatan Wajah', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(2, 'category', 'Perawatan Tubuh', 0, '2026-03-04 14:43:29', '2026-03-04 15:14:15'),
+(3, 'category', 'Perawatan Khusus', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(4, 'category', 'Paket Spesial', 0, '2026-03-04 14:43:29', '2026-03-04 14:46:10'),
+(5, 'category', 'Perawatan Promo', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(6, 'facility', 'Facial Wash', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(7, 'facility', 'Deep Cleansing', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(8, 'facility', 'Facial Massage', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(9, 'facility', 'Head Massage', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(10, 'facility', 'Shoulder Massage', 0, '2026-03-04 14:43:29', '2026-03-04 14:46:24'),
+(11, 'facility', 'Masker Wajah', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(12, 'facility', 'Scrub', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(13, 'facility', 'Serum Treatment', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(14, 'facility', 'Totok Wajah', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(15, 'facility', 'Face Toning', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(16, 'facility', 'Aromaterapi', 0, '2026-03-04 14:43:29', '2026-03-04 14:46:21'),
+(17, 'facility', 'Hand Treatment', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29'),
+(18, 'facility', 'Foot Spa', 1, '2026-03-04 14:43:29', '2026-03-04 14:43:29');
 
 --
 -- Indexes for dumped tables
@@ -349,6 +409,15 @@ ALTER TABLE `articles`
   ADD KEY `idx_created_at` (`created_at`);
 
 --
+-- Indexes for table `disabled_timeslots`
+--
+ALTER TABLE `disabled_timeslots`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_date_time` (`date`,`time_slot`),
+  ADD KEY `idx_date` (`date`),
+  ADD KEY `idx_time_slot` (`time_slot`);
+
+--
 -- Indexes for table `members`
 --
 ALTER TABLE `members`
@@ -364,6 +433,17 @@ ALTER TABLE `member_history`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_member_id` (`member_id`),
   ADD KEY `idx_date` (`date`);
+
+--
+-- Indexes for table `page_information`
+--
+ALTER TABLE `page_information`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_page_section` (`page_type`,`section_key`),
+  ADD KEY `idx_page_type` (`page_type`),
+  ADD KEY `idx_section_key` (`section_key`),
+  ADD KEY `idx_is_active` (`is_active`),
+  ADD KEY `idx_display_order` (`display_order`);
 
 --
 -- Indexes for table `products`
@@ -396,11 +476,11 @@ ALTER TABLE `treatments`
   ADD KEY `idx_price` (`price`);
 
 --
--- Indexes for table `treatment_facilities`
+-- Indexes for table `treatment_options`
 --
-ALTER TABLE `treatment_facilities`
+ALTER TABLE `treatment_options`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_treatment_id` (`treatment_id`);
+  ADD UNIQUE KEY `unique_option` (`option_type`,`option_value`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -416,7 +496,7 @@ ALTER TABLE `admin_users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `articles`
@@ -425,10 +505,16 @@ ALTER TABLE `articles`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `disabled_timeslots`
+--
+ALTER TABLE `disabled_timeslots`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `members`
 --
 ALTER TABLE `members`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=260017;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=260025;
 
 --
 -- AUTO_INCREMENT for table `member_history`
@@ -437,16 +523,22 @@ ALTER TABLE `member_history`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT for table `page_information`
+--
+ALTER TABLE `page_information`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `treatments`
@@ -455,10 +547,10 @@ ALTER TABLE `treatments`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `treatment_facilities`
+-- AUTO_INCREMENT for table `treatment_options`
 --
-ALTER TABLE `treatment_facilities`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `treatment_options`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Constraints for dumped tables
@@ -483,12 +575,6 @@ ALTER TABLE `member_history`
 --
 ALTER TABLE `reviews`
   ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `members` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `treatment_facilities`
---
-ALTER TABLE `treatment_facilities`
-  ADD CONSTRAINT `treatment_facilities_ibfk_1` FOREIGN KEY (`treatment_id`) REFERENCES `treatments` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
