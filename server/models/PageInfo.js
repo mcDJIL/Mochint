@@ -2,14 +2,23 @@ const { promisePool } = require('../config/database');
 
 class PageInfo {
   // Get all page information or filter by page type
-  static async getAll(pageType = null) {
+  static async getAll(pageType = null, includeInactive = false) {
     try {
-      let query = 'SELECT * FROM page_information WHERE is_active = 1';
+      let query = 'SELECT * FROM page_information';
       const params = [];
+      const conditions = [];
+      
+      if (!includeInactive) {
+        conditions.push('is_active = 1');
+      }
       
       if (pageType) {
-        query += ' AND page_type = ?';
+        conditions.push('page_type = ?');
         params.push(pageType);
+      }
+      
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
       }
       
       query += ' ORDER BY display_order ASC';
@@ -162,6 +171,20 @@ class PageInfo {
       return true;
     } catch (error) {
       console.error('Error in PageInfo.hardDelete:', error);
+      throw error;
+    }
+  }
+
+  // Restore (reactivate) page information
+  static async restore(id) {
+    try {
+      await promisePool.query(
+        'UPDATE page_information SET is_active = 1 WHERE id = ?',
+        [id]
+      );
+      return this.getById(id);
+    } catch (error) {
+      console.error('Error in PageInfo.restore:', error);
       throw error;
     }
   }

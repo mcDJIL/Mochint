@@ -4,8 +4,9 @@ class PageInfoController {
   // Get all page information or filter by page type
   async getAll(req, res) {
     try {
-      const { page_type } = req.query;
-      const pageInfo = await PageInfo.getAll(page_type);
+      const { page_type, include_inactive } = req.query;
+      const includeInactive = include_inactive === 'true';
+      const pageInfo = await PageInfo.getAll(page_type, includeInactive);
       
       res.status(200).json({
         success: true,
@@ -239,6 +240,38 @@ class PageInfoController {
       res.status(500).json({
         success: false,
         error: 'Gagal mengambil tipe halaman',
+        details: error.message
+      });
+    }
+  }
+
+  // Restore (reactivate) page information
+  async restore(req, res) {
+    try {
+      const { id } = req.params;
+      
+      // Check if exists
+      const existing = await PageInfo.getById(id);
+      
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          error: 'Data tidak ditemukan'
+        });
+      }
+
+      const restoredPageInfo = await PageInfo.restore(id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Informasi halaman berhasil dipulihkan',
+        data: restoredPageInfo
+      });
+    } catch (error) {
+      console.error('Error in restore:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Gagal memulihkan informasi halaman',
         details: error.message
       });
     }

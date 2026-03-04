@@ -21,6 +21,7 @@ const reviewsRoutes = require('./routes/reviewsRoutes');
 const articlesRoutes = require('./routes/articlesRoutes');
 const timeslotRoutes = require('./routes/timeslotRoutes');
 const pageInfoRoutes = require('./routes/pageInfoRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,7 +29,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: '*',
   credentials: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization','X-Requested-With','Accept']
 }));
 app.use(express.json({ limit: '50mb' }));
@@ -85,6 +86,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewsRoutes); // Register route sekali saja
 app.use('/api/articles', articlesRoutes);
 app.use('/api/page-info', pageInfoRoutes); // Dynamic page content management
+app.use('/api/contact', contactRoutes); // Contact information management
 
 // Protected routes (require token)
 app.use('/api/appointments', authenticateToken, appointmentRoutes);

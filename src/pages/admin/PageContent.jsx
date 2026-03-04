@@ -36,8 +36,8 @@ const PageContent = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
-  const [selectedPageType, setSelectedPageType] = useState('all');
+  const [notification, setNotification] = useState({ show: false, type: '', title: '', message: '' });
+  const [selectedPageType, setSelectedPageType] = useState('home');
   const [previewImage, setPreviewImage] = useState('');
   const [additionalFields, setAdditionalFields] = useState({
     benefits: [''],
@@ -68,13 +68,13 @@ const PageContent = () => {
   const fetchPageInfos = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/page-info', getAuthHeaders());
+      const response = await axios.get('http://localhost:5000/api/page-info?include_inactive=true', getAuthHeaders());
       setPageInfos(response.data.data || []);
       setError('');
     } catch (err) {
       console.error('Error fetching page infos:', err);
       setError('Gagal memuat data. Silakan coba lagi.');
-      showNotification('Gagal memuat data', 'error');
+      showNotification('Gagal Memuat', 'Gagal memuat data', 'error');
       setPageInfos([]);
     } finally {
       setLoading(false);
@@ -82,12 +82,22 @@ const PageContent = () => {
   };
 
   // Show notification toast
-  const showNotification = (message, type) => {
-    setNotification({ show: true, message, type });
+  const showNotification = (title, message, type) => {
+    setNotification({ show: true, type, title, message });
     setTimeout(() => {
-      setNotification({ show: false, message: '', type: '' });
+      setNotification({ show: false, type: '', title: '', message: '' });
     }, 3000);
   };
+
+  // Auto-hide notification
+  useEffect(() => {
+    if (notification.show) {
+      const timer = setTimeout(() => {
+        setNotification({ ...notification, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification.show]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -173,16 +183,16 @@ const PageContent = () => {
     try {
       if (editingInfo) {
         await axios.put(`http://localhost:5000/api/page-info/${editingInfo.id}`, submitData, getAuthHeaders());
-        showNotification('Data berhasil diperbarui!', 'success');
+        showNotification('Berhasil!', 'Data berhasil diperbarui!', 'success');
       } else {
         await axios.post('http://localhost:5000/api/page-info', submitData, getAuthHeaders());
-        showNotification('Data berhasil ditambahkan!', 'success');
+        showNotification('Berhasil!', 'Data berhasil ditambahkan!', 'success');
       }
       
       fetchPageInfos();
       closeForm();
     } catch (err) {
-      showNotification(err.response?.data?.error || 'Terjadi kesalahan', 'error');
+      showNotification('Gagal Menyimpan', err.response?.data?.error || 'Terjadi kesalahan', 'error');
     }
   };
 
@@ -192,10 +202,24 @@ const PageContent = () => {
 
     try {
       await axios.delete(`http://localhost:5000/api/page-info/${id}`, getAuthHeaders());
-      showNotification('Data berhasil dihapus!', 'success');
+      showNotification('Berhasil!', 'Data berhasil dihapus!', 'success');
       fetchPageInfos();
     } catch (err) {
-      showNotification('Gagal menghapus data', 'error');
+      showNotification('Gagal Menghapus', 'Gagal menghapus data', 'error');
+    }
+  };
+
+  // Handle restore
+  const handleRestore = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin mengaktifkan kembali data ini?')) return;
+
+    try {
+      const response = await axios.patch(`http://localhost:5000/api/page-info/${id}/restore`, {}, getAuthHeaders());
+      showNotification('Berhasil!', 'Data berhasil dipulihkan!', 'success');
+      fetchPageInfos();
+    } catch (err) {
+      console.error('Error restoring page info:', err);
+      showNotification('Gagal Memulihkan', err.response?.data?.error || 'Gagal memulihkan data', 'error');
     }
   };
 
@@ -261,17 +285,56 @@ const PageContent = () => {
   };
 
   // Filter page infos by type
-  const filteredInfos = selectedPageType === 'all' 
-    ? (Array.isArray(pageInfos) ? pageInfos : [])
-    : (Array.isArray(pageInfos) ? pageInfos.filter(info => info.page_type === selectedPageType) : []);
+  const filteredInfos = Array.isArray(pageInfos) ? pageInfos.filter(info => info.page_type === selectedPageType) : [];
 
-  // Page type options
+  // Page type options (removed 'all')
   const pageTypes = [
-    { value: 'all', label: 'Semua', icon: FileText },
     { value: 'home', label: 'Home', icon: Home },
     { value: 'about', label: 'About', icon: Users },
     { value: 'promo', label: 'Promo', icon: Tag }
   ];
+
+  // Handle image upload from device
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showNotification('File Terlalu Besar', 'Ukuran gambar maksimal 2MB', 'error');
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification('Format File Salah', 'Hanya file gambar yang diperbolehkan', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+      setFormData(prev => ({ ...prev, image_url: reader.result }));
+      showNotification('Berhasil!', 'Gambar berhasil diupload dan siap disimpan', 'success');
+    };
+    reader.onerror = () => {
+      showNotification('Gagal Membaca File', 'Terjadi kesalahan saat membaca file', 'error');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle image URL input
+  const handleImageUrlChange = (e) => {
+    const url = e.target.value;
+    setFormData(prev => ({ ...prev, image_url: url }));
+    setPreviewImage(url);
+  };
+
+  // Remove image
+  const removeImage = () => {
+    setPreviewImage('');
+    setFormData(prev => ({ ...prev, image_url: '' }));
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-6 lg:p-8">
@@ -459,17 +522,20 @@ const PageContent = () => {
       {/* Notification Toast */}
       {notification.show && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
-          <div className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-2xl ${
+          <div className={`flex items-start gap-3 px-6 py-4 rounded-lg shadow-2xl min-w-[300px] ${
             notification.type === 'success' 
               ? 'bg-green-500 text-white' 
               : 'bg-red-500 text-white'
           }`}>
             {notification.type === 'success' ? (
-              <Check className="w-5 h-5" />
+              <Check className="w-5 h-5 mt-0.5 flex-shrink-0" />
             ) : (
-              <AlertCircle className="w-5 h-5" />
+              <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
             )}
-            <span className="font-medium">{notification.message}</span>
+            <div className="flex-1">
+              <div className="font-bold text-sm">{notification.title}</div>
+              <div className="text-sm opacity-90">{notification.message}</div>
+            </div>
           </div>
         </div>
       )}
@@ -480,7 +546,7 @@ const PageContent = () => {
           Kelola Konten Website
         </h1>
         <p className="text-[#6D4C41]">
-          Kelola informasi konten untuk halaman Home, About, dan Promo
+          Kelola informasi konten untuk halaman Home, About, dan Promo. Informasi kontak seperti nomor telepon, email, dan alamat dapat dikelola di menu Kontak.
         </p>
       </div>
 
@@ -540,7 +606,7 @@ const PageContent = () => {
           {filteredInfos.map((info, index) => (
             <div
               key={info.id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden card-hover-effect animate-fade-in-up"
+              className={`bg-white rounded-xl shadow-lg overflow-hidden card-hover-effect animate-fade-in-up ${!info.is_active ? 'opacity-60 border-2 border-gray-400' : ''}`}
               style={{ animationDelay: `${0.1 * (index + 1)}s` }}
             >
               {/* Image */}
@@ -616,20 +682,32 @@ const PageContent = () => {
 
                 {/* Actions */}
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => openEditForm(info)}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group"
-                  >
-                    <Edit2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(info.id)}
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group"
-                  >
-                    <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    Hapus
-                  </button>
+                  {info.is_active ? (
+                    <>
+                      <button
+                        onClick={() => openEditForm(info)}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group"
+                      >
+                        <Edit2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(info.id)}
+                        className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group"
+                      >
+                        <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        Hapus
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => handleRestore(info.id)}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 group"
+                    >
+                      <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      Pulihkan
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -745,39 +823,55 @@ const PageContent = () => {
                   />
                 </div>
 
-                {/* Image URL */}
+                {/* Image Upload/URL */}
                 <div>
                   <label className="block text-sm font-semibold text-[#3E2723] mb-2">
-                    URL Gambar
+                    Gambar Konten
                   </label>
-                  <div className="flex gap-3">
-                    <input
-                      type="url"
-                      name="image_url"
-                      value={formData.image_url}
-                      onChange={(e) => {
-                        handleInputChange(e);
-                        setPreviewImage(e.target.value);
-                      }}
-                      placeholder="https://example.com/image.jpg"
-                      className="flex-1 px-4 py-3 border-2 border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D6E63] focus:border-transparent transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setPreviewImage(formData.image_url)}
-                      className="bg-[#8D6E63] hover:bg-[#6D4C41] text-white px-4 py-3 rounded-lg transition-all"
-                    >
+                  
+                  {/* Image Upload Button */}
+                  <div className="mb-3">
+                    <label className="cursor-pointer inline-flex items-center gap-2 bg-[#8D6E63] hover:bg-[#6D4C41] text-white px-4 py-3 rounded-lg transition-all font-medium">
                       <ImageIcon className="w-5 h-5" />
-                    </button>
+                      Upload dari Device
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-xs text-[#8D6E63] mt-2">
+                      Atau masukkan URL gambar di bawah ini
+                    </p>
                   </div>
+
+                  {/* Image URL Input */}
+                  <input
+                    type="url"
+                    name="image_url"
+                    value={formData.image_url}
+                    onChange={handleImageUrlChange}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full px-4 py-3 border-2 border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D6E63] focus:border-transparent transition-all"
+                  />
+
+                  {/* Image Preview */}
                   {previewImage && (
-                    <div className="mt-3 rounded-lg overflow-hidden border-2 border-[#D7CCC8]">
+                    <div className="mt-3 relative rounded-lg overflow-hidden border-2 border-[#D7CCC8]">
                       <img
                         src={previewImage}
                         alt="Preview"
                         className="w-full h-48 object-cover"
                         onError={() => setPreviewImage('')}
                       />
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-all"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </div>

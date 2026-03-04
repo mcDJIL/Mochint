@@ -10,8 +10,9 @@ router.get('/public/:pageType/:sectionKey', pageInfoController.getByPageAndSecti
 // Protected routes (require admin authentication)
 router.get('/', authenticateToken, isAdmin, pageInfoController.getAll);
 router.get('/types', authenticateToken, isAdmin, pageInfoController.getPageTypes);
-router.get('/:id', authenticateToken, isAdmin, pageInfoController.getById);
 router.post('/', authenticateToken, isAdmin, pageInfoController.create);
+router.patch('/:id/restore', authenticateToken, isAdmin, pageInfoController.restore);
+router.get('/:id', authenticateToken, isAdmin, pageInfoController.getById);
 router.put('/:id', authenticateToken, isAdmin, pageInfoController.update);
 router.delete('/:id', authenticateToken, isAdmin, pageInfoController.delete);
 
