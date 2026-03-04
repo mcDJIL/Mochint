@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import axios from 'axios';
 
 // Import Swiper React components & styles
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -11,6 +12,36 @@ import 'swiper/css/pagination';
 
 const About = () => {
   const navigate = useNavigate();
+  const [pageContent, setPageContent] = useState({
+    story: null,
+    vision: null
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const API_URL_PAGE_INFO = 'http://localhost:5000/api/page-info/public';
+
+  useEffect(() => {
+    const loadPageContent = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`${API_URL_PAGE_INFO}?page_type=about`);
+        const pageInfoData = response.data.data || [];
+        
+        const contentMap = {
+          story: pageInfoData.find(item => item.section_key === 'story'),
+          vision: pageInfoData.find(item => item.section_key === 'vision')
+        };
+        
+        setPageContent(contentMap);
+      } catch (error) {
+        console.error('Error loading page content:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPageContent();
+  }, []);
 
   const awards = [
     { id: 1, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
@@ -19,6 +50,14 @@ const About = () => {
     { id: 4, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
     { id: 5, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
+        <div className="animate-spin text-[#8D6E63]"><Loader size={48} /></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] pb-20 font-sans text-[#5D4037]">
@@ -36,14 +75,24 @@ const About = () => {
 
         {/* Section 1: Story (Sama seperti sebelumnya) */}
         <section className="space-y-8 mb-24">
-          <h1 className="text-4xl md:text-4xl font-display font-bold text-[#3E2723] tracking-tight">Cerita Mochint Beauty Care</h1>
+          <h1 className="text-4xl md:text-4xl font-display font-bold text-[#3E2723] tracking-tight">
+            {pageContent.story?.title || 'Cerita Mochint Beauty Care'}
+          </h1>
           <div className="relative w-full h-[500px] rounded-[40px] overflow-hidden shadow-xl">
-            <img src="https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80" alt="Banner" className="w-full h-full object-cover" />
+            <img 
+              src={pageContent.story?.image_url || 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80'} 
+              alt="Banner" 
+              className="w-full h-full object-cover" 
+            />
             <div className="absolute inset-0 bg-black/10 flex flex-col justify-center px-12">
-              <h2 className="text-white text-5xl font-bold leading-tight max-w-md">Mochint Beauty Care</h2>
+              <h2 className="text-white text-5xl font-bold leading-tight max-w-md">
+                {pageContent.story?.subtitle || 'Mochint Beauty Care'}
+              </h2>
             </div>
           </div>
-          <p className="text-gray-500 leading-relaxed text-justify">Selamat datang di Mochint Beauty Care, salon kecantikan yang berlokasi di Pandaan Pasuruan Jawa Timur. Kami hadir sebagai solusi bagi Anda yang ingin merawat kulit dengan teknologi terkini dan bahan premium.</p>
+          <p className="text-gray-500 leading-relaxed text-justify">
+            {pageContent.story?.content || 'Selamat datang di Mochint Beauty Care, salon kecantikan yang berlokasi di Pandaan Pasuruan Jawa Timur. Kami hadir sebagai solusi bagi Anda yang ingin merawat kulit dengan teknologi terkini dan bahan premium.'}
+          </p>
         </section>
 
 

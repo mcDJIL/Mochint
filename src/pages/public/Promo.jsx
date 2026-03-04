@@ -1,17 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, MessageCircle, ChevronRight, CheckCircle2, Percent } from 'lucide-react';
+import { Home, MessageCircle, ChevronRight, CheckCircle2, Percent, Loader } from 'lucide-react';
+import axios from 'axios';
 
 const Promo = () => {
   const navigate = useNavigate();
+  const [pageContent, setPageContent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Data Keuntungan Statis
-  const benefits = ['Facial Signature', 'Premium Masker', 'Skin Analysis', 'Hydrating Treatment', 'Aftercare Consultation'];
+  const API_URL_PAGE_INFO = 'http://localhost:5000/api/page-info/public';
+
+  useEffect(() => {
+    const loadPageContent = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`${API_URL_PAGE_INFO}?page_type=promo`);
+        const pageInfoData = response.data.data || [];
+        
+        // Get main promo content
+        const promoContent = pageInfoData.find(item => item.section_key === 'main_promo');
+        setPageContent(promoContent);
+      } catch (error) {
+        console.error('Error loading page content:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPageContent();
+  }, []);
+
+  // Extract data from page content
+  const title = pageContent?.title || 'Diskon Reseller';
+  const subtitle = pageContent?.subtitle || '30% discount for selected products';
+  const content = pageContent?.content || 'Pelembab Moisturizer BPOM paling ampuh dan Halal MUI...';
+  const imageUrl = pageContent?.image_url || 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80';
+  const benefits = pageContent?.additional_data?.benefits || ['Facial Signature', 'Premium Masker', 'Skin Analysis', 'Hydrating Treatment', 'Aftercare Consultation'];
+  const discountPercentage = pageContent?.additional_data?.discount_percentage || '30';
+  const whatsappNumber = pageContent?.additional_data?.whatsapp_number || '6281234567890';
+  const promoLabel = pageContent?.additional_data?.promo_label || 'Limited Offer';
 
   const handleOrderNow = () => {
-    const whatsappUrl = "https://wa.me/6281234567890?text=Halo%20Mochint%2C%20saya%20tertarik%20dengan%20Promo%20Diskon%20Reseller%2030%25";
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Halo%20Mochint%2C%20saya%20tertarik%20dengan%20Promo%20${encodeURIComponent(title)}`;
     window.open(whatsappUrl, '_blank');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
+        <div className="animate-spin text-[#8D6E63]"><Loader size={48} /></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] pb-16 sm:pb-20 md:pb-24 font-sans text-[#3E2723]">
@@ -32,23 +72,23 @@ const Promo = () => {
             <Percent size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-display font-bold text-[#3E2723] tracking-tight leading-tight">
-            Diskon Reseller
+            {title}
           </h1>
         </div>
 
         {/* Banner Section */}
         <div className="relative w-full h-[280px] sm:h-[350px] md:h-[500px] lg:h-[600px] rounded-3xl sm:rounded-[40px] md:rounded-[50px] overflow-hidden shadow-lg sm:shadow-[0_20px_50px_-15px_rgba(141,110,99,0.35)] md:shadow-[0_30px_60px_-15px_rgba(141,110,99,0.4)] mb-10 sm:mb-12 md:mb-16 group">
           <img 
-            src="https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1200&q=80" 
-            alt="Promo Diskon Reseller" 
+            src={imageUrl} 
+            alt={title} 
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out"
           />
           {/* Overlay Text - Poppins */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent flex flex-col justify-center px-5 sm:px-8 md:px-12 lg:px-24">
             <div className="space-y-2.5 sm:space-y-3 md:space-y-4">
-              <span className="bg-[#8D6E63] text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-wider sm:tracking-widest inline-block shadow-lg">Limited Offer</span>
+              <span className="bg-[#8D6E63] text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-wider sm:tracking-widest inline-block shadow-lg">{promoLabel}</span>
               <h2 className="text-white text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-display font-bold leading-[1.1] max-w-xl drop-shadow-2xl tracking-tighter">
-                30% discount <br/> <span className="text-[#D7CCC8]">for selected products</span>
+                {subtitle}
               </h2>
             </div>
           </div>
@@ -59,10 +99,7 @@ const Promo = () => {
           <div className="relative">
             <div className="absolute -left-3 sm:-left-4 md:-left-6 top-0 bottom-0 w-1 sm:w-1.5 bg-[#8D6E63] rounded-full opacity-50"></div>
             <p className="text-[#4E342E] leading-relaxed text-justify text-sm sm:text-base md:text-lg lg:text-xl font-medium opacity-90 pl-4 sm:pl-5 md:pl-6 pr-1 sm:pr-2">
-              Pelembab Moisturizer BPOM paling ampuh dan Halal MUI. Moisturizer Cream Pronafa Skincare merupakan perawatan 
-              hydrating intensif untuk menjaga kelembapan alami kulit. Mengandung Amino Ceramide, Aloe Vera, dan Sodium 
-              Hyaluronate, dikombinasikan dengan Copper Tripeptide yang dapat mempercepat pemulihan jaringan kulit Anda 
-              secara maksimal dan bercahaya.
+              {content}
             </p>
           </div>
 

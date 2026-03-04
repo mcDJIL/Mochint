@@ -19,6 +19,7 @@ const productRoutes = require('./routes/productsRoute');
 const reviewsRoutes = require('./routes/reviewsRoutes');
 const articlesRoutes = require('./routes/articlesRoutes');
 const timeslotRoutes = require('./routes/timeslotRoutes');
+const pageInfoRoutes = require('./routes/pageInfoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -82,6 +83,7 @@ app.use('/api/therapists', therapistRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewsRoutes); // Register route sekali saja
 app.use('/api/articles', articlesRoutes);
+app.use('/api/page-info', pageInfoRoutes); // Dynamic page content management
 
 // Protected routes (require token)
 app.use('/api/appointments', authenticateToken, appointmentRoutes);

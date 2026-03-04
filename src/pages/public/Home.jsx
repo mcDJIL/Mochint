@@ -11,10 +11,16 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pageContent, setPageContent] = useState({
+    hero: null,
+    services: null,
+    why_choose: null
+  });
 
   // --- API URL ---
   const API_URL_PRODUCTS = 'http://localhost:5000/api/products';
   const API_URL_REVIEWS = 'http://localhost:5000/api/reviews';
+  const API_URL_PAGE_INFO = 'http://localhost:5000/api/page-info/public';
 
   // ✨ Format harga konsisten dengan Product.jsx
   const formatPrice = (price) => {
@@ -32,18 +38,29 @@ const Home = () => {
         
         console.log('Loading data from API...');
         
-        // Mengambil data Produk dan Testimoni secara paralel
-        const [resProducts, resReviews] = await Promise.all([
+        // Mengambil data Produk, Testimoni, dan Page Content secara paralel
+        const [resProducts, resReviews, resPageInfo] = await Promise.all([
           axios.get(API_URL_PRODUCTS),
-          axios.get(API_URL_REVIEWS)
+          axios.get(API_URL_REVIEWS),
+          axios.get(`${API_URL_PAGE_INFO}?page_type=home`)
         ]);
 
         console.log('Products response:', resProducts.data);
         console.log('Reviews response:', resReviews.data);
+        console.log('Page Info response:', resPageInfo.data);
 
         // Ambil 4 produk terbaru untuk ditampilkan di Home
         const productsData = resProducts.data.data || resProducts.data || [];
         setProducts(productsData.slice(0, 4));
+        
+        // Set page content
+        const pageInfoData = resPageInfo.data.data || [];
+        const contentMap = {
+          hero: pageInfoData.find(item => item.section_key === 'hero'),
+          services: pageInfoData.find(item => item.section_key === 'services'),
+          why_choose: pageInfoData.find(item => item.section_key === 'why_choose')
+        };
+        setPageContent(contentMap);
         
         // Set testimoni dari database - pastikan data valid
         const reviewsData = resReviews.data.data || resReviews.data || [];
@@ -139,7 +156,7 @@ const Home = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=2000&q=80')"
+            backgroundImage: `url('${pageContent.hero?.image_url || 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=2000&q=80'}')`
           }}
         ></div>
         
@@ -151,10 +168,10 @@ const Home = () => {
         
         <div className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 relative z-10 text-center max-w-[1400px]">
           <h1 className="text-5xl md:text-7xl font-display font-bold text-[#5D4037] mb-6 tracking-tight">
-            Mochint Beauty Care
+            {pageContent.hero?.title || 'Mochint Beauty Care'}
           </h1>
           <p className="text-lg md:text-xl text-[#8D6E63] mb-10 max-w-2xl mx-auto font-medium font-sans">
-            Klinik kecantikan terpercaya dengan teknologi terkini dan bahan premium untuk perawatan kulit Anda.
+            {pageContent.hero?.subtitle || 'Klinik kecantikan terpercaya dengan teknologi terkini dan bahan premium untuk perawatan kulit Anda.'}
           </p>
           <button onClick={handleBookingClick} className="font-display inline-flex items-center px-10 py-4 bg-[#8D6E63] text-white text-lg font-bold rounded-full hover:bg-[#6D4C41] transition-all shadow-lg transform hover:-translate-y-1 mx-auto">
             Reservasi Sekarang <ArrowRight className="ml-2" size={20} />
@@ -173,8 +190,12 @@ const Home = () => {
           </div>
           <div className="w-full lg:w-1/2">
             <div className="font-display inline-block px-3 py-1 bg-[#FDFBF7] text-[#8D6E63] text-xs font-bold tracking-widest uppercase mb-4 rounded-md">Kenali Mochint Lebih Dekat</div>
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-[#3E2723] mb-6 tracking-tight leading-tight">Rumah Cantik <br/> Mochint Beauty Care</h2>
-            <p className="font-sans text-gray-500 mb-8 leading-relaxed text-lg font-normal">Selamat datang di Mochint Beauty Care, salon kecantikan yang berlokasi di Pandaan Pasuruan Jawa Timur. Kami hadir sebagai solusi bagi Anda yang ingin merawat kulit dengan teknologi terkini dan bahan premium.</p>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-[#3E2723] mb-6 tracking-tight leading-tight">
+              {pageContent.services?.title || 'Rumah Cantik Mochint Beauty Care'}
+            </h2>
+            <p className="font-sans text-gray-500 mb-8 leading-relaxed text-lg font-normal">
+              {pageContent.services?.content || 'Selamat datang di Mochint Beauty Care, salon kecantikan yang berlokasi di Pandaan Pasuruan Jawa Timur. Kami hadir sebagai solusi bagi Anda yang ingin merawat kulit dengan teknologi terkini dan bahan premium.'}
+            </p>
             <button onClick={handleAboutClick} className="font-display px-8 py-3 border-2 border-[#8D6E63] text-[#8D6E63] font-bold rounded-full hover:bg-[#8D6E63] hover:text-white transition-all">Tentang Kami</button>
           </div>
         </div>

@@ -21,6 +21,7 @@ import AdminProduct from '../pages/admin/Product';
 import AdminTherapist from '../pages/admin/Therapist';
 import AdminTherapistDetail from '../pages/admin/TherapistDetail';
 import AdminInformation from '../pages/admin/Information';
+import AdminPageContent from '../pages/admin/PageContent';
 import AdminBedManagement from '../pages/admin/BedManagement';
 
 // --- PAGES: AUTH & PUBLIC ---
@@ -316,6 +317,7 @@ const AppRoutes = () => {
                 <Route path="therapist" element={<AdminTherapist />} />
                 <Route path="therapist/:id" element={<AdminTherapistDetail />} />
                 <Route path="information" element={<AdminInformation />} />
+                <Route path="page-content" element={<AdminPageContent />} />
               </Route>
 
               {/* Global Redirect for 404 */}

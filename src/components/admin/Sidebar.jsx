@@ -11,6 +11,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Produk', path: '/admin/product' },
     { name: 'Terapis', path: '/admin/therapist' },
     { name: 'Informasi', path: '/admin/information' },
+    { name: 'Konten Halaman', path: '/admin/page-content' },
   ];
 
   // ============ GANTI NAMA FILE LOGO DI SINI ============
