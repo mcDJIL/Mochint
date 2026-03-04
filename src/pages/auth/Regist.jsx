@@ -104,15 +104,15 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
       setFieldErrors(errors);
       
       const message = errorMessages.length === 1 
-        ? `Mohon isi field: ${errorMessages[0]}`
-        : `Mohon lengkapi field berikut: ${errorMessages.join(', ')}`;
+        ? `Mohon isi data ${errorMessages[0]} dengan lengkap`
+        : `Mohon lengkapi data berikut: ${errorMessages.join(', ')}`;
       
-      console.log('⚠️ Showing notification:', message);
+      console.log('Showing notification:', message);
       
       setNotification({
         show: true,
         type: 'error',
-        message: `⚠️ ${message}`
+        message: `${message}`
       });
       
       // Scroll ke atas untuk melihat notifikasi
@@ -133,7 +133,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
         setNotification({
           show: true,
           type: 'success',
-          message: `🎉 Selamat! Akun Anda berhasil dibuat. Redirecting ke halaman login...`
+          message: `Selamat! Akun Anda berhasil dibuat`
         });
         
         setTimeout(() => {
@@ -145,16 +145,16 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
         }, 2000);
       }
     } catch (error) {
-      console.error('❌ Registration error:', error);
-      console.error('❌ Error response:', error.response);
+      console.error(' Registration error:', error);
+      console.error('Error response:', error.response);
       
       // Handle specific error codes
       if (error.response) {
         const statusCode = error.response.status;
         const errorData = error.response.data;
         
-        console.log('🔍 Status Code:', statusCode);
-        console.log('🔍 Error Data:', errorData);
+        console.log(' Status Code:', statusCode);
+        console.log(' Error Data:', errorData);
         
         switch (statusCode) {
           case 409:
@@ -162,7 +162,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
             setNotification({
               show: true,
               type: 'error',
-              message: '📧 Email sudah terdaftar! Silakan gunakan email lain atau login dengan akun yang sudah ada.'
+              message: 'Email sudah terdaftar! Silakan gunakan email lain atau login dengan akun yang sudah ada.'
             });
             // Highlight email field
             setFieldErrors({ email: 'Email ini sudah terdaftar' });
@@ -174,7 +174,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
             setNotification({
               show: true,
               type: 'error',
-              message: `⚠️ ${serverMessage}`
+              message: `${serverMessage}`
             });
             break;
             
@@ -183,7 +183,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
             setNotification({
               show: true,
               type: 'error',
-              message: '🔧 Terjadi kesalahan pada server. Mohon coba lagi dalam beberapa saat.'
+              message: 'Terjadi kesalahan pada server. Mohon coba lagi dalam beberapa saat.'
             });
             break;
             
@@ -300,7 +300,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
                 <input 
                   type="text" 
                   name="name"
-                  placeholder="Nama Anda" 
+                  placeholder="Tuliskan nama Anda" 
                   className={`w-full px-5 py-3.5 rounded-2xl bg-[#FDFBF7] border-2 ${
                     fieldErrors.name ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-transparent focus:border-[#8D6E63]'
                   } focus:bg-white outline-none text-sm transition-all font-medium placeholder:text-gray-300 shadow-sm`}
@@ -327,7 +327,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
                 <input 
                   type="email" 
                   name="email"
-                  placeholder="email@gmail.com" 
+                  placeholder=" Tuliskan email Anda" 
                   className={`w-full px-5 py-3.5 rounded-2xl bg-[#FDFBF7] border-2 ${
                     fieldErrors.email ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-transparent focus:border-[#8D6E63]'
                   } focus:bg-white outline-none text-sm transition-all font-medium placeholder:text-gray-300 shadow-sm`}
@@ -358,7 +358,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
                 <input 
                   type="tel" 
                   name="phone"
-                  placeholder="+62 8xx" 
+                  placeholder="Tuliskan nomor HP Anda" 
                   className={`w-full px-5 py-3.5 rounded-2xl bg-[#FDFBF7] border-2 ${
                     fieldErrors.phone ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-transparent focus:border-[#8D6E63]'
                   } focus:bg-white outline-none text-sm transition-all font-medium placeholder:text-gray-300 shadow-sm`}
@@ -386,7 +386,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
                   <input 
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    placeholder="Min. 8 Karakter" 
+                    placeholder="Minimal 8 karakter" 
                     minLength="8"
                     className={`w-full px-5 py-3.5 pr-12 rounded-2xl bg-[#FDFBF7] border-2 ${
                       fieldErrors.password ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-transparent focus:border-[#8D6E63]'
@@ -424,7 +424,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
               </label>
               <textarea 
                 name="address"
-                placeholder="Tuliskan alamat lengkap..." 
+                placeholder="Tuliskan alamat lengkap Anda" 
                 rows="2"
                 className={`w-full px-5 py-3.5 rounded-2xl bg-[#FDFBF7] border-2 ${
                   fieldErrors.address ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-transparent focus:border-[#8D6E63]'
@@ -463,7 +463,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   <span>MEMPROSES...</span>
                 </div>
-              ) : "DAFTAR AKUN SEKARANG"}
+              ) : "DAFTAR"}
             </button>
 
             {/* Divider - Only show if Google OAuth is enabled */}
@@ -487,7 +487,7 @@ const Regist = ({ onSwitch, onRegisterSuccess, onBack }) => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Daftar dengan Google
+                Google
                 </button>
               </>
             )}
