@@ -14,7 +14,9 @@ const About = () => {
   const navigate = useNavigate();
   const [pageContent, setPageContent] = useState({
     story: null,
-    vision: null
+    vision: null,
+    awards: null,
+    facilities: null
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,9 +29,13 @@ const About = () => {
         const response = await axios.get(`${API_URL_PAGE_INFO}?page_type=about`);
         const pageInfoData = response.data.data || [];
         
+        console.log('About page content loaded:', pageInfoData);
+        
         const contentMap = {
           story: pageInfoData.find(item => item.section_key === 'story'),
-          vision: pageInfoData.find(item => item.section_key === 'vision')
+          vision: pageInfoData.find(item => item.section_key === 'vision'),
+          awards: pageInfoData.find(item => item.section_key === 'awards'),
+          facilities: pageInfoData.find(item => item.section_key === 'facilities')
         };
         
         setPageContent(contentMap);
@@ -43,13 +49,17 @@ const About = () => {
     loadPageContent();
   }, []);
 
-  const awards = [
+  // Get awards from database or use default
+  const awards = pageContent.awards?.additional_data?.items || [
     { id: 1, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
     { id: 2, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
     { id: 3, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
     { id: 4, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
     { id: 5, title: 'Best Category', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=500&q=80' },
   ];
+
+  // Get facilities from database
+  const facilities = pageContent.facilities?.additional_data?.items || [];
 
   if (isLoading) {
     return (
@@ -76,7 +86,7 @@ const About = () => {
         {/* Section 1: Story (Sama seperti sebelumnya) */}
         <section className="space-y-8 mb-24">
           <h1 className="text-4xl md:text-4xl font-display font-bold text-[#3E2723] tracking-tight">
-            {pageContent.story?.title || 'Cerita Mochint Beauty Care'}
+            {pageContent.story?.title || ''}
           </h1>
           <div className="relative w-full h-[500px] rounded-[40px] overflow-hidden shadow-xl">
             <img 
@@ -97,9 +107,41 @@ const About = () => {
 
 
 
-        {/* Section 2: Penghargaan dengan Slider Interaktif */}
+        {/* Section 2: Vision & Mission (Opsional, jika ada data) */}
+        {pageContent.vision && (
+          <section className="space-y-8 mb-24">
+            <h2 className="text-4xl md:text-4xl font-display font-bold text-[#3E2723] tracking-tight">
+              {pageContent.vision.title || 'Visi & Misi'}
+            </h2>
+            {pageContent.vision.additional_data?.visi && (
+              <div className="bg-white p-8 rounded-[30px] shadow-sm">
+                <h3 className="text-2xl font-bold text-[#5D4037] mb-4">Visi</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {pageContent.vision.additional_data.visi}
+                </p>
+              </div>
+            )}
+            {pageContent.vision.additional_data?.misi && pageContent.vision.additional_data.misi.length > 0 && (
+              <div className="bg-white p-8 rounded-[30px] shadow-sm">
+                <h3 className="text-2xl font-bold text-[#5D4037] mb-4">Misi</h3>
+                <ul className="space-y-3">
+                  {pageContent.vision.additional_data.misi.map((misi, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <span className="text-[#8D6E63] font-bold mt-1">•</span>
+                      <span className="text-gray-600 leading-relaxed">{misi}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Section 3: Penghargaan dengan Slider Interaktif */}
         <section className="space-y-12">
-          <h2 className="text-4xl md:text-4xl font-bold text-[#3E2723] tracking-tight">Penghargaan</h2>
+          <h2 className="text-4xl md:text-4xl font-bold text-[#3E2723] tracking-tight">
+            {pageContent.awards?.title || 'Pencapaian & Penghargaan'}
+          </h2>
           <div className="relative group px-4">
             <Swiper
               modules={[Navigation, Pagination]}
@@ -154,6 +196,34 @@ const About = () => {
             </div>
           </div>
         </section>
+
+        {/* Section 4: Facilities (Jika ada data dari database) */}
+        {pageContent.facilities && facilities.length > 0 && (
+          <section className="space-y-12 mt-24">
+            <h2 className="text-4xl md:text-4xl font-display font-bold text-[#3E2723] tracking-tight">
+              {pageContent.facilities.title || 'Fasilitas'}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {facilities.map((facility, index) => (
+                <div key={index} className="bg-white p-6 rounded-[30px] shadow-sm border border-gray-50 hover:shadow-md transition-shadow">
+                  {facility.image && (
+                    <div className="mb-4 h-48 rounded-[20px] overflow-hidden">
+                      <img 
+                        src={facility.image} 
+                        alt={facility.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <h3 className="text-xl font-bold text-[#3E2723] mb-2">{facility.name}</h3>
+                  {facility.description && (
+                    <p className="text-gray-600 text-sm leading-relaxed">{facility.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* CSS Khusus untuk Dots Sesuai Desain image_d84fdd.jpg */}

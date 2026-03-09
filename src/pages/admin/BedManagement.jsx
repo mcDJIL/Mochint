@@ -157,7 +157,7 @@ const BedManagement = () => {
           availability[slot].appointments.push({
             id: apt.id,
             customer: apt.customer_name,
-            treatment: apt.treatment_category,
+            treatment: apt.treatment_name,
             time: `${startTime} - ${endTime}`
           });
         }
@@ -522,7 +522,7 @@ const BedManagement = () => {
                         {apt.appointment_id || `APT-${apt.id}`}
                       </td>
                       <td className="p-3 font-medium">{apt.customer_name}</td>
-                      <td className="p-3 text-gray-600">{apt.treatment_category}</td>
+                      <td className="p-3 text-gray-600">{apt.treatment_name}</td>
                       <td className="p-3 font-bold text-brown-600">
                         {apt.time} - {endTime}
                       </td>

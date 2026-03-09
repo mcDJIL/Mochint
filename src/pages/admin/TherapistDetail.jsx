@@ -393,7 +393,7 @@ const TherapistDetail = () => {
                               </div>
                             </td>
                             <td className="py-3 text-sm text-gray-600">
-                              {appointment.treatment_category || appointment.treatment || 'N/A'}
+                              {appointment.treatment_name || appointment.treatment || 'N/A'}
                             </td>
                             <td className="py-3">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -448,7 +448,7 @@ const TherapistDetail = () => {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-500">Treatment:</span>
-                            <span className="text-xs text-gray-600">{appointment.treatment_category || appointment.treatment || 'N/A'}</span>
+                            <span className="text-xs text-gray-600">{appointment.treatment_name || appointment.treatment || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-500">Tanggal:</span>

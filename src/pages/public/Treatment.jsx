@@ -161,10 +161,10 @@ const Treatment = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-2 tracking-tight text-[#3E2723]">
-                Layanan Treatment
+                Layanan
               </h2>
               <p className="text-xs sm:text-sm font-sans text-[#8D6E63] font-bold uppercase tracking-widest">
-                {filteredTreatments.length} dari {treatments.length} treatment
+                {filteredTreatments.length} dari {treatments.length} peawatan ditemukan
               </p>
             </div>
 

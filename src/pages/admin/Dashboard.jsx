@@ -640,7 +640,7 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <div className="flex flex-col text-xs sm:text-sm text-gray-500 space-y-0.5">
-                  <span className="truncate">{treatment.treatment_category || 'T/A'}</span>
+                  <span className="truncate">{treatment.treatment_name || 'T/A'}</span>
                   <span className="text-brown-600 font-medium truncate">{treatment.therapist_name || 'T/A'}</span>
                   <span className="truncate">
                     {treatment.date ? new Date(treatment.date).toLocaleDateString('id-ID', {

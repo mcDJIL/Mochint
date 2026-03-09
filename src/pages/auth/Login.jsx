@@ -86,7 +86,7 @@ const Login = ({ onSwitch, onForgot, onLoginSuccess, onBack }) => {
         setNotification({
           show: true,
           type: 'success',
-          message: `Selamat datang kembali, ${res.user.name || 'User'}! Redirecting...`
+          message: `Selamat datang kembali!`
         });
         
         // Delay redirect untuk menampilkan notifikasi

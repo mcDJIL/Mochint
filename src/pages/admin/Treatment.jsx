@@ -178,8 +178,9 @@ const Treatment = () => {
     
     // Format tanggal untuk input type="date" (YYYY-MM-DD)
     const formatDateForInput = (dateString) => {
-      if (!dateString) return '';
+      if (!dateString || dateString === '0000-00-00') return '';
       const date = new Date(dateString);
+      if (isNaN(date.getTime())) return ''; // Check for invalid date
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -433,8 +434,8 @@ const Treatment = () => {
         image: previewImage || formData.image || '',
         facilities: formData.facilities.filter(facility => facility.trim() !== ''),
         discountPercentage: parseInt(formData.discountPercentage) || 0,
-        promoStartDate: formData.promoStartDate || null,
-        promoEndDate: formData.promoEndDate || null
+        promoStartDate: formData.promoStartDate && formData.promoStartDate.trim() !== '' ? formData.promoStartDate : null,
+        promoEndDate: formData.promoEndDate && formData.promoEndDate.trim() !== '' ? formData.promoEndDate : null
       };
 
       const Token = localStorage.getItem('token');

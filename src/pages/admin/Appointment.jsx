@@ -349,7 +349,7 @@ const Appointment = () => {
     setFormData({ 
       customer_name: app.customer_name || '',
       member_id: app.member_id || '',
-      treatment: app.treatment_category || app.treatment || '',
+      treatment: app.treatment_name || app.treatment || '',
       treatment_id: app.treatment_id || '',
       therapist: app.therapist_name || app.therapist || '',
       therapist_id: app.therapist_id || '',
@@ -786,7 +786,7 @@ const Appointment = () => {
                       )}
                     </td>
                     <td className="p-2 sm:p-4">
-                      <div className="text-[11px] sm:text-base">{app.treatment_category}</div>
+                      <div className="text-[11px] sm:text-base">{app.treatment_name}</div>
                       <div className="text-[9px] sm:text-[10px] text-brown-600 font-bold uppercase">{app.therapist_name}</div>
                     </td>
                     <td className="p-2 sm:p-4 text-gray-500 text-[10px] sm:text-sm">

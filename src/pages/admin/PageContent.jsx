@@ -38,7 +38,9 @@ const PageContent = () => {
     misi: [''],
     phone_display: '',
     whatsapp_url: '',
-    map_embed_url: ''
+    map_embed_url: '',
+    awards: [{ id: Date.now(), title: '', image: '' }],
+    facilities: [{ id: Date.now(), name: '', description: '', image: '' }]
   });
 
   // Helper function to get auth headers
@@ -146,6 +148,134 @@ const PageContent = () => {
     }));
   };
 
+  // Add award field
+  const addAward = () => {
+    setAdditionalFields(prev => ({
+      ...prev,
+      awards: [...prev.awards, { id: Date.now(), title: '', image: '' }]
+    }));
+  };
+
+  // Remove award field
+  const removeAward = (index) => {
+    setAdditionalFields(prev => ({
+      ...prev,
+      awards: prev.awards.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Handle award field change
+  const handleAwardChange = (index, field, value) => {
+    setAdditionalFields(prev => {
+      const newAwards = [...prev.awards];
+      newAwards[index] = { ...newAwards[index], [field]: value };
+      return { ...prev, awards: newAwards };
+    });
+  };
+
+  // Add facility field
+  const addFacility = () => {
+    setAdditionalFields(prev => ({
+      ...prev,
+      facilities: [...prev.facilities, { id: Date.now(), name: '', description: '', image: '' }]
+    }));
+  };
+
+  // Remove facility field
+  const removeFacility = (index) => {
+    setAdditionalFields(prev => ({
+      ...prev,
+      facilities: prev.facilities.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Handle facility field change
+  const handleFacilityChange = (index, field, value) => {
+    setAdditionalFields(prev => {
+      const newFacilities = [...prev.facilities];
+      newFacilities[index] = { ...newFacilities[index], [field]: value };
+      return { ...prev, facilities: newFacilities };
+    });
+  };
+
+  // Handle award image upload
+  const handleAwardImageUpload = (index, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showNotification(
+        'File Terlalu Besar', 
+        'Ukuran gambar maksimal 2MB untuk upload langsung.', 
+        'error'
+      );
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification('Format File Salah', 'Hanya file gambar yang diperbolehkan', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      const sizeInKB = Math.round((base64String.length * 3) / 4 / 1024);
+      
+      handleAwardChange(index, 'image', base64String);
+      showNotification(
+        'Berhasil!', 
+        `Gambar penghargaan berhasil diupload (~${sizeInKB}KB). Klik Simpan untuk menyimpan.`, 
+        'success'
+      );
+    };
+    reader.onerror = () => {
+      showNotification('Gagal Membaca File', 'Terjadi kesalahan saat membaca file', 'error');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle facility image upload
+  const handleFacilityImageUpload = (index, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showNotification(
+        'File Terlalu Besar', 
+        'Ukuran gambar maksimal 2MB untuk upload langsung.', 
+        'error'
+      );
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification('Format File Salah', 'Hanya file gambar yang diperbolehkan', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      const sizeInKB = Math.round((base64String.length * 3) / 4 / 1024);
+      
+      handleFacilityChange(index, 'image', base64String);
+      showNotification(
+        'Berhasil!', 
+        `Gambar fasilitas berhasil diupload (~${sizeInKB}KB). Klik Simpan untuk menyimpan.`, 
+        'success'
+      );
+    };
+    reader.onerror = () => {
+      showNotification('Gagal Membaca File', 'Terjadi kesalahan saat membaca file', 'error');
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Prepare additional data based on page type
   const prepareAdditionalData = () => {
     if (formData.page_type === 'promo') {
@@ -159,6 +289,14 @@ const PageContent = () => {
       return {
         visi: additionalFields.visi,
         misi: additionalFields.misi.filter(m => m.trim() !== '')
+      };
+    } else if (formData.page_type === 'about' && formData.section_key === 'awards') {
+      return {
+        items: additionalFields.awards.filter(a => a.title.trim() !== '' || a.image.trim() !== '')
+      };
+    } else if (formData.page_type === 'about' && formData.section_key === 'facilities') {
+      return {
+        items: additionalFields.facilities.filter(f => f.name.trim() !== '')
       };
     } else if (formData.page_type === 'home' && formData.section_key === 'footer_contact') {
       return {
@@ -246,7 +384,9 @@ const PageContent = () => {
       misi: [''],
       phone_display: '',
       whatsapp_url: '',
-      map_embed_url: ''
+      map_embed_url: '',
+      awards: [{ id: Date.now(), title: '', image: '' }],
+      facilities: [{ id: Date.now(), name: '', description: '', image: '' }]
     });
     setPreviewImage('');
   };
@@ -255,18 +395,23 @@ const PageContent = () => {
   const openEditForm = (info) => {
     setIsAdding(true);
     setEditingInfo(info);
+    
+    const imageUrl = info.image_url || '';
+    
     setFormData({
       page_type: info.page_type,
       section_key: info.section_key || '',
       title: info.title || '',
       subtitle: info.subtitle || '',
       content: info.content || '',
-      image_url: info.image_url || '',
+      image_url: imageUrl,
       additional_data: info.additional_data || {},
       is_active: info.is_active,
       display_order: info.display_order || 1
     });
-    setPreviewImage(info.image_url || '');
+    
+    // Set preview image
+    setPreviewImage(imageUrl);
 
     // Load additional fields
     const additionalData = info.additional_data || {};
@@ -279,7 +424,9 @@ const PageContent = () => {
       misi: additionalData.misi || [''],
       phone_display: additionalData.phone_display || '',
       whatsapp_url: additionalData.whatsapp_url || '',
-      map_embed_url: additionalData.map_embed_url || ''
+      map_embed_url: additionalData.map_embed_url || '',
+      awards: additionalData.items && info.section_key === 'awards' ? additionalData.items : [{ id: Date.now(), title: '', image: '' }],
+      facilities: additionalData.items && info.section_key === 'facilities' ? additionalData.items : [{ id: Date.now(), name: '', description: '', image: '' }]
     });
   };
 
@@ -313,7 +460,11 @@ const PageContent = () => {
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      showNotification('File Terlalu Besar', 'Ukuran gambar maksimal 2MB', 'error');
+      showNotification(
+        'File Terlalu Besar', 
+        'Ukuran gambar maksimal 2MB untuk upload langsung.', 
+        'error'
+      );
       return;
     }
 
@@ -325,9 +476,16 @@ const PageContent = () => {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPreviewImage(reader.result);
-      setFormData(prev => ({ ...prev, image_url: reader.result }));
-      showNotification('Berhasil!', 'Gambar berhasil diupload dan siap disimpan', 'success');
+      const base64String = reader.result;
+      const sizeInKB = Math.round((base64String.length * 3) / 4 / 1024);
+      
+      setPreviewImage(base64String);
+      setFormData(prev => ({ ...prev, image_url: base64String }));
+      showNotification(
+        'Berhasil!', 
+        `Gambar berhasil diupload (~${sizeInKB}KB). Klik Simpan untuk menyimpan.`, 
+        'success'
+      );
     };
     reader.onerror = () => {
       showNotification('Gagal Membaca File', 'Terjadi kesalahan saat membaca file', 'error');
@@ -339,7 +497,10 @@ const PageContent = () => {
   const handleImageUrlChange = (e) => {
     const url = e.target.value;
     setFormData(prev => ({ ...prev, image_url: url }));
-    setPreviewImage(url);
+    // Only update preview if URL is not empty
+    if (url.trim()) {
+      setPreviewImage(url);
+    }
   };
 
   // Remove image
@@ -422,9 +583,88 @@ const PageContent = () => {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
           Kelola Konten Website
         </h1>
-        <p className="text-sm sm:text-base text-gray-500">
+        <p className="text-sm sm:text-base text-gray-500 mb-4">
           Kelola informasi konten untuk halaman Home, About, dan Promo. Informasi kontak seperti nomor telepon, email, dan alamat dapat dikelola di menu Kontak.
         </p>
+        
+        {/* Info Banner for Home Page Sections */}
+        {selectedPageType === 'home' && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="bg-blue-500 p-2 rounded-lg flex-shrink-0">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-blue-900 mb-2">
+                  🏠 Panduan Konten Halaman Home
+                </h3>
+                <p className="text-xs text-blue-800 mb-2">
+                  Untuk konten yang muncul di halaman Home, pastikan menggunakan <strong>Page Type: Home</strong> dengan section_key berikut:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-blue-600 font-bold">hero</code> - Banner utama
+                  </div>
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-blue-600 font-bold">about</code> - Bagian About di Home
+                  </div>
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-blue-600 font-bold">services</code> - Layanan
+                  </div>
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-blue-600 font-bold">promo_banner</code> - Banner promo
+                  </div>
+                  <div className="bg-white p-2 rounded shadow-sm col-span-1 sm:col-span-2">
+                    <code className="text-blue-600 font-bold">footer_contact</code> - Kontak di footer
+                  </div>
+                </div>
+                <p className="text-xs text-blue-700 mt-3 font-medium">
+                  💡 <strong>Tip:</strong> Untuk mengubah gambar section About di Home, edit konten dengan Section Key: <code className="bg-blue-100 px-1.5 py-0.5 rounded">about</code>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Info Banner for About Page Sections */}
+        {selectedPageType === 'about' && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-4 rounded-lg shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="bg-green-500 p-2 rounded-lg flex-shrink-0">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-green-900 mb-2">
+                  📖 Panduan Konten Halaman About
+                </h3>
+                <p className="text-xs text-green-800 mb-2">
+                  Untuk konten yang muncul di halaman About, pastikan menggunakan <strong>Page Type: About</strong> dengan section_key berikut:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-green-600 font-bold">story</code> - Cerita/Banner utama
+                  </div>
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-green-600 font-bold">vision</code> - Visi & Misi
+                  </div>
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-green-600 font-bold">awards</code> - Penghargaan (slider)
+                  </div>
+                  <div className="bg-white p-2 rounded shadow-sm">
+                    <code className="text-green-600 font-bold">facilities</code> - Fasilitas (grid)
+                  </div>
+                </div>
+                <p className="text-xs text-green-700 mt-3 font-medium">
+                  💡 <strong>Tip:</strong> Gunakan <code className="bg-green-100 px-1.5 py-0.5 rounded">awards</code> untuk penghargaan dan <code className="bg-green-100 px-1.5 py-0.5 rounded">facilities</code> untuk fasilitas. Data items dikelola di additional data.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filter & View Toggle */}
@@ -756,9 +996,17 @@ const PageContent = () => {
           >
             {/* Modal Header - Sticky */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 rounded-t-xl flex items-center justify-between z-10">
-              <h2 className="text-base sm:text-xl font-semibold text-gray-900">
-                {editingInfo ? 'Edit Konten' : 'Tambah Konten Baru'}
-              </h2>
+              <div className="flex-1">
+                <h2 className="text-base sm:text-xl font-semibold text-gray-900">
+                  {editingInfo ? 'Edit Konten' : 'Tambah Konten Baru'}
+                </h2>
+                {/* Show helper text when editing about section */}
+                {editingInfo && formData.page_type === 'home' && formData.section_key === 'about' && (
+                  <p className="text-xs text-blue-600 mt-1 font-medium">
+                    📝 Anda sedang mengedit section <strong>About</strong> yang muncul di halaman Home
+                  </p>
+                )}
+              </div>
               <button
                 onClick={closeForm}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -794,18 +1042,34 @@ const PageContent = () => {
                 {/* Section Key */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Section Key
+                    Section Key {(formData.page_type === 'home' || formData.page_type === 'about') && <span className="text-red-500">*</span>}
                   </label>
                   <input
                     type="text"
                     name="section_key"
                     value={formData.section_key}
                     onChange={handleInputChange}
-                    placeholder="Contoh: hero, vision, services"
+                    placeholder={
+                      formData.page_type === 'home' 
+                        ? "Contoh: hero, about, services, promo_banner, footer_contact"
+                        : formData.page_type === 'about'
+                        ? "Contoh: story, vision, awards, facilities"
+                        : "Contoh: hero, vision, services"
+                    }
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Identifier unik untuk section (opsional)
+                    {formData.page_type === 'home' ? (
+                      <span className="text-blue-600 font-medium">
+                        🏠 <strong>Untuk Halaman Home</strong>, gunakan section_key: <code className="bg-blue-50 px-1.5 py-0.5 rounded">hero</code>, <code className="bg-blue-50 px-1.5 py-0.5 rounded">about</code>, <code className="bg-blue-50 px-1.5 py-0.5 rounded">services</code>, <code className="bg-blue-50 px-1.5 py-0.5 rounded">promo_banner</code>, atau <code className="bg-blue-50 px-1.5 py-0.5 rounded">footer_contact</code>
+                      </span>
+                    ) : formData.page_type === 'about' ? (
+                      <span className="text-green-600 font-medium">
+                        📖 <strong>Untuk Halaman About</strong>, gunakan section_key: <code className="bg-green-50 px-1.5 py-0.5 rounded">story</code>, <code className="bg-green-50 px-1.5 py-0.5 rounded">vision</code>, <code className="bg-green-50 px-1.5 py-0.5 rounded">awards</code>, atau <code className="bg-green-50 px-1.5 py-0.5 rounded">facilities</code>
+                      </span>
+                    ) : (
+                      'Identifier unik untuk section (opsional)'
+                    )}
                   </p>
                 </div>
 
@@ -855,52 +1119,90 @@ const PageContent = () => {
                 </div>
 
                 {/* Image Upload/URL */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-lg border-2 border-purple-200">
+                  <label className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-2">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                     Gambar Konten
                   </label>
                   
-                  {/* Image Upload Button */}
-                  <div className="mb-2">
+                  {/* Method 1: Image Upload Button */}
+                  <div className="mb-3 bg-white p-3 rounded-lg border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      📤 Upload dari Perangkat (Maksimal 2MB)
+                    </label>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg"
+                      className="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
+                      key={previewImage} // Reset file input when image is removed
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      atau
-                    </p>
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                      <p className="text-xs text-blue-800">
+                        💡 <strong>Tips:</strong> Untuk performa terbaik, compress gambar sebelum upload atau gunakan URL dari hosting/CDN.
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Image URL Input */}
-                  <input
-                    type="url"
-                    name="image_url"
-                    value={formData.image_url}
-                    onChange={handleImageUrlChange}
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  <div className="text-center text-xs font-bold text-gray-500 my-2">── ATAU ──</div>
+
+                  {/* Method 2: Image URL Input - RECOMMENDED */}
+                  <div className="bg-white p-3 rounded-lg border-2 border-green-300 shadow-sm">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 mb-1.5">
+                      <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">REKOMENDASI</span>
+                      🔗 Masukkan URL Gambar
+                    </label>
+                    <input
+                      type="url"
+                      name="image_url"
+                      value={formData.image_url}
+                      onChange={handleImageUrlChange}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                      <p className="text-xs text-green-800">
+                        ✅ <strong>Keuntungan URL:</strong> Loading lebih cepat, tidak ada batasan ukuran, mudah diganti.
+                      </p>
+                    </div>
+                  </div>
 
                   {/* Image Preview */}
                   {previewImage && (
-                    <div className="mt-3 relative inline-block">
-                      <img
-                        src={previewImage}
-                        alt="Preview"
-                        className="h-32 w-auto rounded-lg"
-                        onError={() => setPreviewImage('')}
-                      />
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                    <div className="mt-4 bg-white p-3 rounded-lg border border-gray-200">
+                      <p className="text-xs font-semibold text-gray-700 mb-2">👁️ Preview Gambar:</p>
+                      <div className="relative inline-block">
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          className="h-40 w-auto rounded-lg shadow-md border border-gray-200"
+                          onError={(e) => {
+                            console.error('Error loading image:', previewImage);
+                            showNotification('Error', 'Gagal memuat gambar. Periksa URL atau upload ulang.', 'error');
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 shadow-lg transition-all transform hover:scale-110"
+                          title="Hapus gambar"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!previewImage && (
+                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-xs text-yellow-800">
+                        ⚠️ <strong>Belum ada gambar.</strong> Upload gambar atau masukkan URL untuk menampilkan gambar.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1052,6 +1354,216 @@ const PageContent = () => {
                         Tambah Misi
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {/* Additional Fields for About Awards */}
+                {formData.page_type === 'about' && formData.section_key === 'awards' && (
+                  <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border-2 border-amber-300 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                      </svg>
+                      <h3 className="font-bold text-gray-900 text-base sm:text-lg">Data Penghargaan</h3>
+                    </div>
+                    
+                    <p className="text-xs text-amber-800 bg-amber-100 p-2 rounded">
+                      💡 Tambahkan penghargaan yang akan ditampilkan dalam slider
+                    </p>
+
+                    {additionalFields.awards.map((award, index) => (
+                      <div key={award.id} className="p-3 bg-white rounded-lg border border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Penghargaan #{index + 1}
+                          </label>
+                          {additionalFields.awards.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeAward(index)}
+                              className="text-red-600 hover:text-red-800 text-xs"
+                            >
+                              Hapus
+                            </button>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Judul</label>
+                            <input
+                              type="text"
+                              value={award.title}
+                              onChange={(e) => handleAwardChange(index, 'title', e.target.value)}
+                              placeholder="Contoh: Best Beauty Clinic 2024"
+                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Gambar Penghargaan</label>
+                            <div className="space-y-2">
+                              {/* Upload File */}
+                              <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Opsi 1: Upload File (Max 2MB)</label>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleAwardImageUpload(index, e)}
+                                  className="w-full text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                                />
+                              </div>
+                              {/* URL Input */}
+                              <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Opsi 2: Gunakan URL</label>
+                                <input
+                                  type="url"
+                                  value={award.image}
+                                  onChange={(e) => handleAwardChange(index, 'image', e.target.value)}
+                                  placeholder="https://example.com/award.jpg"
+                                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                />
+                              </div>
+                              {/* Preview */}
+                              {award.image && (
+                                <div className="mt-2">
+                                  <p className="text-xs text-gray-500 mb-1">Preview:</p>
+                                  <img
+                                    src={award.image}
+                                    alt="Preview"
+                                    className="w-24 h-24 object-cover rounded-lg border border-gray-300"
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23888" font-size="12"%3EError%3C/text%3E%3C/svg%3E';
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addAward}
+                      className="w-full px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Tambah Penghargaan
+                    </button>
+                  </div>
+                )}
+
+                {/* Additional Fields for About Facilities */}
+                {formData.page_type === 'about' && formData.section_key === 'facilities' && (
+                  <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg border-2 border-teal-300 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <h3 className="font-bold text-gray-900 text-base sm:text-lg">Data Fasilitas</h3>
+                    </div>
+                    
+                    <p className="text-xs text-teal-800 bg-teal-100 p-2 rounded">
+                      🏢 Tambahkan fasilitas yang tersedia di klinik
+                    </p>
+
+                    {additionalFields.facilities.map((facility, index) => (
+                      <div key={facility.id} className="p-3 bg-white rounded-lg border border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Fasilitas #{index + 1}
+                          </label>
+                          {additionalFields.facilities.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeFacility(index)}
+                              className="text-red-600 hover:text-red-800 text-xs"
+                            >
+                              Hapus
+                            </button>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Nama Fasilitas</label>
+                            <input
+                              type="text"
+                              value={facility.name}
+                              onChange={(e) => handleFacilityChange(index, 'name', e.target.value)}
+                              placeholder="Contoh: Ruang Treatment"
+                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Deskripsi</label>
+                            <textarea
+                              value={facility.description}
+                              onChange={(e) => handleFacilityChange(index, 'description', e.target.value)}
+                              placeholder="Deskripsi fasilitas..."
+                              rows="2"
+                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Gambar Fasilitas</label>
+                            <div className="space-y-2">
+                              {/* Upload File */}
+                              <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Opsi 1: Upload File (Max 2MB)</label>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleFacilityImageUpload(index, e)}
+                                  className="w-full text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+                                />
+                              </div>
+                              {/* URL Input */}
+                              <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Opsi 2: Gunakan URL</label>
+                                <input
+                                  type="url"
+                                  value={facility.image}
+                                  onChange={(e) => handleFacilityChange(index, 'image', e.target.value)}
+                                  placeholder="https://example.com/facility.jpg"
+                                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                />
+                              </div>
+                              {/* Preview */}
+                              {facility.image && (
+                                <div className="mt-2">
+                                  <p className="text-xs text-gray-500 mb-1">Preview:</p>
+                                  <img
+                                    src={facility.image}
+                                    alt="Preview"
+                                    className="w-24 h-24 object-cover rounded-lg border border-gray-300"
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23888" font-size="12"%3EError%3C/text%3E%3C/svg%3E';
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addFacility}
+                      className="w-full px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Tambah Fasilitas
+                    </button>
                   </div>
                 )}
 

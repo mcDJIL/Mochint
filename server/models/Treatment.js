@@ -97,7 +97,6 @@ class Treatment {
   // Create new treatment
   static async create(treatmentData) {
     const {
-      id,
       name,
       category = [],
       duration = '60 min',
@@ -112,15 +111,22 @@ class Treatment {
 
     const categoryString = this.stringifyCategory(category);
     const facilitiesString = this.stringifyFacilities(facilities);
+    
+    // Ensure discount percentage is a valid number
+    const validDiscountPercentage = parseInt(discountPercentage) || 0;
+    
+    // Ensure dates are properly formatted or null
+    const validPromoStartDate = promoStartDate && promoStartDate !== '' ? promoStartDate : null;
+    const validPromoEndDate = promoEndDate && promoEndDate !== '' ? promoEndDate : null;
 
     const [result] = await promisePool.query(
       `INSERT INTO treatments 
-       (id, name, category, duration, price, description, image, facilities, discount_percentage, promo_start_date, promo_end_date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, categoryString, duration, price, description, image, facilitiesString, discountPercentage, promoStartDate, promoEndDate]
+       (name, category, duration, price, description, image, facilities, discount_percentage, promo_start_date, promo_end_date)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, categoryString, duration, price, description, image, facilitiesString, validDiscountPercentage, validPromoStartDate, validPromoEndDate]
     );
     
-    return { id, insertId: result.insertId };
+    return { insertId: result.insertId };
   }
 
   // Update treatment
@@ -140,13 +146,20 @@ class Treatment {
 
     const categoryString = this.stringifyCategory(category);
     const facilitiesString = this.stringifyFacilities(facilities);
+    
+    // Ensure discount percentage is a valid number
+    const validDiscountPercentage = parseInt(discountPercentage) || 0;
+    
+    // Ensure dates are properly formatted or null
+    const validPromoStartDate = promoStartDate && promoStartDate !== '' ? promoStartDate : null;
+    const validPromoEndDate = promoEndDate && promoEndDate !== '' ? promoEndDate : null;
 
     const [result] = await promisePool.query(
       `UPDATE treatments SET
         name = ?, category = ?, duration = ?, price = ?, 
         description = ?, image = ?, facilities = ?, discount_percentage = ?, promo_start_date = ?, promo_end_date = ?
        WHERE id = ?`,
-      [name, categoryString, duration, price, description, image, facilitiesString, discountPercentage, promoStartDate, promoEndDate, id]
+      [name, categoryString, duration, price, description, image, facilitiesString, validDiscountPercentage, validPromoStartDate, validPromoEndDate, id]
     );
     
     return result.affectedRows;
