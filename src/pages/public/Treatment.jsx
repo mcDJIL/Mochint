@@ -164,7 +164,7 @@ const Treatment = () => {
                 Layanan
               </h2>
               <p className="text-xs sm:text-sm font-sans text-[#8D6E63] font-bold uppercase tracking-widest">
-                {filteredTreatments.length} dari {treatments.length} peawatan ditemukan
+                {filteredTreatments.length} dari {treatments.length} peawatan ditemukan     
               </p>
             </div>
 
