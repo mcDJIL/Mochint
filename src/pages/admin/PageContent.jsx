@@ -4,8 +4,15 @@ import {
   AlertCircle,
   Check,
   Eye,
-  EyeOff
+  EyeOff,
+  X
 } from 'lucide-react';
+
+// API Configuration
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Error image SVG constant
+const ERROR_IMAGE_SVG = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23888" font-size="12"%3EError%3C/text%3E%3C/svg%3E';
 
 const PageContent = () => {
   // State Management
@@ -24,8 +31,9 @@ const PageContent = () => {
   });
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [apiLoading, setApiLoading] = useState(false);
   const [error, setError] = useState('');
-  const [notification, setNotification] = useState({ show: false, type: '', title: '', message: '' });
+  const [notification, setNotification] = useState({ show: false, type: '', title: '', message: '', duration: 3000 });
   const [selectedPageType, setSelectedPageType] = useState('home');
   const [previewImage, setPreviewImage] = useState('');
   const [viewMode, setViewMode] = useState('grid');
@@ -64,13 +72,13 @@ const PageContent = () => {
   const fetchPageInfos = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/page-info?include_inactive=true', getAuthHeaders());
+      const response = await axios.get(`${API_URL}/page-info?include_inactive=true`, getAuthHeaders());
       setPageInfos(response.data.data || []);
       setError('');
     } catch (err) {
       console.error('Error fetching page infos:', err);
       setError('Gagal memuat data. Silakan coba lagi.');
-      showNotification('Gagal Memuat', 'Gagal memuat data', 'error');
+      showNotification('Gagal Memuat', 'Gagal memuat data', 'error', 5000);
       setPageInfos([]);
     } finally {
       setLoading(false);
@@ -78,22 +86,24 @@ const PageContent = () => {
   };
 
   // Show notification toast
-  const showNotification = (title, message, type) => {
-    setNotification({ show: true, type, title, message });
-    setTimeout(() => {
-      setNotification({ show: false, type: '', title: '', message: '' });
-    }, 3000);
+  const showNotification = (title, message, type, duration = 3000) => {
+    setNotification({ show: true, type, title, message, duration });
   };
 
-  // Auto-hide notification
+  // Close notification manually
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, show: false }));
+  };
+
+  // Auto-hide notification with single timer
   useEffect(() => {
     if (notification.show) {
       const timer = setTimeout(() => {
-        setNotification({ ...notification, show: false });
-      }, 3000);
+        setNotification(prev => ({ ...prev, show: false }));
+      }, notification.duration);
       return () => clearTimeout(timer);
     }
-  }, [notification.show]);
+  }, [notification.show, notification.duration]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -310,9 +320,20 @@ const PageContent = () => {
     return {};
   };
 
+  // Validate section_key based on page_type
+  const isSectionKeyRequired = () => {
+    return formData.page_type === 'home' || formData.page_type === 'about';
+  };
+
   // Handle form submit (Add or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate section_key if required
+    if (isSectionKeyRequired() && !formData.section_key.trim()) {
+      showNotification('Validasi Error', 'Section Key wajib diisi untuk page type ini', 'error');
+      return;
+    }
     
     const submitData = {
       ...formData,
@@ -320,18 +341,21 @@ const PageContent = () => {
     };
 
     try {
+      setApiLoading(true);
       if (editingInfo) {
-        await axios.put(`http://localhost:5000/api/page-info/${editingInfo.id}`, submitData, getAuthHeaders());
-        showNotification('Berhasil!', 'Data berhasil diperbarui!', 'success');
+        await axios.put(`${API_URL}/page-info/${editingInfo.id}`, submitData, getAuthHeaders());
+        showNotification('Berhasil!', 'Data berhasil diperbarui!', 'success', 3000);
       } else {
-        await axios.post('http://localhost:5000/api/page-info', submitData, getAuthHeaders());
-        showNotification('Berhasil!', 'Data berhasil ditambahkan!', 'success');
+        await axios.post(`${API_URL}/page-info`, submitData, getAuthHeaders());
+        showNotification('Berhasil!', 'Data berhasil ditambahkan!', 'success', 3000);
       }
       
       fetchPageInfos();
       closeForm();
     } catch (err) {
-      showNotification('Gagal Menyimpan', err.response?.data?.error || 'Terjadi kesalahan', 'error');
+      showNotification('Gagal Menyimpan', err.response?.data?.error || 'Terjadi kesalahan', 'error', 5000);
+    } finally {
+      setApiLoading(false);
     }
   };
 
@@ -340,11 +364,14 @@ const PageContent = () => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/page-info/${id}`, getAuthHeaders());
-      showNotification('Berhasil!', 'Data berhasil dihapus!', 'success');
+      setApiLoading(true);
+      await axios.delete(`${API_URL}/page-info/${id}`, getAuthHeaders());
+      showNotification('Berhasil!', 'Data berhasil dihapus!', 'success', 3000);
       fetchPageInfos();
     } catch (err) {
-      showNotification('Gagal Menghapus', 'Gagal menghapus data', 'error');
+      showNotification('Gagal Menghapus', 'Gagal menghapus data', 'error', 5000);
+    } finally {
+      setApiLoading(false);
     }
   };
 
@@ -353,12 +380,15 @@ const PageContent = () => {
     if (!window.confirm('Apakah Anda yakin ingin mengaktifkan kembali data ini?')) return;
 
     try {
-      const response = await axios.patch(`http://localhost:5000/api/page-info/${id}/restore`, {}, getAuthHeaders());
-      showNotification('Berhasil!', 'Data berhasil dipulihkan!', 'success');
+      setApiLoading(true);
+      const response = await axios.patch(`${API_URL}/page-info/${id}/restore`, {}, getAuthHeaders());
+      showNotification('Berhasil!', 'Data berhasil dipulihkan!', 'success', 3000);
       fetchPageInfos();
     } catch (err) {
       console.error('Error restoring page info:', err);
-      showNotification('Gagal Memulihkan', err.response?.data?.error || 'Gagal memulihkan data', 'error');
+      showNotification('Gagal Memulihkan', err.response?.data?.error || 'Gagal memulihkan data', 'error', 5000);
+    } finally {
+      setApiLoading(false);
     }
   };
 
@@ -418,19 +448,28 @@ const PageContent = () => {
 
     // Load additional fields
     const additionalData = info.additional_data || {};
+    
+    // Helper to ensure items have id for React keys
+    const ensureItemsHaveIds = (items) => {
+      return (items || []).map(item => ({
+        ...item,
+        id: item.id || Date.now() + Math.random()
+      }));
+    };
+    
     setAdditionalFields({
-      benefits: additionalData.benefits || [''],
+      benefits: (additionalData.benefits || ['']).filter(b => b !== ''),
       discount_percentage: additionalData.discount_percentage || '',
       whatsapp_number: additionalData.whatsapp_number || '',
       promo_label: additionalData.promo_label || '',
       visi: additionalData.visi || '',
-      misi: additionalData.misi || [''],
+      misi: (additionalData.misi || ['']).filter(m => m !== ''),
       phone_display: additionalData.phone_display || '',
       whatsapp_url: additionalData.whatsapp_url || '',
       map_embed_url: additionalData.map_embed_url || '',
       maps_url: additionalData.maps_url || '',
-      awards: additionalData.items && info.section_key === 'awards' ? additionalData.items : [{ id: Date.now(), title: '', image: '' }],
-      facilities: additionalData.items && info.section_key === 'facilities' ? additionalData.items : [{ id: Date.now(), name: '', description: '', image: '' }]
+      awards: additionalData.items && info.section_key === 'awards' ? ensureItemsHaveIds(additionalData.items) : [{ id: Date.now(), title: '', image: '' }],
+      facilities: additionalData.items && info.section_key === 'facilities' ? ensureItemsHaveIds(additionalData.items) : [{ id: Date.now(), name: '', description: '', image: '' }]
     });
   };
 
@@ -578,6 +617,13 @@ const PageContent = () => {
               <div className="font-bold text-sm">{notification.title}</div>
               <div className="text-sm opacity-90">{notification.message}</div>
             </div>
+            <button
+              onClick={closeNotification}
+              className="flex-shrink-0 hover:bg-white/20 p-1 rounded transition-colors"
+              aria-label="Close notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
@@ -1044,6 +1090,7 @@ const PageContent = () => {
                     name="section_key"
                     value={formData.section_key}
                     onChange={handleInputChange}
+                    required={isSectionKeyRequired()}
                     placeholder={
                       formData.page_type === 'home' 
                         ? "Contoh: hero, about, services, promo_banner, footer_contact"
@@ -1132,7 +1179,7 @@ const PageContent = () => {
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
-                      key={previewImage} // Reset file input when image is removed
+                      key="main-image-upload"
                     />
                     <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
                       <p className="text-xs text-blue-800">
@@ -1175,8 +1222,8 @@ const PageContent = () => {
                           className="h-40 w-auto rounded-lg shadow-md border border-gray-200"
                           onError={(e) => {
                             console.error('Error loading image:', previewImage);
-                            showNotification('Error', 'Gagal memuat gambar. Periksa URL atau upload ulang.', 'error');
-                            e.target.style.display = 'none';
+                            showNotification('Error', 'Gagal memuat gambar. Periksa URL atau upload ulang.', 'error', 5000);
+                            e.target.src = ERROR_IMAGE_SVG;
                           }}
                         />
                         <button
@@ -1427,8 +1474,7 @@ const PageContent = () => {
                                     alt="Preview"
                                     className="w-24 h-24 object-cover rounded-lg border border-gray-300"
                                     onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23888" font-size="12"%3EError%3C/text%3E%3C/svg%3E';
+                                      e.target.src = ERROR_IMAGE_SVG;
                                     }}
                                   />
                                 </div>
@@ -1537,8 +1583,7 @@ const PageContent = () => {
                                     alt="Preview"
                                     className="w-24 h-24 object-cover rounded-lg border border-gray-300"
                                     onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23888" font-size="12"%3EError%3C/text%3E%3C/svg%3E';
+                                      e.target.src = ERROR_IMAGE_SVG;
                                     }}
                                   />
                                 </div>
@@ -1715,19 +1760,20 @@ const PageContent = () => {
             <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4 rounded-b-xl flex gap-3 z-10">
               <button
                 type="submit"
-                onClick={handleSubmit}
+                disabled={apiLoading}
                 className={`flex-1 px-4 sm:px-6 py-2 text-white rounded-lg transition-colors ${
                   editingInfo
-                    ? 'bg-blue-600 hover:bg-blue-700'
-                    : 'bg-gray-600 hover:bg-gray-700'
-                }`}
+                    ? 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400'
+                    : 'bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400'
+                } disabled:cursor-not-allowed`}
               >
-                {editingInfo ? 'Perbarui' : 'Simpan'}
+                {apiLoading ? 'Memproses...' : (editingInfo ? 'Perbarui' : 'Simpan')}
               </button>
               <button
                 type="button"
                 onClick={closeForm}
-                className="flex-1 px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                disabled={apiLoading}
+                className="flex-1 px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 Batal
               </button>
