@@ -108,10 +108,21 @@ const PageContent = () => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    const newValue = type === 'checkbox' ? checked : value;
+    
+    // Auto-set section_key to 'main_promo' when page_type changes to promo
+    if (name === 'page_type' && newValue === 'promo') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: newValue,
+        section_key: 'main_promo'
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: newValue
+      }));
+    }
   };
 
   // Handle additional field changes
@@ -322,16 +333,22 @@ const PageContent = () => {
 
   // Validate section_key based on page_type
   const isSectionKeyRequired = () => {
-    return formData.page_type === 'home' || formData.page_type === 'about';
+    return formData.page_type === 'home' || formData.page_type === 'about' || formData.page_type === 'promo';
   };
 
   // Handle form submit (Add or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate section_key if required
-    if (isSectionKeyRequired() && !formData.section_key.trim()) {
-      showNotification('Validasi Error', 'Section Key wajib diisi untuk page type ini', 'error');
+    // Validate section_key if required or for promo (always required)
+    if ((isSectionKeyRequired() || formData.page_type === 'promo') && !formData.section_key.trim()) {
+      showNotification('Validasi Error', 'Section Key wajib diisi', 'error');
+      return;
+    }
+    
+    // Ensure promo always has section_key as 'main_promo'
+    if (formData.page_type === 'promo' && formData.section_key !== 'main_promo') {
+      showNotification('Validasi Error', 'Section Key untuk promo harus "main_promo"', 'error');
       return;
     }
     
@@ -398,7 +415,7 @@ const PageContent = () => {
     setEditingInfo(null);
     setFormData({
       page_type: '',
-      section_key: '',
+      section_key: '', 
       title: '',
       subtitle: '',
       content: '',
@@ -458,12 +475,16 @@ const PageContent = () => {
     };
     
     setAdditionalFields({
-      benefits: (additionalData.benefits || ['']).filter(b => b !== ''),
+      benefits: (additionalData.benefits || []).filter(b => b.trim() !== '').length > 0 
+        ? (additionalData.benefits || []).filter(b => b.trim() !== '')
+        : [''],
       discount_percentage: additionalData.discount_percentage || '',
       whatsapp_number: additionalData.whatsapp_number || '',
       promo_label: additionalData.promo_label || '',
       visi: additionalData.visi || '',
-      misi: (additionalData.misi || ['']).filter(m => m !== ''),
+      misi: (additionalData.misi || []).filter(m => m.trim() !== '').length > 0
+        ? (additionalData.misi || []).filter(m => m.trim() !== '')
+        : [''],
       phone_display: additionalData.phone_display || '',
       whatsapp_url: additionalData.whatsapp_url || '',
       map_embed_url: additionalData.map_embed_url || '',
@@ -1083,22 +1104,25 @@ const PageContent = () => {
                 {/* Section Key */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Section Key {(formData.page_type === 'home' || formData.page_type === 'about') && <span className="text-red-500">*</span>}
+                    Section Key {(formData.page_type === 'home' || formData.page_type === 'about' || formData.page_type === 'promo') && <span className="text-red-500">*</span>}
                   </label>
                   <input
                     type="text"
                     name="section_key"
                     value={formData.section_key}
                     onChange={handleInputChange}
-                    required={isSectionKeyRequired()}
+                    readOnly={formData.page_type === 'promo'}
+                    required={isSectionKeyRequired() || formData.page_type === 'promo'}
                     placeholder={
                       formData.page_type === 'home' 
                         ? "Contoh: hero, about, services, promo_banner, footer_contact"
                         : formData.page_type === 'about'
                         ? "Contoh: story, vision, awards, facilities"
-                        : "Contoh: hero, vision, services"
+                        : formData.page_type === 'promo'
+                        ? "main_promo"
+                        : ""
                     }
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${formData.page_type === 'promo' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     {formData.page_type === 'home' ? (
@@ -1109,8 +1133,12 @@ const PageContent = () => {
                       <span className="text-brown-600 font-medium">
                         <strong>Untuk Halaman About</strong>, gunakan section_key: <code className="bg-green-50 px-1.5 py-0.5 rounded">story</code>, <code className="bg-green-50 px-1.5 py-0.5 rounded">vision</code>, <code className="bg-green-50 px-1.5 py-0.5 rounded">awards</code>, atau <code className="bg-green-50 px-1.5 py-0.5 rounded">facilities</code>
                       </span>
+                    ) : formData.page_type === 'promo' ? (
+                      <span className="text-blue-600 font-medium">
+                        <strong>Untuk Promo</strong>, section_key otomatis diset ke <code className="bg-blue-50 px-1.5 py-0.5 rounded">main_promo</code>
+                      </span>
                     ) : (
-                      'Identifier unik untuk section (opsional)'
+                      'Identifier unik untuk section'
                     )}
                   </p>
                 </div>
@@ -1753,30 +1781,30 @@ const PageContent = () => {
                     Aktifkan konten ini
                   </label>
                 </div>
-              </form>
-            </div>
 
-            {/* Modal Footer - Sticky */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4 rounded-b-xl flex gap-3 z-10">
-              <button
-                type="submit"
-                disabled={apiLoading}
-                className={`flex-1 px-4 sm:px-6 py-2 text-white rounded-lg transition-colors ${
-                  editingInfo
-                    ? 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400'
-                    : 'bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400'
-                } disabled:cursor-not-allowed`}
-              >
-                {apiLoading ? 'Memproses...' : (editingInfo ? 'Perbarui' : 'Simpan')}
-              </button>
-              <button
-                type="button"
-                onClick={closeForm}
-                disabled={apiLoading}
-                className="flex-1 px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
-              >
-                Batal
-              </button>
+                {/* Modal Footer - Sticky */}
+                <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4 rounded-b-xl flex gap-3 z-10 -mx-6 sm:-mx-8 -mb-6 sm:-mb-8">
+                  <button
+                    type="submit"
+                    disabled={apiLoading}
+                    className={`flex-1 px-4 sm:px-6 py-2 text-white rounded-lg transition-colors ${
+                      editingInfo
+                        ? 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400'
+                        : 'bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400'
+                    } disabled:cursor-not-allowed`}
+                  >
+                    {apiLoading ? 'Memproses...' : (editingInfo ? 'Perbarui' : 'Simpan')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeForm}
+                    disabled={apiLoading}
+                    className="flex-1 px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

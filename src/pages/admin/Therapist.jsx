@@ -525,7 +525,7 @@ const Therapist = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleView(therapist)}
-                            className="px-3 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600 transition-colors duration-200"
+                            className="px-3 py-1 bg-brown-500 text-white text-xs rounded hover:bg-brown-600 transition-colors duration-200"
                           >
                             Lihat
                           </button>

@@ -144,7 +144,7 @@ const Treatment = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] pb-20 font-sans text-[#5D4037]">
-      {/* ✨ CONTAINER dengan MARGIN KANAN KIRI */}
+      {/* CONTAINER dengan MARGIN KANAN KIRI */}
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 pt-6 sm:pt-8 max-w-[1400px]">
         
         {/* Breadcrumbs */}
@@ -156,7 +156,7 @@ const Treatment = () => {
           <span>Perawatan</span>
         </nav>
 
-        {/* ✨ HEADER dengan Info & Reset Button */}
+        {/*HEADER dengan Info & Reset Button */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
@@ -164,7 +164,7 @@ const Treatment = () => {
                 Layanan
               </h2>
               <p className="text-xs sm:text-sm font-sans text-[#8D6E63] font-bold uppercase tracking-widest">
-                {filteredTreatments.length} dari {treatments.length} peawatan ditemukan     
+                {filteredTreatments.length} dari {treatments.length} perawatan ditemukan     
               </p>
             </div>
 
@@ -276,33 +276,7 @@ const Treatment = () => {
               </div>
             </div>
 
-            {/* Active Filter Info */}
-            {(selectedCategory !== 'All' || searchQuery.trim() !== '') && (
-              <div className="bg-blue-50 border-2 border-blue-200 p-4 rounded-2xl">
-                <p className="text-xs font-bold text-blue-700 mb-2 flex items-center gap-2">
-                  <Filter size={14} />
-                  Filter Aktif:
-                </p>
-                <div className="space-y-2">
-                  {selectedCategory !== 'All' && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-blue-600">Kategori:</span>
-                      <span className="px-2 py-1 bg-white rounded text-xs font-bold text-blue-700">
-                        {selectedCategory}
-                      </span>
-                    </div>
-                  )}
-                  {searchQuery.trim() !== '' && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-blue-600">Pencarian:</span>
-                      <span className="px-2 py-1 bg-white rounded text-xs font-bold text-blue-700 truncate max-w-[150px]">
-                        "{searchQuery}"
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+
           </div>
 
           {/* ✨ MOBILE FILTER DRAWER */}
@@ -456,32 +430,7 @@ const Treatment = () => {
 
           {/* ✨ LIST LAYANAN - RESPONSIVE GRID */}
           <div className="w-full lg:w-3/4">
-            {/* Mobile Active Filter Info */}
-            {(selectedCategory !== 'All' || searchQuery.trim() !== '') && (
-              <div className="lg:hidden mb-4 bg-blue-50 border-2 border-blue-200 p-3 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <Filter size={12} className="text-blue-700" />
-                    {selectedCategory !== 'All' && (
-                      <span className="px-2 py-1 bg-white rounded font-bold text-blue-700">
-                        {selectedCategory}
-                      </span>
-                    )}
-                    {searchQuery.trim() !== '' && (
-                      <span className="px-2 py-1 bg-white rounded font-bold text-blue-700 truncate max-w-[100px]">
-                        "{searchQuery}"
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={handleResetFilter}
-                    className="text-blue-700 font-bold text-xs hover:underline"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            )}
+
 
             {/* MOBILE GRID VIEW (2 kolom) */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4 md:hidden">

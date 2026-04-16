@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, MapPin, Phone, Star, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import { ArrowRight, MapPin, Phone, Star, ChevronLeft, ChevronRight, Loader, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -24,7 +24,7 @@ const Home = () => {
   const API_URL_REVIEWS = 'http://localhost:5000/api/reviews';
   const API_URL_PAGE_INFO = 'http://localhost:5000/api/page-info/public';
 
-  // ✨ Format harga konsisten dengan Product.jsx
+  //  Format harga konsisten dengan Product.jsx
   const formatPrice = (price) => {
     return new Intl.NumberFormat('id-ID', { 
       minimumFractionDigits: 0, 
@@ -413,7 +413,7 @@ const Home = () => {
                 onClick={() => window.open(pageContent.footer_contact?.additional_data?.whatsapp_url || 'https://wa.me/6281994204009')}
               >
                 <div className="bg-[#8D6E63] p-4 rounded-2xl shadow-lg group-hover:bg-[#6D4C41] transition-colors">
-                  <Phone size={24} className="text-white" />
+                  <MessageCircle size={24} className="text-white" /> 
                 </div>
                 <div className="font-sans">
                   <h4 className="font-black text-[10px] uppercase tracking-widest text-[#D7CCC8]">

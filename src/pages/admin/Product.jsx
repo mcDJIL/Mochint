@@ -489,7 +489,7 @@ const Product = () => {
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                     <div className="text-[10px] sm:text-xs text-gray-500">ID: {product.id || product._id}</div>
                     <div className="flex gap-1.5 sm:gap-2">
-                      <button onClick={() => handleView(product)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-100 text-gray-700 text-[10px] sm:text-xs rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium">
+                      <button onClick={() => handleView(product)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-brown-500 text-white text-[10px] sm:text-xs rounded-lg hover:bg-brown-600 transition-colors duration-200 font-medium">
                         Lihat
                       </button>
                       <button onClick={() => handleEdit(product)} className="flex-1 sm:flex-none px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-[10px] sm:text-xs rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">

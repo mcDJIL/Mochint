@@ -172,7 +172,7 @@ const About = () => {
                       <img src={award.image} alt={award.title} className="w-full h-full object-cover" />
                     </div>
                     <div className="p-6">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">
+                      <p className="text-[15px] font-black uppercase tracking-[0.2em] text-#3E2723 text-center">
                         {award.title}
                       </p>
                     </div>
@@ -217,7 +217,7 @@ const About = () => {
                   )}
                   <h3 className="text-xl font-bold text-[#3E2723] mb-2">{facility.name}</h3>
                   {facility.description && (
-                    <p className="text-gray-600 text-sm leading-relaxed">{facility.description}</p>
+                    <p className="text-brown-600 text-sm leading-relaxed">{facility.description}</p>
                   )}
                 </div>
               ))}

@@ -635,16 +635,16 @@ const Information = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleEdit(article)}
-                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                  >
-                    Edit
-                  </button>
-                  <button
                     onClick={() => toggleStatus(article._id || article.id, article.status)}
                     className="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium"
                   >
                     {article.status === 'Published' ? 'Unpublish' : 'Publish'}
+                  </button>
+                  <button
+                    onClick={() => handleEdit(article)}
+                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                  >
+                    Edit
                   </button>
                   <button
                     onClick={() => handleDelete(article._id || article.id)}
@@ -699,16 +699,16 @@ const Information = () => {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleEdit(article)}
-                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
                         onClick={() => toggleStatus(article._id || article.id, article.status)}
                         className="px-3 sm:px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-xs sm:text-sm font-medium transition-colors"
                       >
                         {article.status === 'Published' ? 'Unpublish' : 'Publish'}
+                      </button>
+                      <button
+                        onClick={() => handleEdit(article)}
+                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium transition-colors"
+                      >
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDelete(article._id || article.id)}

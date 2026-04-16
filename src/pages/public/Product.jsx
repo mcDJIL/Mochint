@@ -397,8 +397,8 @@ const Product = () => {
                   )}
                 </div>
 
-                <div className="p-4 sm:p-6 lg:p-7">
-                  <h3 className="text-[#3E2723] font-display font-bold text-sm sm:text-base mb-4 sm:mb-6 h-10 sm:h-12 leading-tight overflow-hidden tracking-tight line-clamp-2">
+                <div className="p-2 sm:p-3 lg:p-4">
+                  <h3 className="text-[#3E2723] font-display font-bold text-xs sm:text-sm mb-2 sm:mb-3 h-6 sm:h-7 leading-tight overflow-hidden tracking-tight line-clamp-2">
                     {product.name}
                   </h3>
                   
