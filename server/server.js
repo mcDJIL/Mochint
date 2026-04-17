@@ -26,7 +26,6 @@ const contactRoutes = require('./routes/contactRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
-import { fileURLToPath } from 'url';
 
 app.use(cors({
   origin: '*',
@@ -74,8 +73,6 @@ app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
   next();
 });
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.use(express.static(path.join(__dirname, '../public_html')));
 
